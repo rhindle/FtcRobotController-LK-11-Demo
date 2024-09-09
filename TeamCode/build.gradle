@@ -25,4 +25,11 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
+    //??? annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
+    implementation 'org.ftclib.ftclib:core:2.1.1' // lk 20240907
+    implementation files('lib/ftc265-3.0.0-pre.5.aar')    //lk
+    implementation files('lib/librealsense-2.41.1-ftc265.aar')   //lk 20240425
+    implementation 'com.acmerobotics.dashboard:dashboard:0.4.15'
+    implementation 'com.acmerobotics.roadrunner:core:0.5.5'
+    implementation 'org.openftc:easyopencv:1.7.3'
 }

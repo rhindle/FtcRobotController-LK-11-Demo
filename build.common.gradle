@@ -112,6 +112,10 @@ android {
     sourceSets.main {
         jni.srcDirs = []
         jniLibs.srcDir rootProject.file('libs')
+        java {
+            //exclude 'TeamCode/src/main/java/Ignore'   //lk
+            exclude '**/Ignore'   //lk
+        }
     }
     ndkVersion '21.3.6528147'
 }
