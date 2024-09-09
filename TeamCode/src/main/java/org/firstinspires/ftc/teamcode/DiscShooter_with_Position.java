@@ -22,9 +22,9 @@ public class DiscShooter_with_Position extends LinearOpMode {
       parts = new PartsDS(this);
 
       parts.useODO = false;
-      parts.useIMU = true;   //!!!
-      parts.useSlamra = true;  //!!!
-      parts.useNeoMatrix = true; //true;
+      parts.useIMU = true;
+      parts.useSlamra = true;
+      parts.useNeoMatrix = true;
       parts.useAprilTag = true;
       parts.useDrivetrainEncoders = true;
       parts.reverseDrive = false;
@@ -32,6 +32,8 @@ public class DiscShooter_with_Position extends LinearOpMode {
       parts.odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
       parts.slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
       parts.speedMaximum = 1;
+
+      settingsOverride();
 
       parts.setup();
       parts.preInit();
@@ -43,18 +45,13 @@ public class DiscShooter_with_Position extends LinearOpMode {
       /* Init Loop */
       while (!isStarted()) {
          TelemetryMgr.message(Category.MANDATORY, "Press Play to start");
-//         if (parts.useIMU) TelemetryMgr.message(Category.MANDATORY, "Heading","%.1f", parts.imuMgr.returnImuHeadingRaw(true));
          TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
          TelemetryMgr.message(Category.MANDATORY, "Drive Type", parts.reverseDrive ? "AndyMark" : "GobildaBot");
-
          parts.initLoop();
-
          if (parts.buttonMgr.wasTapped(1, ButtonMgr.Buttons.x))
             parts.reverseDrive = !parts.reverseDrive;
          if (parts.buttonMgr.wasTapped(2, ButtonMgr.Buttons.x))
             parts.reverseDrive = !parts.reverseDrive;
-
-//         TelemetryMgr.Update(true);
          sleep(20);
       }
 
@@ -63,14 +60,13 @@ public class DiscShooter_with_Position extends LinearOpMode {
       /* Run Loop */
       if (opModeIsActive()) {
          while (opModeIsActive()) {
-//            addTelemetryLoopStart();
             parts.runLoop();
-//            addTelemetryLoopEnd();
-//            TelemetryMgr.Update();
          }
       }
 
       parts.stop();
+   }
 
+   public void settingsOverride(){
    }
 }
