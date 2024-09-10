@@ -39,7 +39,6 @@ public class DiscShooter_with_Position extends LinearOpMode {
       parts.preInit();
 
       TelemetryMgr.setDebugLevel(10);
-//      TelemetryMgr.enableCategories(new TelemetryMgr.Category[] {Category.AUTODRIVE});
       TelemetryMgr.enableAllCategories();
 
       /* Init Loop */

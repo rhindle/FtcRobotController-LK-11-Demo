@@ -17,9 +17,6 @@ public class ControlsDS extends Controls {
    boolean guestOK, teamOK;
    boolean toggleIntake = false;
 
-//   Position shootPosition = new Position (-20, 0, 0);
-   Position aimPosition = new Position (0, 0, 0);
-
    public ControlsDS(Parts parts) {
       super(parts);
    }
@@ -159,14 +156,20 @@ public class ControlsDS extends Controls {
       }
 
       if (eitherGuestOrTeam(Buttons.dpad_up, State.wasHeld)) {
-         parts.autoDrive.setNavTarget(new NavigationTarget(DSShooter.autoLaunchPos, parts.dsMisc.toleranceHigh));
-         parts.userDrive.directionTarget = aimPosition;
+         parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.autoLaunchPos, parts.dsMisc.toleranceHigh));
+         parts.userDrive.directionTarget = DSMisc.aimPosition;
          parts.userDrive.useTargetDirection = true;
          parts.dsLed.displayMessage('A', 2);
       }
 
+      if (eitherGuestOrTeam(Buttons.dpad_up, State.wasDoubleTapped)) {
+         parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, parts.dsMisc.toleranceHigh));
+         parts.userDrive.useTargetDirection = false;
+         parts.dsLed.displayMessage('#', 4);
+      }
+
       if (eitherGuestOrTeam(Buttons.dpad_down, State.wasHeld)) {
-         parts.userDrive.directionTarget = aimPosition;
+         parts.userDrive.directionTarget = DSMisc.aimPosition;
          parts.dsLed.displayMessage('T', parts.userDrive.toggleUseTargetDirection());
       }
 

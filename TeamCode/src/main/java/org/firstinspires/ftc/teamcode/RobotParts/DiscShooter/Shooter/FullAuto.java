@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter;
 
+import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
 
 class FullAuto {
@@ -31,8 +32,8 @@ class FullAuto {
         }
 
         if (state == 2) {                                    // navigate to launch position
-            DSShooter.parts.autoDrive.setNavTarget(new NavigationTarget(DSShooter.autoLaunchPos, DSShooter.parts.dsMisc.toleranceHigh));
-            DSShooter.armShooter();   // todo: this OK?  just added without too much thought
+            DSShooter.parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.autoLaunchPos, DSShooter.parts.dsMisc.toleranceHigh));
+            DSShooter.armShooter();
             state++;
         }
         if (state == 3) {                                   // wait until reach position and start blasting

@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class DSLed implements PartsInterface {
@@ -168,7 +169,7 @@ public class DSLed implements PartsInterface {
    }
 
    public void autoSetBlinkin() {
-      if (parts.dsShooter.isArmed) servoBlinkinSetting = 21;
+      if (DSShooter.isArmed) servoBlinkinSetting = 21;
       else if (parts.autoDrive.isNavigating) servoBlinkinSetting = 71;
       else if (parts.userDrive.isDriving) servoBlinkinSetting = 51;
       else servoBlinkinSetting = 25; //43;

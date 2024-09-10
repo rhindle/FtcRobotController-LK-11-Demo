@@ -153,6 +153,7 @@ public class Robot implements PartsInterface {
         // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
         // and named "sensorIMU".
 
+        // todo: This can probably be moved to ImuMgr
         // Initialize IMU directly
         sensorIMU = hardwareMap.get(IMU.class, "imu");
         sensorIMU.initialize(
@@ -284,7 +285,7 @@ public class Robot implements PartsInterface {
         ServoControllerEx controller = (ServoControllerEx) servo.getController();
         int servoPort = servo.getPortNumber();
         controller.setServoPwmDisable(servoPort);
-//        if (controller.isServoPwmEnabled(servoPort)) controller.setServoPwmDisable(servoPort);  //todo:check this
+//        if (controller.isServoPwmEnabled(servoPort)) controller.setServoPwmDisable(servoPort);  //todo:check this; also I think 10.0 adds methods to Servo
 //        else controller.setServoPwmEnable(servoPort);
     }
 

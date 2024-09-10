@@ -31,7 +31,7 @@ public class DSShooter implements PartsInterface {
    static final int disarmTime                         = 10000;
    static final int disarmTimeAfterFire                = 5000;
 
-   public static final Position autoLaunchPos          = new Position(-24, 0, 0);  // must be updated!!
+
 
    /* Internal use */
    private static DcMotorEx motorSpinner;
@@ -43,7 +43,7 @@ public class DSShooter implements PartsInterface {
    private static long pusherTimer = System.currentTimeMillis();
    private static final double spinMultiplier = 60.0 / 28.0 * 1.0;  // ticksPerRev * gearRatio;;
    public static long cancelTimer = System.currentTimeMillis();
-   public static long disarmTimer = System.currentTimeMillis();// + 10000000; // unattainable future
+   public static long disarmTimer = System.currentTimeMillis();
    public static boolean isArmed = false;
 
    /* Public OpMode members. */
@@ -196,7 +196,6 @@ public class DSShooter implements PartsInterface {
       closeGate();
       spinnerOff();
       isArmed = false;
-      //disarmTimer = System.currentTimeMillis() + 10000000; // unattainable future
    }
 
    public static void openGate() {

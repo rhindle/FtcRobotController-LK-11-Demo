@@ -15,6 +15,10 @@ public class Drivetrain {
     DrivePowers drivePowers, drivePowersLast;
     public boolean minimizeCycleTime = true;   // skip small power changes to improve cycle time (each motor power transaction degrades cycle time)
     public double ignoreDiff = .05;            // absolute power difference to ignore
+    public boolean accelControl = true;
+    public double accelControlRamp = 200;      // time allowed for transition from 0 to 1 power
+    public long lastLoopTime = System.currentTimeMillis();
+    public long currentLoopTime;
 
     /* Constructor */
     public Drivetrain(Parts parts) {
@@ -57,7 +61,10 @@ public class Drivetrain {
     }
 
     public void applyDrivePowers(boolean addTelemetry) {
+        currentLoopTime = System.currentTimeMillis();
         if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN, "raw", drivePowers.toString(2));
+        if (accelControl) drivePowers = applyAccelRateLimit(drivePowers, drivePowersLast);
+        if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN, "lim", drivePowers.toString(2));
         if (minimizeCycleTime) drivePowers = adjustPowers(drivePowers, drivePowersLast);
         if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN, "adj", drivePowers.toString(2));
         motorLF.setPower(drivePowers.v0);
@@ -65,6 +72,7 @@ public class Drivetrain {
         motorLR.setPower(drivePowers.v2);
         motorRR.setPower(drivePowers.v3);
         drivePowersLast = drivePowers.clone();
+        lastLoopTime = currentLoopTime;
     }
 
     public DrivePowers getDrivePowers() {
@@ -91,6 +99,7 @@ public class Drivetrain {
 
     public void stopDriveMotors(boolean immediate) {
         setDrivePowers(0, 0, 0, 0);
+        drivePowersLast = drivePowers.clone();  // this is so it doesn't try to rate limit
         if (immediate) applyDrivePowers(false);
     }
 
@@ -103,6 +112,23 @@ public class Drivetrain {
             if (newPow[i] == 0) adjPow[i] = 0;
             else if (Math.abs(newPow[i] - oldPow[i]) < ignoreDiff) adjPow[i] = oldPow[i];
             else adjPow[i] = newPow[i];
+        }
+        return new DrivePowers(adjPow);
+    }
+
+    private DrivePowers applyAccelRateLimit(DrivePowers powerRequested, DrivePowers powerLast) {
+        // This is a simple linear substitute for motion profiling, which might be a good idea to add at a later date
+        // The value of this as written is dubious; it does not maintain direction and rotation of the robot
+        double[] newPow = {powerRequested.v0, powerRequested.v1, powerRequested.v2, powerRequested.v3};
+        double[] oldPow = {powerLast.v0, powerLast.v1, powerLast.v2, powerLast.v3};
+        double[] adjPow = new double[4];
+        double rateLimit = Math.min((currentLoopTime - lastLoopTime) / accelControlRamp, 1);
+        for (int i = 0; i < 4; i++) {
+            double change = newPow[i] - oldPow[i];
+            if (Math.abs(change) > rateLimit) {
+                change = rateLimit * Math.signum(change);
+            }
+            adjPow[i] = oldPow[i] + change;
         }
         return new DrivePowers(adjPow);
     }

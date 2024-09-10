@@ -11,6 +11,10 @@ public class DSMisc implements PartsInterface {
    /* Public OpMode members. */
    public Parts parts;
 
+   public static final Position aimPosition            = new Position (12, -4, 0);
+   public static final Position tagReadPos             = new Position(-28,-1,0);
+   public static final Position autoLaunchPos          = new Position(-33, -4, 0);  // must be updated!!
+
    public PositionTolerance toleranceImpossible = new PositionTolerance (0.5, 0.5, 250);
    public PositionTolerance toleranceHigh = new PositionTolerance (1.0, 1.0, 250);
    public PositionTolerance toleranceMedium = new PositionTolerance (2.0, 2.0, 125);

@@ -40,7 +40,7 @@ public class PartsDS extends Parts {
         controls = new ControlsDS(this);
         drivetrain = new DrivetrainDS(this);
 
-        if (useIMU) imuMgr = new ImuMgr(this);  //todo: update all IMU stuff to be disable-able
+        if (useIMU) imuMgr = new ImuMgr(this);
         positionMgr = new PositionMgr(this);
         autoDrive = new AutoDriveDS(this);
         userDrive = new UserDriveDS(this);
@@ -72,7 +72,6 @@ public class PartsDS extends Parts {
         dsShooter.initialize();
         if (useSlamra) slamra.initialize();
         if (useAprilTag) dsApriltag.initialize();
-        //if (useNeoMatrix) dsLed.initialize();
         dsLed.initialize();
     }
 
@@ -83,7 +82,6 @@ public class PartsDS extends Parts {
         if (useSlamra) slamra.initLoop();
         if (useAprilTag) dsApriltag.initLoop();
         positionMgr.initLoop();
-        //if (useNeoMatrix) dsLed.initLoop();
         dsLed.initLoop();
         dsShooter.initLoop();
         TelemetryMgr.Update();
@@ -96,13 +94,12 @@ public class PartsDS extends Parts {
         if (useODO) odometry.initialize();
         userDrive.initialize();
         autoDrive.initialize();
-        autoDrive.setNavTarget(new NavigationTarget(new Position(-20,0,0), dsMisc.toleranceHigh));
+        autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, dsMisc.toleranceHigh));
 
         if (useODO) odometry.runLoop();  // get some things squared away before the regular runLoops start
         autoDrive.runLoop();
 
         if (useSlamra) slamra.preRun();
-        //if (useNeoMatrix) dsLed.preRun();
         dsLed.preRun();
         dsShooter.preRun();
     }
@@ -125,7 +122,6 @@ public class PartsDS extends Parts {
         drivetrain.runLoop();
         dsShooter.runLoop();
         tagPositionAndLEDs();
-        //if (useNeoMatrix) dsLed.runLoop();
         dsLed.runLoop();
 
         addTelemetryLoopEnd();
@@ -141,20 +137,20 @@ public class PartsDS extends Parts {
     }
 
     public void tagPositionAndLEDs () {
-        /* AprilTag experiment follows, to be moved elsewhere eventually? */   //todo:move this (including firstlock variable)
+        /* AprilTag experiment follows, to be moved elsewhere eventually? */   //todo:move this? (including firstlock variable)
         if (useAprilTag) {
             Position roboTagPosition = dsApriltag.getTagRobotPosition();
             if (roboTagPosition != null) {
                 if (useSlamra) slamra.setupFieldOffset(roboTagPosition);
                 if (useODO) odometry.setupFieldOffset(roboTagPosition);
                 if (useIMU) imuMgr.setupFieldOffset(roboTagPosition);
-                //  autoDrive.modifyHeading = robot.returnImuHeading() - roboTagPosition.R; // saving for reference
             }
             if (dsApriltag.tagRobotPosition!=null){
                 dsLed.updateGraphic('1', Color.rgb(0,40,10));
                 if (firstLock && !userDrive.isDriving) {   //todo:make this better
                     firstLock = false;
-                    autoDrive.setNavTarget(new NavigationTarget(new Position(-20,0,0), dsMisc.toleranceHigh));
+                    autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, dsMisc.toleranceHigh));
+                    dsLed.displayMessage('#', 2);
                 }
             } else if (dsApriltag.instantTagRobotPosition!=null) {
                 dsLed.updateGraphic('1', Color.rgb(20,10,0));
