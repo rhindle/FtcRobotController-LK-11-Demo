@@ -87,24 +87,6 @@ public class ControlsDS extends Controls {
          parts.dsLed.displayMessage('S', 2);
       }
 
-      if (eitherGuestOrTeam(Buttons.dpad_left, State.wasDoubleTapped)) {
-         DSShooter.extendPusher();
-      }
-
-      if (eitherGuestOrTeam(Buttons.dpad_right, State.wasDoubleTapped)) {
-         DSShooter.retractPusher();
-      }
-
-      if (eitherGuestOrTeam(Buttons.dpad_up, State.wasSingleTapped)) {
-         DSShooter.openGate();
-         parts.dsLed.displayMessage('G', 2);
-      }
-
-      if (eitherGuestOrTeam(Buttons.dpad_down, State.wasSingleTapped)) {
-         DSShooter.closeGate();
-         parts.dsLed.displayMessage('G', 3);
-      }
-
       if (eitherGuestOrTeam(Buttons.left_bumper, State.wasSingleTapped)) {
          toggleIntake = !toggleIntake;
          if (toggleIntake) {
@@ -136,7 +118,7 @@ public class ControlsDS extends Controls {
          parts.dsLed.displayMessage('X', 3);
       }
 
-      if (eitherGuestOrTeam(Buttons.a, State.wasTapped)) {  // todo: Do we want team to be able to push without being armed?
+      if (eitherGuestOrTeam(Buttons.a, State.wasTapped)) {
          parts.dsShooter.startPushIfArmed();
       }
 
@@ -155,6 +137,7 @@ public class ControlsDS extends Controls {
          parts.dsLed.displayMessage('A', 4);
       }
 
+      // Drive to shoot position and activate target following
       if (eitherGuestOrTeam(Buttons.dpad_up, State.wasHeld)) {
          parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.autoLaunchPos, parts.dsMisc.toleranceHigh));
          parts.userDrive.directionTarget = DSMisc.aimPosition;
@@ -162,34 +145,57 @@ public class ControlsDS extends Controls {
          parts.dsLed.displayMessage('A', 2);
       }
 
+      // Drive to AprilTag read position
       if (eitherGuestOrTeam(Buttons.dpad_up, State.wasDoubleTapped)) {
          parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, parts.dsMisc.toleranceHigh));
          parts.userDrive.useTargetDirection = false;
          parts.dsLed.displayMessage('#', 4);
       }
 
-      if (eitherGuestOrTeam(Buttons.dpad_down, State.wasHeld)) {
+      /* Special controls only available to Team, not Guest */
+
+      if (teamControl(Buttons.dpad_left, State.wasDoubleTapped)) {
+         DSShooter.extendPusher();
+      }
+
+      if (teamControl(Buttons.dpad_right, State.wasDoubleTapped)) {
+         DSShooter.retractPusher();
+      }
+
+      if (teamControl(Buttons.dpad_up, State.wasSingleTapped)) {
+         DSShooter.openGate();
+         parts.dsLed.displayMessage('G', 2);
+      }
+
+      if (teamControl(Buttons.dpad_down, State.wasSingleTapped)) {
+         DSShooter.closeGate();
+         parts.dsLed.displayMessage('G', 3);
+      }
+
+      // Toggle TargetDirection aiming
+      if (teamControl(Buttons.dpad_down, State.wasHeld)) {
          parts.userDrive.directionTarget = DSMisc.aimPosition;
          parts.dsLed.displayMessage('T', parts.userDrive.toggleUseTargetDirection());
       }
 
       // Toggle FCD
-      if (eitherGuestOrTeam(Buttons.start, State.wasDoubleTapped)) {
+      if (teamControl(Buttons.start, State.wasDoubleTapped)) {
          parts.dsLed.displayMessage('F', parts.userDrive.toggleFieldCentricDrive());
       }
 
       // Toggle HeadingHold
-      if (eitherGuestOrTeam(Buttons.back, State.wasDoubleTapped)) {
+      if (teamControl(Buttons.back, State.wasDoubleTapped)) {
          parts.dsLed.displayMessage('H', parts.userDrive.toggleHeadingHold());
       }
 
       // Store heading correction
-      if (eitherGuestOrTeam(Buttons.right_stick_button, State.wasReleased)) {
+      if (teamControl(Buttons.right_stick_button, State.wasReleased)) {
          parts.userDrive.setDeltaHeading();
          parts.dsLed.displayMessage('D', 1);
       }
 
-      if (eitherGuestOrTeam(Buttons.left_stick_button, State.wasReleased))  {
+      // Toggle PositionHold
+      if (teamControl(Buttons.left_stick_button, State.wasReleased))  {
          parts.dsLed.displayMessage('P', parts.userDrive.togglePositionHold());
       }
    }
@@ -199,6 +205,10 @@ public class ControlsDS extends Controls {
       boolean team = teamOK && buttonMgr.getState(1, button, state);
       boolean guest = guestOK && buttonMgr.getState(2, button, state);
       return team || guest;
+   }
+
+   public boolean teamControl(Buttons button, State state) {
+      return teamOK && buttonMgr.getState(1, button, state);
    }
 
    public void stopEverything() {

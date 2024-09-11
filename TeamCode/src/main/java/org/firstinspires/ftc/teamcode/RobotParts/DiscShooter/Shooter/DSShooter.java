@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class DSShooter implements PartsInterface {
@@ -30,8 +29,9 @@ public class DSShooter implements PartsInterface {
    static final double ingesterPower                   = 1;
    static final int disarmTime                         = 10000;
    static final int disarmTimeAfterFire                = 5000;
-
-
+   static final int cancelIntakeTime                   = 30000;
+   static final int cancelIntakeTimeShort              = 3000;
+   static final int cancelIntakeIdle                   = 5000;
 
    /* Internal use */
    private static DcMotorEx motorSpinner;
@@ -44,7 +44,10 @@ public class DSShooter implements PartsInterface {
    private static final double spinMultiplier = 60.0 / 28.0 * 1.0;  // ticksPerRev * gearRatio;;
    public static long cancelTimer = System.currentTimeMillis();
    public static long disarmTimer = System.currentTimeMillis();
+   public static long intakeTimer = System.currentTimeMillis();
+   public static long idleTimer = System.currentTimeMillis();
    public static boolean isArmed = false;
+   public static int intakeState = 0;
 
    /* Public OpMode members. */
    public static Parts parts;
@@ -73,13 +76,18 @@ public class DSShooter implements PartsInterface {
 
    @SuppressLint("DefaultLocale")
    public void runLoop() {
-      TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "SpinnerRPM", getSpinnerRPM());
-      TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "Ingester", motorIngester.getPower());
       Pusher.stateMachine();
       Shoot1.stateMachine();
       Shoot3.stateMachine();
       FullAuto.stateMachine();
+
       if (isArmed && System.currentTimeMillis() >= disarmTimer) disarmShooter();
+      if (intakeState!=0 &&  System.currentTimeMillis() >= intakeTimer) intakeOff();
+      if (parts.userDrive.isDriving) idleTimer = System.currentTimeMillis() + cancelIntakeIdle;
+      if (intakeState!=0 &&  System.currentTimeMillis() >= idleTimer) intakeOff();
+
+      TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "SpinnerRPM", getSpinnerRPM());
+      TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "Ingester", motorIngester.getPower());
       TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER,
               "States: " +
                       "PU: " + String.format("%02d", Pusher.getState()) +
@@ -141,6 +149,7 @@ public class DSShooter implements PartsInterface {
       motorIngester.setPower(0);
       motorSpinner.setPower(0);
       isArmed = false;
+      intakeState = 0;
    }
 
    public void eStop() {
@@ -175,12 +184,16 @@ public class DSShooter implements PartsInterface {
       isArmed = false;
    }
    public void intakeOn() {
+      intakeState = 1;
       motorIngester.setPower(ingesterPower);
+      intakeTimer = System.currentTimeMillis() + cancelIntakeTime;
    }
    public void intakeReverse() {
+      intakeState = -1;
       motorIngester.setPower(-ingesterPower);
    }
    public void intakeOff() {
+      intakeState = 0;
       motorIngester.setPower(0);
    }
 
@@ -190,6 +203,7 @@ public class DSShooter implements PartsInterface {
       spinnerOn();
       isArmed = true;
       disarmTimer = System.currentTimeMillis() + disarmTime;
+      intakeTimer = System.currentTimeMillis() + cancelIntakeTimeShort;
    }
    public static void disarmShooter() {
       retractPusher();
