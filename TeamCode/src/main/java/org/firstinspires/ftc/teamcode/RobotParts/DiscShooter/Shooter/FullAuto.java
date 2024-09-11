@@ -38,7 +38,7 @@ class FullAuto {
         }
         if (state == 3) {                                   // wait until reach position and start blasting
             if (DSShooter.parts.autoDrive.onTargetByAccuracy) {
-                Shoot3.start();
+                Shoot3.startForFullAuto();
                 state++;
             }
         }
@@ -53,6 +53,7 @@ class FullAuto {
     //----State Machine End-----
 
     public static void start() {
+        if (!DSShooter.parts.positionMgr.hasPosition()) return;  // don't even start if no position
         complete = false;
         state = 1;
         cancelTimer = System.currentTimeMillis() + timeLimit;
@@ -64,7 +65,14 @@ class FullAuto {
         state = -1;
     }
 
-    public boolean isRunning() {
+    public static void softStop() {
+        // don't spin down!
+        DSShooter.parts.autoDrive.setAutoDrive(false);
+        DSShooter.retractPusher();
+        state = -1;
+    }
+
+    public static boolean isRunning() {
         return (state>0);
     }
 

@@ -98,6 +98,29 @@ public class Position
         Y += vec.Y();
     }
 
+//    public Position transPose(Position pos1, Position pos2) {
+//        return new Position(
+//                (pos1.X + (pos2.X*Math.cos(Math.toRadians(pos1.R)) - pos2.Y*Math.sin(Math.toRadians(pos1.R)))),
+//                (pos1.Y + (pos2.X*Math.sin(Math.toRadians(pos1.R)) + pos2.Y*Math.cos(Math.toRadians(pos1.R)))),
+//                (pos1.R + pos2.R)
+//        );
+//    }
+
+    public Position transformPosition(Position pos2) {
+        return new Position(
+                (X + (pos2.X*Math.cos(Math.toRadians(R)) - pos2.Y*Math.sin(Math.toRadians(R)))),
+                (Y + (pos2.X*Math.sin(Math.toRadians(R)) + pos2.Y*Math.cos(Math.toRadians(R)))),
+                (R + pos2.R)
+        );
+    }
+
+//    public void transPose(Position pos2) {
+//        X = X + (pos2.X*Math.cos(Math.toRadians(R)) - pos2.Y*Math.sin(Math.toRadians(R)));
+//        Y = Y + (pos2.X*Math.sin(Math.toRadians(R)) + pos2.Y*Math.cos(Math.toRadians(R)));
+//        R = R + pos2.R;
+//    }
+
+
     //todo: do these make sense? I can't remember why I'd want to compare to "this"
     public boolean inTolerance (Position target, PositionTolerance tolerance) {
         return tolerance.inTolerance(target,this);

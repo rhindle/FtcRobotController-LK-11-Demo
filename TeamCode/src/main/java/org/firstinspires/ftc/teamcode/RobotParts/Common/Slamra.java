@@ -22,6 +22,10 @@ public class Slamra implements PartsInterface {
 	public Position slamraRobotPosition;
 	final Position zeroPos = new Position (0, 0, 0);
 
+	////!!!!!! todo: solve and delete
+	Position debugFieldOffset = new Position();
+	Position debugFinalPose = new Position();
+
 	Position lastPos = new Position();
 	int timesStuck = 0;
 
@@ -93,11 +97,15 @@ public class Slamra implements PartsInterface {
 		slamraFieldOffset = zeroPos;    // clear any existing offset
 		updateSlamraPosition();
 		slamraFieldOffset = getSlamraFieldOffset(slamraRobotPose, fieldPosition);
+		///!!!!! todo: solve and erase
+		debugFieldOffset = getSlamraFieldOffset(fieldPosition, slamraRobotPose);
 	}
 	public void setupFieldOffset() {
 		slamraFieldOffset = zeroPos;    // clear any existing offset
 		updateSlamraPosition();
 		if (slamraFieldStart!=null) slamraFieldOffset = getSlamraFieldOffset(slamraRobotPose, slamraFieldStart);
+		///!!!!! todo: solve and erase
+		if (slamraFieldStart!=null) debugFieldOffset = getSlamraFieldOffset(slamraFieldStart, slamraRobotPose);
 		// if the field offset is 0,0,0, it can be known that it was not properly offset
 	}
 
@@ -107,6 +115,10 @@ public class Slamra implements PartsInterface {
 		slamraRawPose = new Position(update.getX(), update.getY(), Math.toDegrees(update.getHeading()));
 		slamraRobotPose = getSlamraRobotPose();
 		slamraFinalPose = getSlamraFinalPose();
+		////!!!! todo: solve and delete
+		debugFinalPose = transformPosition(slamraRobotPose, slamraFieldOffset);
+		debugFinalPose.normalize();
+		////
 		slamraRobotPosition = slamraFinalPose;
 	}
 
@@ -119,6 +131,7 @@ public class Slamra implements PartsInterface {
 		//pos1 = slamraFieldOffset, pos2 = slamraRobotPose
 		Position slamraFinal;
 		slamraFinal = transformPosition(slamraFieldOffset, slamraRobotPose);
+		//slamraFinal = slamraFieldOffset.transformPosition(slamraRobotPose);
 		slamraFinal.normalize();
 		return slamraFinal;
 	}
@@ -142,9 +155,11 @@ public class Slamra implements PartsInterface {
 
 	public void addTeleOpTelemetry() {
 		TelemetryMgr.message(Category.SLAMRA_EXT, "fldof", slamraFieldOffset.toString(2));
+		TelemetryMgr.message(Category.SLAMRA_EXT, "debug", debugFieldOffset.toString(2));
 		TelemetryMgr.message(Category.SLAMRA_EXT, "raw__", slamraRawPose.toString(2));
 		TelemetryMgr.message(Category.SLAMRA_EXT, "robot", slamraRobotPose.toString(2));
 		TelemetryMgr.message(Category.SLAMRA, "final", slamraFinalPose.toString(2));
+		TelemetryMgr.message(Category.SLAMRA, "debgf", debugFinalPose.toString(2));
 		TelemetryMgr.message(Category.SLAMRA, "stuck", timesStuck);
 	}
 }

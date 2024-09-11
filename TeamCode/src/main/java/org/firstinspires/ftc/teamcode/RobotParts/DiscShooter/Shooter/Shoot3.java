@@ -19,6 +19,10 @@ class Shoot3 {
                 DSShooter.cancelTimer = System.currentTimeMillis() + 1000;
                 Shoot1.softStop();
             }
+            if (FullAuto.isRunning()) {
+                DSShooter.cancelTimer = System.currentTimeMillis() + 1000;
+                FullAuto.softStop();
+            }
             if (System.currentTimeMillis() >= DSShooter.cancelTimer) state++;
         }
         if (state == 2) {                 // open gate, start spinner    // todo: there's no "if" here, so these tasks could move to state==1
@@ -53,6 +57,13 @@ class Shoot3 {
     public static void start() {
         complete = false;
         state = 1;
+        cancelTimer = System.currentTimeMillis() + timeLimit;
+        DSShooter.disarmTimer = System.currentTimeMillis() + timeLimit + DSShooter.disarmTimeAfterFire;
+    }
+
+    public static void startForFullAuto() {
+        complete = false;
+        state = 2;   // skip the checks for stopping other state machines
         cancelTimer = System.currentTimeMillis() + timeLimit;
         DSShooter.disarmTimer = System.currentTimeMillis() + timeLimit + DSShooter.disarmTimeAfterFire;
     }

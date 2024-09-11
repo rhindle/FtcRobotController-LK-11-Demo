@@ -34,7 +34,8 @@ public class DSAprilTag implements PartsInterface {
     int lastPositionPointer = 0;
     public Position acceptableStDev = new Position(0.2, 0.2, 0.2);
     public boolean strongLocked = false;
-    public double strongLockMaxAngle = 10.0;
+    public double strongLockMaxAngle = 10.0;     // in degrees
+    public double strongLockMaxDistance = 48.0;  // in inches
     public Position camOffset = new Position(-8.2, -1.5, 0); //new Position(-1, 3, 0);
 
     /* Constructor */
@@ -262,7 +263,8 @@ public class DSAprilTag implements PartsInterface {
         TelemetryMgr.message(Category.APRILTAG, String.format("stdvPos XYR %6.1f %6.1f %6.1f  (inch, inch, deg)", stdevPosition.X, stdevPosition.Y, stdevPosition.R));
 
         if (stdevPosition.X <= acceptableStDev.X && stdevPosition.Y <= acceptableStDev.Y && stdevPosition.R <= acceptableStDev.R) {
-            if (Math.abs(meanPosition.R) <= strongLockMaxAngle) {
+//            if (Math.abs(meanPosition.R) <= strongLockMaxAngle) {
+            if (Math.abs(meanPosition.R) <= strongLockMaxAngle && Math.abs(meanPosition.X) <= strongLockMaxDistance) {   //todo:embetter this
                 strongLocked = true;
                 tagRobotPosition = meanPosition;
             }

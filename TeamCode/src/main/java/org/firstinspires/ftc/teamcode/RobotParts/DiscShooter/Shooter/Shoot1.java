@@ -19,6 +19,10 @@ class Shoot1 {
                 DSShooter.cancelTimer = System.currentTimeMillis() + 1000;
                 Shoot3.softStop();
             }
+            if (FullAuto.isRunning()) {
+                DSShooter.cancelTimer = System.currentTimeMillis() + 1000;
+                FullAuto.softStop();
+            }
             if (System.currentTimeMillis() >= DSShooter.cancelTimer) state++;
         }
         if (state == 2) {                 // open gate, start spinner   // todo: there's no "if" here, so these tasks could move to state==1
