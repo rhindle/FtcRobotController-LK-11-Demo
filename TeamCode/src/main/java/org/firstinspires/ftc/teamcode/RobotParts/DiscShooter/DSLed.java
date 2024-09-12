@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter;
 import android.graphics.Color;
 
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
+import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -53,8 +54,8 @@ public class DSLed implements PartsInterface {
       }
       servoBlinkin = parts.robot.servo2B;
       ServoImplEx adjust = parts.opMode.hardwareMap.get(ServoImplEx.class,"servo2B");
-      adjust.setPwmRange(new PwmControl.PwmRange(500, 2500));
-      setBlinkinPattern(60);
+      adjust.setPwmRange(new PwmControl.PwmRange(500, 2500));  // Default is 400-2400, but Blinkin wants 500-2500.
+      setBlinkinPattern(RevBlinkinLedDriver.BlinkinPattern.CP2_LARSON_SCANNER);  //60
    }
 
    public void preInit() {
@@ -74,7 +75,7 @@ public class DSLed implements PartsInterface {
       if (parts.useNeoMatrix) {
          parts.neo.clearMatrix();
          normalMatrix = new int[cols][rows];
-         updateGraphic('4', Color.rgb(2, 2, 2));
+         updateGraphic('4', MessageColor.G_LTGRAY);
 //         parts.neo.applyPixelMapToBuffer(finalMatrix, 0, 15, 0, true);
          parts.neo.applyPixelMapToBuffer(finalMatrix, 0, 7, 0, true);
          parts.neo.forceUpdateMatrix();
@@ -102,35 +103,41 @@ public class DSLed implements PartsInterface {
    int messageDisplayTime = 1000;
 
    public void displayMessage (char msgChar, boolean boo) {
-      if (boo) displayMessage(msgChar, 2);
-      else displayMessage(msgChar, 3);
+      if (boo) displayMessage(msgChar, MessageColor.GREEN);
+      else displayMessage(msgChar, MessageColor.RED);
+   }
+   public void displayMessage (char msgChar, MessageColor messageColor) {
+      displayMessage(msgChar, messageColor.color);
    }
    public void displayMessage (char msgChar, int color) {
       if (!parts.useNeoMatrix) return;
       clearMessageTimer = System.currentTimeMillis() + messageDisplayTime;
-      int msgColor;
+//      int msgColor;
       int[][] textMatrix;
-      switch (color) {
-         case 2:
-            msgColor = Color.rgb(0,40,0);
-            break;
-         case 3:
-            msgColor = Color.rgb(40,0,0);
-            break;
-         case 4:
-            msgColor = Color.rgb(0,0,40);
-            break;
-         case 1:
-         default:
-            msgColor = Color.rgb(20,20,20);
-      }
-      textMatrix = parts.neo.buildPixelMapFromString(String.valueOf(msgChar), parts.neo.bigLetters, msgColor);
+//      switch (color) {
+//         case 2:
+//            msgColor = Color.rgb(0,40,0);
+//            break;
+//         case 3:
+//            msgColor = Color.rgb(40,0,0);
+//            break;
+//         case 4:
+//            msgColor = Color.rgb(0,0,40);
+//            break;
+//         case 1:
+//         default:
+//            msgColor = Color.rgb(20,20,20);
+//      }
+      textMatrix = parts.neo.buildPixelMapFromString(String.valueOf(msgChar), parts.neo.bigLetters, color);
       messageMatrix = new int[cols][rows];
       messageMatrix = parts.neo.overlayPixelMap(textMatrix, messageMatrix, 2);
       //messageMatrix = parts.neo.overlayPixelMap(textMatrix, messageMatrix, 10);
       finalMatrix = parts.neo.cloneArray(messageMatrix);
    }
 
+   public void updateGraphic (char msgChar, MessageColor messageColor) {
+      updateGraphic(msgChar, messageColor.color);
+   }
    public void updateGraphic (char msgChar, int color) {
       if (!parts.useNeoMatrix) return;
       int[][] textMatrix;
@@ -158,23 +165,44 @@ public class DSLed implements PartsInterface {
 //   }
 
    public void setBlinkinPattern(int pattern) {
-      if (pattern<1 || pattern>100) return;  //or throw an error
-      int pulseWidth = 995 + 10*pattern;                 // convert pattern number to pulse width between 1000-2000 μs)
-      double setting = (pulseWidth - 500) / 2000.0;      // covert pulse width to 0-1 servo position (based on 500-2500 μs)
+      // Q: Why do this craziness instead of defining the servo port as a Blinkin?
+      // A: Because that changes the stored config and the Robot class. Easier to just use all the servo ports as servos.
+      if (pattern<1 || pattern>100) return;              // Or throw an error? Legal Blinkin patters are between 1 and 100
+      int pulseWidth = 995 + 10*pattern;                 // Convert pattern number to pulse width between 1000-2000 μs)
+      double setting = (pulseWidth - 500) / 2000.0;      // Covert pulse width to 0-1 servo position (based on 500-2500 μs)
       servoBlinkin.setPosition(setting);
    }
 
-   public void setBlinkinPattern(RevBlinkinLedDriver.BlinkinPattern pattern) {
-      setBlinkinPattern(pattern.ordinal()+1);            // ordinal starts at 0, so need to add 1
+   public void setBlinkinPattern(BlinkinPattern pattern) {
+      setBlinkinPattern(pattern.ordinal()+1);            // Ordinal starts at 0, so need to add 1 (convert 0-99 to 1-100)
    }
 
    public void autoSetBlinkin() {
-      if (DSShooter.isArmed) servoBlinkinSetting = 21;
-      else if (parts.autoDrive.isNavigating) servoBlinkinSetting = 71;
-      else if (parts.userDrive.isDriving) servoBlinkinSetting = 51;
-      else servoBlinkinSetting = 25; //43;
+      if (DSShooter.isArmed) servoBlinkinSetting = BlinkinPattern.FIRE_MEDIUM.ordinal();  //21
+      else if (parts.autoDrive.isNavigating) servoBlinkinSetting = BlinkinPattern.CP1_2_COLOR_GRADIENT.ordinal();  //71
+      else if (parts.userDrive.isDriving) servoBlinkinSetting = BlinkinPattern.CP1_LIGHT_CHASE.ordinal();   //51
+      else servoBlinkinSetting = BlinkinPattern.TWINKLES_OCEAN_PALETTE.ordinal(); //25 //43;
+      servoBlinkinSetting++;                            // Convert ordinal 0-99 to 1-100
       if (servoBlinkinSetting != servoBlinkinSettingLast) setBlinkinPattern(servoBlinkinSetting);
       servoBlinkinSettingLast = servoBlinkinSetting;
+   }
+
+   public enum MessageColor {
+      GREEN (Color.rgb(0,40,0)),
+      RED (Color.rgb(40,0,0)),
+      BLUE (Color.rgb(0,0,40)),
+      GRAY (Color.rgb(20,20,20)),
+      G_GREEN (Color.rgb(0,20,0)),
+      G_RED (Color.rgb(20,0,0)),
+      G_ORANGE (Color.rgb(20,10,0)),
+      G_GRUE(Color.rgb(0,40,10)),
+      G_LTGRAY (Color.rgb(2, 2, 2)),
+      G_BLUE (Color.rgb(0,0,20)),
+      G_PURPLE (Color.rgb(5,0,15));
+      public final int color;
+      MessageColor(int color) {
+         this.color = color;
+      }
    }
 
    public final char[][] marquis = {
@@ -195,3 +223,106 @@ public class DSLed implements PartsInterface {
 
    public final int[] chase = { 10, 20, 40, 60, 20, 0, 0, 0};
 }
+
+/* For reference, here are the Blinkin colors by index and name:
+1	RAINBOW_RAINBOW_PALETTE
+2	RAINBOW_PARTY_PALETTE
+3	RAINBOW_OCEAN_PALETTE
+4	RAINBOW_LAVA_PALETTE
+5	RAINBOW_FOREST_PALETTE
+6	RAINBOW_WITH_GLITTER
+7	CONFETTI
+8	SHOT_RED
+9	SHOT_BLUE
+10	SHOT_WHITE
+11	SINELON_RAINBOW_PALETTE
+12	SINELON_PARTY_PALETTE
+13	SINELON_OCEAN_PALETTE
+14	SINELON_LAVA_PALETTE
+15	SINELON_FOREST_PALETTE
+16	BEATS_PER_MINUTE_RAINBOW_PALETTE
+17	BEATS_PER_MINUTE_PARTY_PALETTE
+18	BEATS_PER_MINUTE_OCEAN_PALETTE
+19	BEATS_PER_MINUTE_LAVA_PALETTE
+20	BEATS_PER_MINUTE_FOREST_PALETTE
+21	FIRE_MEDIUM
+22	FIRE_LARGE
+23	TWINKLES_RAINBOW_PALETTE
+24	TWINKLES_PARTY_PALETTE
+25	TWINKLES_OCEAN_PALETTE
+26	TWINKLES_LAVA_PALETTE
+27	TWINKLES_FOREST_PALETTE
+28	COLOR_WAVES_RAINBOW_PALETTE
+29	COLOR_WAVES_PARTY_PALETTE
+30	COLOR_WAVES_OCEAN_PALETTE
+31	COLOR_WAVES_LAVA_PALETTE
+32	COLOR_WAVES_FOREST_PALETTE
+33	LARSON_SCANNER_RED
+34	LARSON_SCANNER_GRAY
+35	LIGHT_CHASE_RED
+36	LIGHT_CHASE_BLUE
+37	LIGHT_CHASE_GRAY
+38	HEARTBEAT_RED
+39	HEARTBEAT_BLUE
+40	HEARTBEAT_WHITE
+41	HEARTBEAT_GRAY
+42	BREATH_RED
+43	BREATH_BLUE
+44	BREATH_GRAY
+45	STROBE_RED
+46	STROBE_BLUE
+47	STROBE_GOLD
+48	STROBE_WHITE
+49	CP1_END_TO_END_BLEND_TO_BLACK
+50	CP1_LARSON_SCANNER
+51	CP1_LIGHT_CHASE
+52	CP1_HEARTBEAT_SLOW
+53	CP1_HEARTBEAT_MEDIUM
+54	CP1_HEARTBEAT_FAST
+55	CP1_BREATH_SLOW
+56	CP1_BREATH_FAST
+57	CP1_SHOT
+58	CP1_STROBE
+59	CP2_END_TO_END_BLEND_TO_BLACK
+60	CP2_LARSON_SCANNER
+61	CP2_LIGHT_CHASE
+62	CP2_HEARTBEAT_SLOW
+63	CP2_HEARTBEAT_MEDIUM
+64	CP2_HEARTBEAT_FAST
+65	CP2_BREATH_SLOW
+66	CP2_BREATH_FAST
+67	CP2_SHOT
+68	CP2_STROBE
+69	CP1_2_SPARKLE_1_ON_2
+70	CP1_2_SPARKLE_2_ON_1
+71	CP1_2_COLOR_GRADIENT
+72	CP1_2_BEATS_PER_MINUTE
+73	CP1_2_END_TO_END_BLEND_1_TO_2
+74	CP1_2_END_TO_END_BLEND
+75	CP1_2_NO_BLENDING
+76	CP1_2_TWINKLES
+77	CP1_2_COLOR_WAVES
+78	CP1_2_SINELON
+79	HOT_PINK
+80	DARK_RED
+81	RED
+82	RED_ORANGE
+83	ORANGE
+84	GOLD
+85	YELLOW
+86	LAWN_GREEN
+87	LIME
+88	DARK_GREEN
+89	GREEN
+90	BLUE_GREEN
+91	AQUA
+92	SKY_BLUE
+93	DARK_BLUE
+94	BLUE
+95	BLUE_VIOLET
+96	VIOLET
+97	WHITE
+98	GRAY
+99	DARK_GRAY
+100	BLACK
+*/

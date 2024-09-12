@@ -22,9 +22,8 @@ public class Slamra implements PartsInterface {
 	public Position slamraRobotPosition;
 	final Position zeroPos = new Position (0, 0, 0);
 
-	////!!!!!! todo: solve and delete
-	Position debugFieldOffset = new Position();
-	Position debugFinalPose = new Position();
+	///debug & delete
+	Position slamraFinalPose2 = new Position();
 
 	Position lastPos = new Position();
 	int timesStuck = 0;
@@ -52,7 +51,8 @@ public class Slamra implements PartsInterface {
 
 	public void initLoop () {
 		setupFieldOffset();
-		slamraFinalPose = getSlamraFinalPose();
+//		slamraFinalPose = getSlamraFinalPose();
+		slamraFinalPose = slamraFieldOffset.transformPosition(slamraRobotPose);
 		slamraRobotPosition = slamraFinalPose;
 		isSlamraChanging();
 		addTeleOpTelemetry();
@@ -96,70 +96,64 @@ public class Slamra implements PartsInterface {
 	public void setupFieldOffset(Position fieldPosition) {
 		slamraFieldOffset = zeroPos;    // clear any existing offset
 		updateSlamraPosition();
-		slamraFieldOffset = getSlamraFieldOffset(slamraRobotPose, fieldPosition);
-		///!!!!! todo: solve and erase
-		debugFieldOffset = getSlamraFieldOffset(fieldPosition, slamraRobotPose);
+//		slamraFieldOffset = getSlamraFieldOffset(slamraRobotPose, fieldPosition);
+		slamraFieldOffset = slamraRobotPose.getOffset(fieldPosition);
 	}
 	public void setupFieldOffset() {
 		slamraFieldOffset = zeroPos;    // clear any existing offset
 		updateSlamraPosition();
-		if (slamraFieldStart!=null) slamraFieldOffset = getSlamraFieldOffset(slamraRobotPose, slamraFieldStart);
-		///!!!!! todo: solve and erase
-		if (slamraFieldStart!=null) debugFieldOffset = getSlamraFieldOffset(slamraFieldStart, slamraRobotPose);
+//		if (slamraFieldStart!=null) slamraFieldOffset = getSlamraFieldOffset(slamraRobotPose, slamraFieldStart);
+		if (slamraFieldStart!=null) slamraFieldOffset = slamraRobotPose.getOffset(slamraFieldStart);
 		// if the field offset is 0,0,0, it can be known that it was not properly offset
 	}
 
 	public void updateSlamraPosition() {
 		T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
-		Pose2d update = up.pose;
-		slamraRawPose = new Position(update.getX(), update.getY(), Math.toDegrees(update.getHeading()));
-		slamraRobotPose = getSlamraRobotPose();
-		slamraFinalPose = getSlamraFinalPose();
-		////!!!! todo: solve and delete
-		debugFinalPose = transformPosition(slamraRobotPose, slamraFieldOffset);
-		debugFinalPose.normalize();
-		////
+//		Pose2d update = up.pose;
+		slamraRawPose = new Position(up.pose.getX(), up.pose.getY(), Math.toDegrees(up.pose.getHeading()));
+//		slamraRobotPose = getSlamraRobotPose();
+//		slamraFinalPose = getSlamraFinalPose();
+		slamraRobotPose = slamraRawPose.transformPosition(slamraRobotOffset);
+		slamraFinalPose = slamraFieldOffset.transformPosition(slamraRobotPose);
 		slamraRobotPosition = slamraFinalPose;
 	}
 
-	Position getSlamraRobotPose() {
-		//pos1 = slamraRawPose, pos2 = slamraRobotOffset
-		return transformPosition(slamraRawPose, slamraRobotOffset);
-	}
-
-	Position getSlamraFinalPose() {
-		//pos1 = slamraFieldOffset, pos2 = slamraRobotPose
-		Position slamraFinal;
-		slamraFinal = transformPosition(slamraFieldOffset, slamraRobotPose);
-		//slamraFinal = slamraFieldOffset.transformPosition(slamraRobotPose);
-		slamraFinal.normalize();
-		return slamraFinal;
-	}
-
-	Position getSlamraFieldOffset(Position robotPose, Position fieldPose) {
-		double offsetR = fieldPose.R - robotPose.R;
-		return new Position (
-				fieldPose.X - (robotPose.X*Math.cos(Math.toRadians(offsetR)) - robotPose.Y*Math.sin(Math.toRadians(offsetR))),
-				fieldPose.Y - (robotPose.X*Math.sin(Math.toRadians(offsetR)) + robotPose.Y*Math.cos(Math.toRadians(offsetR))),
-				offsetR *1
-		);
-	}
-
-	Position transformPosition(Position pos1, Position pos2) {
-		return new Position(
-				pos1.X + (pos2.X*Math.cos(Math.toRadians(pos1.R)) - pos2.Y*Math.sin(Math.toRadians(pos1.R))),
-				pos1.Y + (pos2.X*Math.sin(Math.toRadians(pos1.R)) + pos2.Y*Math.cos(Math.toRadians(pos1.R))),
-				pos1.R + pos2.R
-		);
-	}
+//	Position getSlamraRobotPose() {
+//		//pos1 = slamraRawPose, pos2 = slamraRobotOffset
+//		return transformPosition(slamraRawPose, slamraRobotOffset);
+//	}
+//
+//	Position getSlamraFinalPose() {
+//		//pos1 = slamraFieldOffset, pos2 = slamraRobotPose
+//		Position slamraFinal;
+//		slamraFinal = transformPosition(slamraFieldOffset, slamraRobotPose);
+//		slamraFinalPose2 = slamraFieldOffset.transformPosition(slamraRobotPose);
+//		slamraFinal.normalize();
+//		return slamraFinal;
+//	}
+//
+//	Position getSlamraFieldOffset(Position robotPose, Position fieldPose) {
+//		double offsetR = fieldPose.R - robotPose.R;
+//		return new Position (
+//				fieldPose.X - (robotPose.X*Math.cos(Math.toRadians(offsetR)) - robotPose.Y*Math.sin(Math.toRadians(offsetR))),
+//				fieldPose.Y - (robotPose.X*Math.sin(Math.toRadians(offsetR)) + robotPose.Y*Math.cos(Math.toRadians(offsetR))),
+//				offsetR *1
+//		);
+//	}
+//
+//	Position transformPosition(Position pos1, Position pos2) {
+//		return new Position(
+//				pos1.X + (pos2.X*Math.cos(Math.toRadians(pos1.R)) - pos2.Y*Math.sin(Math.toRadians(pos1.R))),
+//				pos1.Y + (pos2.X*Math.sin(Math.toRadians(pos1.R)) + pos2.Y*Math.cos(Math.toRadians(pos1.R))),
+//				pos1.R + pos2.R
+//		);
+//	}
 
 	public void addTeleOpTelemetry() {
 		TelemetryMgr.message(Category.SLAMRA_EXT, "fldof", slamraFieldOffset.toString(2));
-		TelemetryMgr.message(Category.SLAMRA_EXT, "debug", debugFieldOffset.toString(2));
 		TelemetryMgr.message(Category.SLAMRA_EXT, "raw__", slamraRawPose.toString(2));
 		TelemetryMgr.message(Category.SLAMRA_EXT, "robot", slamraRobotPose.toString(2));
 		TelemetryMgr.message(Category.SLAMRA, "final", slamraFinalPose.toString(2));
-		TelemetryMgr.message(Category.SLAMRA, "debgf", debugFinalPose.toString(2));
 		TelemetryMgr.message(Category.SLAMRA, "stuck", timesStuck);
 	}
 }

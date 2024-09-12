@@ -212,6 +212,7 @@ public class Odometry implements PartsInterface {
       // if the field offset is 0,0,0, it can be known that it was not properly offset
    }
 
+   //todo: refactor Odometry like Slamra to use Position.transformPosition and .getOffset
    Position getOdoFieldOffset(Position robotPose, Position fieldPose) {  //todo: maybe this should be inverted somehow?
       double offsetR = fieldPose.R - robotPose.R;
       return new Position (

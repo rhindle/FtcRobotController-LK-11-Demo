@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
+import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed.MessageColor;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
@@ -15,7 +16,7 @@ public class ControlsDS extends Controls {
 
    boolean isStopped = false;
    boolean guestOK, teamOK;
-   boolean toggleIntake = false;
+//   boolean toggleIntake = false;
 
    public ControlsDS(Parts parts) {
       super(parts);
@@ -43,20 +44,20 @@ public class ControlsDS extends Controls {
       /* If neither dead man is pressed, stop everything (if needed) and proceed no further */
       if (!guestOK && !teamOK) {
          stopEverything();
-         parts.dsLed.updateGraphic('3', Color.rgb(20,0,0));
+         parts.dsLed.updateGraphic('3', MessageColor.G_RED);
          return;
       }
 
       /* If we made it here, things aren't necessarily stopped any more (this affect the e-stop method */
       isStopped = false;
       if (guestOK && teamOK) {
-         parts.dsLed.updateGraphic('3', Color.rgb(0,0,20));
+         parts.dsLed.updateGraphic('3', MessageColor.G_BLUE);
       }
       else if (guestOK) {
-         parts.dsLed.updateGraphic('3', Color.rgb(0,20,0));
+         parts.dsLed.updateGraphic('3', MessageColor.G_GREEN);
       }
       else {
-         parts.dsLed.updateGraphic('3', Color.rgb(5,0,15));
+         parts.dsLed.updateGraphic('3', MessageColor.G_PURPLE);
       }
 
       /* If guest is allowed, start with their drive input */
@@ -79,43 +80,43 @@ public class ControlsDS extends Controls {
 
       if (eitherGuestOrTeam(Buttons.dpad_left, State.wasSingleTapped)) {
          DSShooter.disarmShooter();
-         parts.dsLed.displayMessage('S', 3);
+         parts.dsLed.displayMessage('S', DSLed.MessageColor.RED);
       }
 
       if (eitherGuestOrTeam(Buttons.dpad_right, State.wasSingleTapped)) {
          DSShooter.armShooter();
-         parts.dsLed.displayMessage('S', 2);
+         parts.dsLed.displayMessage('S', DSLed.MessageColor.GREEN);
       }
 
       if (eitherGuestOrTeam(Buttons.left_bumper, State.wasSingleTapped)) {
-         toggleIntake = !toggleIntake;
-         if (toggleIntake) {
+//         toggleIntake = !toggleIntake;
+         if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeReverse();
-            parts.dsLed.displayMessage('I', 4);
+            parts.dsLed.displayMessage('I', DSLed.MessageColor.GRAY);
             DSShooter.disarmShooter();
          }
          else {
             parts.dsShooter.intakeOff();
-            parts.dsLed.displayMessage('I', 3);
+            parts.dsLed.displayMessage('I', DSLed.MessageColor.RED);
          }
       }
 
       if (eitherGuestOrTeam(Buttons.right_bumper, State.wasSingleTapped)) {
-         toggleIntake = !toggleIntake;
-         if (toggleIntake) {
+//         toggleIntake = !toggleIntake;
+         if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeOn();
-            parts.dsLed.displayMessage('I', 2);
+            parts.dsLed.displayMessage('I', DSLed.MessageColor.GREEN);
             DSShooter.disarmShooter();
          }
          else {
             parts.dsShooter.intakeOff();
-            parts.dsLed.displayMessage('I', 3);
+            parts.dsLed.displayMessage('I', DSLed.MessageColor.RED);
          }
       }
 
       if (eitherGuestOrTeam(Buttons.back, State.isHeld)) {
          parts.dsShooter.cancelStateMachines();
-         parts.dsLed.displayMessage('X', 3);
+//         parts.dsLed.displayMessage('X', DSLed.MessageColor.RED);
       }
 
       if (eitherGuestOrTeam(Buttons.a, State.wasTapped)) {
@@ -124,17 +125,17 @@ public class ControlsDS extends Controls {
 
       if (eitherGuestOrTeam(Buttons.b, State.wasSingleTapped)) {
          parts.dsShooter.startShoot1();
-         parts.dsLed.displayMessage('1', 4);
+         parts.dsLed.displayMessage('1', DSLed.MessageColor.BLUE);
       }
 
       if (eitherGuestOrTeam(Buttons.x, State.wasSingleTapped)) {
          parts.dsShooter.startShoot3();
-         parts.dsLed.displayMessage('3', 4);
+         parts.dsLed.displayMessage('3', DSLed.MessageColor.BLUE);
       }
 
       if (eitherGuestOrTeam(Buttons.y, State.wasSingleTapped)) {
          parts.dsShooter.startFullAuto();
-         parts.dsLed.displayMessage('A', 4);
+         parts.dsLed.displayMessage('A', DSLed.MessageColor.BLUE);
       }
 
       // Drive to shoot position and activate target following
@@ -142,14 +143,14 @@ public class ControlsDS extends Controls {
          parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.autoLaunchPos, parts.dsMisc.toleranceHigh));
          parts.userDrive.directionTarget = DSMisc.aimPosition;
          parts.userDrive.useTargetDirection = true;
-         parts.dsLed.displayMessage('A', 2);
+         parts.dsLed.displayMessage('A', DSLed.MessageColor.GREEN);
       }
 
       // Drive to AprilTag read position
       if (eitherGuestOrTeam(Buttons.dpad_up, State.wasDoubleTapped)) {
          parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, parts.dsMisc.toleranceHigh));
          parts.userDrive.useTargetDirection = false;
-         parts.dsLed.displayMessage('#', 4);
+         parts.dsLed.displayMessage('#', DSLed.MessageColor.BLUE);
       }
 
       /* Special controls only available to Team, not Guest */
@@ -164,12 +165,12 @@ public class ControlsDS extends Controls {
 
       if (teamControl(Buttons.dpad_up, State.wasSingleTapped)) {
          DSShooter.openGate();
-         parts.dsLed.displayMessage('G', 2);
+         parts.dsLed.displayMessage('G', DSLed.MessageColor.GREEN);
       }
 
       if (teamControl(Buttons.dpad_down, State.wasSingleTapped)) {
          DSShooter.closeGate();
-         parts.dsLed.displayMessage('G', 3);
+         parts.dsLed.displayMessage('G', DSLed.MessageColor.RED);
       }
 
       // Toggle TargetDirection aiming
@@ -191,7 +192,7 @@ public class ControlsDS extends Controls {
       // Store heading correction
       if (teamControl(Buttons.right_stick_button, State.wasReleased)) {
          parts.userDrive.setDeltaHeading();
-         parts.dsLed.displayMessage('D', 1);
+         parts.dsLed.displayMessage('D', DSLed.MessageColor.GRAY);
       }
 
       // Toggle PositionHold
@@ -219,7 +220,7 @@ public class ControlsDS extends Controls {
          parts.autoDrive.eStop();
          parts.userDrive.eStop();
          // set internal variables
-         toggleIntake = false;
+//         toggleIntake = false;
          isStopped = true;
       }
    }

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.RobotParts.Common;
 
+import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DrivePowers;
@@ -38,6 +39,7 @@ public class UserDrive implements PartsInterface {
 
    public void initialize(){
       drivePowers = new DrivePowers();
+      if (parts.positionMgr.hasHeading()) storedHeading = parts.positionMgr.headingOnly.R;
    }
 
    public void preInit() {
@@ -63,6 +65,8 @@ public class UserDrive implements PartsInterface {
    // Determine motor speeds when under driver control
    public void userDrivePower () {
 
+      TelemetryMgr.message(Category.USERDRIVE, "sto", JavaUtil.formatNumber(storedHeading, 2));
+
       if (parts.autoDrive.isNavigating) {
          TelemetryMgr.message(Category.USERDRIVE, "pow : autoDrive is Navigating");
          if (parts.positionMgr.hasPosition()) storedHeading = parts.positionMgr.robotPosition.R;
@@ -73,7 +77,7 @@ public class UserDrive implements PartsInterface {
       handleRotateIdle();
 
       if (useHoldPosition) {
-         if (idleDelay <= System.currentTimeMillis()) {
+         if (idleDelay <= System.currentTimeMillis() && parts.positionMgr.hasPosition()) {
             // no driver input, so let autoDrive take over and do nothing else
             if (useHoldOK) {
                if (useHeadingHold) parts.autoDrive.setTargetToCurrentPosition(storedHeading);

@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter;
 
 import android.annotation.SuppressLint;
-import android.graphics.Color;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
@@ -146,27 +145,27 @@ public class PartsDS extends Parts {
                 if (useIMU) imuMgr.setupFieldOffset(roboTagPosition);
             }
             if (dsApriltag.tagRobotPosition!=null){
-                dsLed.updateGraphic('1', Color.rgb(0,40,10));
+                dsLed.updateGraphic('1', DSLed.MessageColor.G_GRUE);
                 if (firstLock && !userDrive.isDriving) {   //todo:make this better
                     firstLock = false;
                     autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, dsMisc.toleranceHigh));
-                    dsLed.displayMessage('#', 2);
+                    dsLed.displayMessage('#', DSLed.MessageColor.GREEN);
                 }
             } else if (dsApriltag.instantTagRobotPosition!=null) {
-                dsLed.updateGraphic('1', Color.rgb(20,10,0));
+                dsLed.updateGraphic('1', DSLed.MessageColor.G_ORANGE);
             } else {
-                dsLed.updateGraphic('1', Color.rgb(20,0,0));
+                dsLed.updateGraphic('1', DSLed.MessageColor.G_RED);
             }
         }
 
         if (positionMgr.robotPosition!=null) {
             if (dsApriltag.strongLocked) {
-                dsLed.updateGraphic('2', Color.rgb(0,20,0));
+                dsLed.updateGraphic('2', DSLed.MessageColor.G_GREEN);
             } else {
-                dsLed.updateGraphic('2', Color.rgb(20,10,0));
+                dsLed.updateGraphic('2', DSLed.MessageColor.G_ORANGE);
             }
         } else {
-            dsLed.updateGraphic('2', Color.rgb(20,0,0));
+            dsLed.updateGraphic('2', DSLed.MessageColor.G_RED);
             if (useAprilTag) dsApriltag.strongLocked=false;  // if all is lost, allow a weak lock again
         }
     }

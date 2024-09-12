@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter;
 
+import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
+
+import static org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter.parts;
 
 class FullAuto {
 
@@ -17,7 +20,12 @@ class FullAuto {
         if (state < 1) return;  // not running
         if  (System.currentTimeMillis() >= cancelTimer) stop();
 
-        if (!DSShooter.parts.positionMgr.hasPosition()) stop();    // cancel running if no navigation
+
+        // cancel running if no navigation && cancel if user starts driving (overriding the NavTarget)
+        if (!DSShooter.parts.positionMgr.hasPosition() || DSShooter.parts.userDrive.isDriving) {
+            stop();
+            parts.dsLed.displayMessage('A', DSLed.MessageColor.RED);
+        }
 
         if (state == 1) {
             if (Shoot1.isRunning()) {

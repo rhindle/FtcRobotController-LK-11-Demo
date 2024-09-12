@@ -126,6 +126,7 @@ public class AutoDrive implements PartsInterface {
       /* Check for being on target */
       //todo: Do we want to switch mode from navigating to holding and thus avoid timeouts or whatever?
       //todo: Have navigate that ends in holding vs end idle?
+      //todo: If Navigating is interrupted by UserDrive, then holding changes the navTarget and onTargetByAccuracy may not represent what we want
       onTargetByAccuracy = navTarget.inToleranceByTime(parts.positionMgr.robotPosition);
       if (onTargetByAccuracy) {
          status=isNavigating ? Status.SUCCESS : Status.HOLDING;

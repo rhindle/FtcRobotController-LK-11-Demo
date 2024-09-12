@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class DSShooter implements PartsInterface {
@@ -81,10 +82,16 @@ public class DSShooter implements PartsInterface {
       Shoot3.stateMachine();
       FullAuto.stateMachine();
 
-      if (isArmed && System.currentTimeMillis() >= disarmTimer) disarmShooter();
-      if (intakeState!=0 &&  System.currentTimeMillis() >= intakeTimer) intakeOff();
       if (parts.userDrive.isDriving) idleTimer = System.currentTimeMillis() + cancelIntakeIdle;
-      if (intakeState!=0 &&  System.currentTimeMillis() >= idleTimer) intakeOff();
+      if (isArmed && System.currentTimeMillis() >= disarmTimer) {
+         disarmShooter();
+         parts.dsLed.displayMessage('S', DSLed.MessageColor.RED);
+      }
+      if (intakeState!=0 && (System.currentTimeMillis() >= intakeTimer || System.currentTimeMillis() >= idleTimer)) {
+         intakeOff();
+         parts.dsLed.displayMessage('I', DSLed.MessageColor.RED);
+      }
+//      if (intakeState!=0 &&  System.currentTimeMillis() >= idleTimer) intakeOff();
 
       TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "SpinnerRPM", getSpinnerRPM());
       TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "Ingester", motorIngester.getPower());
@@ -143,6 +150,7 @@ public class DSShooter implements PartsInterface {
       Pusher.stop();
       FullAuto.stop();
       isArmed = false;
+      parts.dsLed.displayMessage('!', DSLed.MessageColor.RED);
    }
 
    public void stopMotors() {
@@ -187,10 +195,13 @@ public class DSShooter implements PartsInterface {
       intakeState = 1;
       motorIngester.setPower(ingesterPower);
       intakeTimer = System.currentTimeMillis() + cancelIntakeTime;
+      idleTimer = System.currentTimeMillis() + cancelIntakeIdle;
    }
    public void intakeReverse() {
       intakeState = -1;
       motorIngester.setPower(-ingesterPower);
+      intakeTimer = System.currentTimeMillis() + cancelIntakeTimeShort;
+      idleTimer = System.currentTimeMillis() + cancelIntakeIdle;
    }
    public void intakeOff() {
       intakeState = 0;

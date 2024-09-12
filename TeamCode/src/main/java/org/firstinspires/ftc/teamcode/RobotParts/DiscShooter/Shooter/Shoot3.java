@@ -12,7 +12,7 @@ class Shoot3 {
     public static void stateMachine() {
         if (complete) state = 0;
         if (state < 1) return;  // not running
-        if  (System.currentTimeMillis() >= cancelTimer) stop();
+        if (System.currentTimeMillis() >= cancelTimer) stop();
 
         if (state == 1) {                                       // cancel other state machines if needed
             if (Shoot1.isRunning()) {
