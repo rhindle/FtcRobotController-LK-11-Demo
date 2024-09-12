@@ -14,13 +14,13 @@ import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 public class DSShooter implements PartsInterface {
 
    /* Settings */
-   static final double pusherRetracted                 = 0.362; //0;
-   static final double pusherExtended                  = 0.660; //0.8;
-   static final int pusherSweepTime                    = 225;  //200;
-   static final int pusherAutoCycles                   = 5;   // 3 rings, but extra pushes in case miss
+   static final double pusherRetracted                 = 0.362;
+   static final double pusherExtended                  = 0.660;
+   static final int pusherSweepTime                    = 225;
+   static final int pusherAutoCycles                   = 5;     // 3 rings, but extra pushes in case miss
 
-   static final double gateOpen                        = 0.352; //1;
-   static final double gateClosed                      = 0.015; //0;
+   static final double gateOpen                        = 0.352;
+   static final double gateClosed                      = 0.015;
    static final int gateSweepTime                      = 325;
 
    static final double spinnerRPM                      = 3600;
@@ -91,7 +91,6 @@ public class DSShooter implements PartsInterface {
          intakeOff();
          parts.dsLed.displayMessage('I', DSLed.MessageColor.RED);
       }
-//      if (intakeState!=0 &&  System.currentTimeMillis() >= idleTimer) intakeOff();
 
       TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "SpinnerRPM", getSpinnerRPM());
       TelemetryMgr.message(TelemetryMgr.Category.DISCSHOOTER, "Ingester", motorIngester.getPower());

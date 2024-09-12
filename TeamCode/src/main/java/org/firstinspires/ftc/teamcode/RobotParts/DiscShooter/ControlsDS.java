@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter;
 
-import android.graphics.Color;
-
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.Buttons;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
@@ -16,7 +14,6 @@ public class ControlsDS extends Controls {
 
    boolean isStopped = false;
    boolean guestOK, teamOK;
-//   boolean toggleIntake = false;
 
    public ControlsDS(Parts parts) {
       super(parts);
@@ -89,7 +86,6 @@ public class ControlsDS extends Controls {
       }
 
       if (eitherGuestOrTeam(Buttons.left_bumper, State.wasSingleTapped)) {
-//         toggleIntake = !toggleIntake;
          if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeReverse();
             parts.dsLed.displayMessage('I', DSLed.MessageColor.GRAY);
@@ -102,7 +98,6 @@ public class ControlsDS extends Controls {
       }
 
       if (eitherGuestOrTeam(Buttons.right_bumper, State.wasSingleTapped)) {
-//         toggleIntake = !toggleIntake;
          if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeOn();
             parts.dsLed.displayMessage('I', DSLed.MessageColor.GREEN);
@@ -116,7 +111,6 @@ public class ControlsDS extends Controls {
 
       if (eitherGuestOrTeam(Buttons.back, State.isHeld)) {
          parts.dsShooter.cancelStateMachines();
-//         parts.dsLed.displayMessage('X', DSLed.MessageColor.RED);
       }
 
       if (eitherGuestOrTeam(Buttons.a, State.wasTapped)) {
@@ -220,7 +214,6 @@ public class ControlsDS extends Controls {
          parts.autoDrive.eStop();
          parts.userDrive.eStop();
          // set internal variables
-//         toggleIntake = false;
          isStopped = true;
       }
    }

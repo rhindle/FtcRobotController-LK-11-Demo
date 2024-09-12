@@ -112,22 +112,7 @@ public class DSLed implements PartsInterface {
    public void displayMessage (char msgChar, int color) {
       if (!parts.useNeoMatrix) return;
       clearMessageTimer = System.currentTimeMillis() + messageDisplayTime;
-//      int msgColor;
       int[][] textMatrix;
-//      switch (color) {
-//         case 2:
-//            msgColor = Color.rgb(0,40,0);
-//            break;
-//         case 3:
-//            msgColor = Color.rgb(40,0,0);
-//            break;
-//         case 4:
-//            msgColor = Color.rgb(0,0,40);
-//            break;
-//         case 1:
-//         default:
-//            msgColor = Color.rgb(20,20,20);
-//      }
       textMatrix = parts.neo.buildPixelMapFromString(String.valueOf(msgChar), parts.neo.bigLetters, color);
       messageMatrix = new int[cols][rows];
       messageMatrix = parts.neo.overlayPixelMap(textMatrix, messageMatrix, 2);
@@ -188,16 +173,16 @@ public class DSLed implements PartsInterface {
    }
 
    public enum MessageColor {
-      GREEN (Color.rgb(0,40,0)),
-      RED (Color.rgb(40,0,0)),
-      BLUE (Color.rgb(0,0,40)),
-      GRAY (Color.rgb(20,20,20)),
-      G_GREEN (Color.rgb(0,20,0)),
-      G_RED (Color.rgb(20,0,0)),
+      GREEN    (Color.rgb(0,40,0)),
+      RED      (Color.rgb(40,0,0)),
+      BLUE     (Color.rgb(0,0,40)),
+      GRAY     (Color.rgb(20,20,20)),
+      G_GREEN  (Color.rgb(0,20,0)),
+      G_RED    (Color.rgb(20,0,0)),
       G_ORANGE (Color.rgb(20,10,0)),
-      G_GRUE(Color.rgb(0,40,10)),
+      G_GRUE   (Color.rgb(0,40,10)),
       G_LTGRAY (Color.rgb(2, 2, 2)),
-      G_BLUE (Color.rgb(0,0,20)),
+      G_BLUE   (Color.rgb(0,0,20)),
       G_PURPLE (Color.rgb(5,0,15));
       public final int color;
       MessageColor(int color) {

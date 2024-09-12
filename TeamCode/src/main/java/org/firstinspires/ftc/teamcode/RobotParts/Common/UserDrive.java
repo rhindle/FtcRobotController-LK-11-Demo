@@ -39,6 +39,7 @@ public class UserDrive implements PartsInterface {
 
    public void initialize(){
       drivePowers = new DrivePowers();
+      // imu and slarma are not necessarily 0 now, so storedHeading needs to be synced
       if (parts.positionMgr.hasHeading()) storedHeading = parts.positionMgr.headingOnly.R;
    }
 
@@ -78,7 +79,7 @@ public class UserDrive implements PartsInterface {
 
       if (useHoldPosition) {
          if (idleDelay <= System.currentTimeMillis() && parts.positionMgr.hasPosition()) {
-            // no driver input, so let autoDrive take over and do nothing else
+            // No driver input, so let autoDrive take over unless there is no position
             if (useHoldOK) {
                if (useHeadingHold) parts.autoDrive.setTargetToCurrentPosition(storedHeading);
                else parts.autoDrive.setTargetToCurrentPosition();
