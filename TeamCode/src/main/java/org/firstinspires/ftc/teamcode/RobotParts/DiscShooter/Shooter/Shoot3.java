@@ -3,10 +3,10 @@ package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter;
 class Shoot3 {
 
     private static int state = 0;
-    private static int cycleCount = 0;
     private static boolean complete = false;
     private static long cancelTimer;
     private static final long timeLimit = 10000;
+    private static int cycleCount = 0;
 
     //----State Machine Start-----
     public static void stateMachine() {
@@ -14,7 +14,7 @@ class Shoot3 {
         if (state < 1) return;  // not running
         if (System.currentTimeMillis() >= cancelTimer) stop();
 
-        if (state == 1) {                                       // cancel other state machines if needed
+        if (state == 1) {                 // cancel other state machines if needed
             if (Shoot1.isRunning()) {
                 DSShooter.cancelTimer = System.currentTimeMillis() + 1000;
                 Shoot1.softStop();
@@ -25,17 +25,18 @@ class Shoot3 {
             }
             if (System.currentTimeMillis() >= DSShooter.cancelTimer) state++;
         }
-        if (state == 2) {                 // open gate, start spinner    // todo: there's no "if" here, so these tasks could move to state==1
-            Pusher.stop();   // cancel any ongoing pusher movement
-            cycleCount = 0;
+        // state 2 has no "if" but exists separately so startForFullAuto() can skip over stopping the other state machines
+        if (state == 2) {                 // open gate, start spinner
+            Pusher.stop();                // cancel any ongoing pusher movement
             DSShooter.armShooter();
             state++;
+            cycleCount = 0;
         }
         if (state == 3) {                 // wait for gate up, spinner at rpm
             if (DSShooter.isGateOpen() && DSShooter.isPusherRetracted() && DSShooter.isSpinnerInTolerance()) {
-                cycleCount++;
-                Pusher.start();    // start the pusher state machine
+                Pusher.start();           // start the pusher state machine
                 state++;
+                cycleCount++;
             }
         }
         if (state == 4) {                 // wait for pusher machine to complete
@@ -71,7 +72,6 @@ class Shoot3 {
     public static void stop() {
         DSShooter.spinnerOff();
         DSShooter.retractPusher();
-        // do we want to close the gate?  Ring might be in there...
         state = -1;
     }
 

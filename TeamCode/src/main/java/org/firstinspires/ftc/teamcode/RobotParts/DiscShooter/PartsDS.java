@@ -173,6 +173,7 @@ public class PartsDS extends Parts {
     private void addTelemetryLoopStart() {
         TelemetryMgr.message(TelemetryMgr.Category.BASIC, "Loop time (ms)", JavaUtil.formatNumber(Functions.calculateLoopTime(), 0));
         TelemetryMgr.message(TelemetryMgr.Category.BASIC, "IMU raw heading", useIMU ? JavaUtil.formatNumber(imuMgr.returnImuHeadingRaw(),2) : "(not used)");
+        TelemetryMgr.message(TelemetryMgr.Category.BASIC, "autoLaunchPos", DSMisc.autoLaunchPos.toString(2));
         if (useODO) odometry.addTeleOpTelemetry();
     }
 

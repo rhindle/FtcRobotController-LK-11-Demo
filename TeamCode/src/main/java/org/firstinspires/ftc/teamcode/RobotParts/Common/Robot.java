@@ -289,6 +289,12 @@ public class Robot implements PartsInterface {
 //        else controller.setServoPwmEnable(servoPort);
     }
 
+    public void enableServo(Servo servo) {
+        ServoControllerEx controller = (ServoControllerEx) servo.getController();
+        int servoPort = servo.getPortNumber();
+        controller.setServoPwmEnable(servoPort);
+    }
+
     public void initOptions() {
         /* Following left as examples for subclass @override method */
 

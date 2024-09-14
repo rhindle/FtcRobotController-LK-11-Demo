@@ -48,19 +48,14 @@ public class DiscShooter_with_Position extends LinearOpMode {
       while (!isStarted()) {
          TelemetryMgr.message(Category.MANDATORY, "Press Play to start");
          TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
-         TelemetryMgr.message(Category.MANDATORY, "Drive Type", parts.reverseDrive ? "AndyMark" : "GobildaBot");
          TelemetryMgr.message(Category.MANDATORY, "Field", testField ? "Knowlton" : "Kroon");
          parts.initLoop();
-         if (parts.buttonMgr.wasTapped(1, ButtonMgr.Buttons.x))
-            parts.reverseDrive = !parts.reverseDrive;
-         if (parts.buttonMgr.wasTapped(2, ButtonMgr.Buttons.x))
-            parts.reverseDrive = !parts.reverseDrive;
          if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
             testField = !testField;
          sleep(20);
       }
 
-      if (testField) DSMisc.autoLaunchPos = DSMisc.autoLaunchPosFake;
+      DSMisc.autoLaunchPos = testField ? DSMisc.autoLaunchPosKnowlton : DSMisc.autoLaunchPosDemo;
 
       parts.preRun();
 

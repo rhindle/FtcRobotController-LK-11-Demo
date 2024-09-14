@@ -8,7 +8,6 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed.MessageColor;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 public class ControlsDS extends Controls {
 
@@ -85,10 +84,10 @@ public class ControlsDS extends Controls {
          parts.dsLed.displayMessage('S', DSLed.MessageColor.GREEN);
       }
 
-      if (eitherGuestOrTeam(Buttons.left_bumper, State.wasSingleTapped)) {
+      if (eitherGuestOrTeam(Buttons.left_bumper, State.wasTapped)) {
          if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeReverse();
-            parts.dsLed.displayMessage('I', DSLed.MessageColor.GRAY);
+            parts.dsLed.displayMessage('I', DSLed.MessageColor.YELLOW);
             DSShooter.disarmShooter();
          }
          else {
@@ -97,7 +96,7 @@ public class ControlsDS extends Controls {
          }
       }
 
-      if (eitherGuestOrTeam(Buttons.right_bumper, State.wasSingleTapped)) {
+      if (eitherGuestOrTeam(Buttons.right_bumper, State.wasTapped)) {
          if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeOn();
             parts.dsLed.displayMessage('I', DSLed.MessageColor.GREEN);
