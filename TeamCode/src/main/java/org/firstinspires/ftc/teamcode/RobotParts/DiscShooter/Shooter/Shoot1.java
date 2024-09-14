@@ -7,7 +7,6 @@ class Shoot1 {
     private static long cancelTimer;
     private static final long timeLimit = 5000;
 
-
     //----State Machine Start-----
     public static void stateMachine() {
         if (complete) state = 0;
@@ -25,14 +24,15 @@ class Shoot1 {
             }
             if (System.currentTimeMillis() >= DSShooter.cancelTimer) state++;
         }
-        if (state == 2) {                 // open gate, start spinner   // todo: there's no "if" here, so these tasks could move to state==1
-            Pusher.stop();   // cancel any ongoing pusher movement
+        // state 2 has no "if" but exists for parallelism with Shoot3 state machine
+        if (state == 2) {                 // open gate, start spinner
+            Pusher.stop();                // cancel any ongoing pusher movement
             DSShooter.armShooter();
             state++;
         }
         if (state == 3) {                 // wait for gate up, spinner at rpm
             if (DSShooter.isGateOpen() && DSShooter.isPusherRetracted() && DSShooter.isSpinnerInTolerance()) {
-                Pusher.start();    // start the pusher state machine
+                Pusher.start();           // start the pusher state machine
                 state++;
             }
         }
@@ -57,7 +57,6 @@ class Shoot1 {
         DSShooter.spinnerOff();
         DSShooter.retractPusher();
         DSShooter.isArmed = false;
-        // do we want to close the gate?  Ring might be in there...
         state = -1;
     }
 

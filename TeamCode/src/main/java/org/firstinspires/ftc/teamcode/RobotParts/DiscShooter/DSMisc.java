@@ -13,7 +13,8 @@ public class DSMisc implements PartsInterface {
 
    public static final Position aimPosition            = new Position (12, -4, 0);
    public static final Position tagReadPos             = new Position(-28,-1,0);
-   public static final Position autoLaunchPosFake      = new Position(-33, -4, 0);  // must be updated!!
+   public static final Position autoLaunchPosKnowlton  = new Position(-33, -4, 0);  // must be updated!!
+   public static final Position autoLaunchPosDemo      = new Position(-75, -4, 0);  // must be updated!!
    public static Position autoLaunchPos                = new Position(-75, -4, 0);  // must be updated!!
 
    public PositionTolerance toleranceImpossible = new PositionTolerance (0.5, 0.5, 250);

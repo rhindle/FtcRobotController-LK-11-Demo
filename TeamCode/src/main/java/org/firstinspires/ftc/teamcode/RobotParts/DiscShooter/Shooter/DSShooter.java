@@ -39,6 +39,8 @@ public class DSShooter implements PartsInterface {
    private static DcMotorEx motorIngester;
    private static Servo servoPusher;
    private static Servo servoGate;
+   private static boolean servoPusherDisabled = false;
+   private static boolean servoGateDisabled = false;
    private static double spinRPMset;
    private static long gateTimer = System.currentTimeMillis();
    private static long pusherTimer = System.currentTimeMillis();
@@ -164,6 +166,8 @@ public class DSShooter implements PartsInterface {
       cancelStateMachines();
       parts.robot.disableServo(servoPusher);
       parts.robot.disableServo(servoGate);
+      servoPusherDisabled = true;
+      servoGateDisabled = true;
       isArmed = false;
    }
 
@@ -237,12 +241,20 @@ public class DSShooter implements PartsInterface {
    }
 
    public static void setGateServo(double newPosition) {
+      if (servoGateDisabled) {
+         servoGateDisabled = false;
+         parts.robot.enableServo(servoGate);
+      }
       if (isServoAtPosition(servoGate, newPosition)) return;  // has already been set (but not necessarily done moving)
       servoGate.setPosition(newPosition);
       gateTimer = System.currentTimeMillis() + gateSweepTime;
    }
 
    public static void setPusherServo(double newPosition) {
+      if (servoPusherDisabled) {
+         servoPusherDisabled = false;
+         parts.robot.enableServo(servoPusher);
+      }
       if (isServoAtPosition(servoPusher, newPosition)) return;  // has already been set (but not necessarily done moving)
       servoPusher.setPosition(newPosition);
       pusherTimer = System.currentTimeMillis() + pusherSweepTime;

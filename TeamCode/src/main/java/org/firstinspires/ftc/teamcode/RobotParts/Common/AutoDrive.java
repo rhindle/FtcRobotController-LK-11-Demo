@@ -78,6 +78,7 @@ public class AutoDrive implements PartsInterface {
       TelemetryMgr.message(Category.AUTODRIVE, "isLate", isLate);
       TelemetryMgr.message(Category.AUTODRIVE, "onTargetByAccuracy", onTargetByAccuracy);
       TelemetryMgr.message(Category.AUTODRIVE, "AutoDrive", status);
+      TelemetryMgr.message(Category.AUTODRIVE, "Target", (navTarget==null) ? "(null)" : navTarget.targetPos.toString(2));
    }
 
    public void stop() {

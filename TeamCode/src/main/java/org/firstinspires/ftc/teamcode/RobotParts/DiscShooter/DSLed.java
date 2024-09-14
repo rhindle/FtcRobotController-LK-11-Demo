@@ -29,7 +29,6 @@ public class DSLed implements PartsInterface {
    int[][] finalMatrix = new int[cols][rows];
 
    private static Servo servoBlinkin;
-   //private static ServoImplEx servoBlinkin;
    int servoBlinkinSetting, servoBlinkinSettingLast;
 
    /* Constructor */
@@ -86,6 +85,9 @@ public class DSLed implements PartsInterface {
 
    public void runLoop() {
       if (parts.useNeoMatrix) {
+         updateGraphic('a', parts.userDrive.useHeadingHold ? MessageColor.G_LTGREEN : MessageColor.G_LTORANGE);
+         updateGraphic('b', parts.userDrive.useHoldPosition ? MessageColor.G_LTGREEN : MessageColor.G_LTORANGE);
+         updateGraphic('c', !parts.userDrive.useFieldCentricDrive ? MessageColor.G_LTGREEN : MessageColor.G_LTORANGE);
          clearMessage();
 //         parts.neo.applyPixelMapToBuffer(finalMatrix, 0, 15, 0, true);
          parts.neo.applyPixelMapToBuffer(finalMatrix, 0, 7, 0, true);
@@ -173,17 +175,20 @@ public class DSLed implements PartsInterface {
    }
 
    public enum MessageColor {
-      GREEN    (Color.rgb(0,40,0)),
-      RED      (Color.rgb(40,0,0)),
-      BLUE     (Color.rgb(0,0,40)),
-      GRAY     (Color.rgb(20,20,20)),
-      G_GREEN  (Color.rgb(0,20,0)),
-      G_RED    (Color.rgb(20,0,0)),
-      G_ORANGE (Color.rgb(20,10,0)),
-      G_GRUE   (Color.rgb(0,40,10)),
-      G_LTGRAY (Color.rgb(2, 2, 2)),
-      G_BLUE   (Color.rgb(0,0,20)),
-      G_PURPLE (Color.rgb(5,0,15));
+      GREEN      (Color.rgb(0,40,0)),
+      RED        (Color.rgb(40,0,0)),
+      YELLOW     (Color.rgb(30,20,0)),
+      BLUE       (Color.rgb(0,0,40)),
+      GRAY       (Color.rgb(20,20,20)),
+      G_GREEN    (Color.rgb(0,20,0)),
+      G_LTGREEN  (Color.rgb(0,3,0)),
+      G_RED      (Color.rgb(20,0,0)),
+      G_ORANGE   (Color.rgb(20,10,0)),
+      G_LTORANGE (Color.rgb(2,1,0)),
+      G_GRUE     (Color.rgb(0,40,10)),
+      G_LTGRAY   (Color.rgb(2, 2, 2)),
+      G_BLUE     (Color.rgb(0,0,20)),
+      G_PURPLE   (Color.rgb(5,0,15));
       public final int color;
       MessageColor(int color) {
          this.color = color;
@@ -204,7 +209,10 @@ public class DSLed implements PartsInterface {
            {'1', 0, 0, 0, 24, 24, 0, 0, 0},
            {'2', 0, 0, 60, 36, 36, 60, 0, 0},
            {'3', 0, 60, 66, 66, 66, 66, 60, 0},
-           {'4', 60, 66, 129, 129, 129, 129, 66, 60} };
+           {'4', 60, 66, 129, 129, 129, 129, 66, 60},
+           {'a', 1, 0, 0, 0, 0, 0, 0, 0},
+           {'b', 0, 0, 0, 0, 0, 0, 0, 1},
+           {'c', 128, 0, 0, 0, 0, 0, 0, 128} };
 
    public final int[] chase = { 10, 20, 40, 60, 20, 0, 0, 0};
 }
