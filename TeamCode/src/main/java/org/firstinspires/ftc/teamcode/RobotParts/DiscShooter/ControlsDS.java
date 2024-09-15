@@ -112,25 +112,6 @@ public class ControlsDS extends Controls {
          parts.dsShooter.cancelStateMachines();
       }
 
-      if (eitherGuestOrTeam(Buttons.a, State.wasTapped)) {
-         parts.dsShooter.startPushIfArmed();
-      }
-
-      if (eitherGuestOrTeam(Buttons.b, State.wasSingleTapped)) {
-         parts.dsShooter.startShoot1();
-         parts.dsLed.displayMessage('1', DSLed.MessageColor.BLUE);
-      }
-
-      if (eitherGuestOrTeam(Buttons.x, State.wasSingleTapped)) {
-         parts.dsShooter.startShoot3();
-         parts.dsLed.displayMessage('3', DSLed.MessageColor.BLUE);
-      }
-
-      if (eitherGuestOrTeam(Buttons.y, State.wasSingleTapped)) {
-         parts.dsShooter.startFullAuto();
-         parts.dsLed.displayMessage('A', DSLed.MessageColor.BLUE);
-      }
-
       // Drive to shoot position and activate target following
       if (eitherGuestOrTeam(Buttons.dpad_up, State.wasHeld)) {
          parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.autoLaunchPos, parts.dsMisc.toleranceHigh));
@@ -144,6 +125,27 @@ public class ControlsDS extends Controls {
          parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, parts.dsMisc.toleranceHigh));
          parts.userDrive.useTargetDirection = false;
          parts.dsLed.displayMessage('#', DSLed.MessageColor.BLUE);
+      }
+
+      /* All shooting functions require additional permission: Guest+Team (or just Team) */
+
+      if (teamOrTeamAndGuest(Buttons.a, State.wasTapped)) {
+         parts.dsShooter.startPushIfArmed();
+      }
+
+      if (teamOrTeamAndGuest(Buttons.b, State.wasTapped)) {
+         parts.dsShooter.startShoot1();
+         parts.dsLed.displayMessage('1', DSLed.MessageColor.BLUE);
+      }
+
+      if (teamOrTeamAndGuest(Buttons.x, State.wasTapped)) {
+         parts.dsShooter.startShoot3();
+         parts.dsLed.displayMessage('3', DSLed.MessageColor.BLUE);
+      }
+
+      if (teamOrTeamAndGuest(Buttons.y, State.wasTapped)) {
+         parts.dsShooter.startFullAuto();
+         parts.dsLed.displayMessage('A', DSLed.MessageColor.BLUE);
       }
 
       /* Special controls only available to Team, not Guest */
@@ -198,6 +200,13 @@ public class ControlsDS extends Controls {
       // if either was enabled and activated the control, return true
       boolean team = teamOK && buttonMgr.getState(1, button, state);
       boolean guest = guestOK && buttonMgr.getState(2, button, state);
+      return team || guest;
+   }
+
+   public boolean teamOrTeamAndGuest(Buttons button, State state) {
+      // requires either team or team+guest (additional lockout for shooting functions)
+      boolean team = teamOK && buttonMgr.getState(1, button, state);
+      boolean guest = guestOK && teamOK && buttonMgr.getState(2, button, state);
       return team || guest;
    }
 
