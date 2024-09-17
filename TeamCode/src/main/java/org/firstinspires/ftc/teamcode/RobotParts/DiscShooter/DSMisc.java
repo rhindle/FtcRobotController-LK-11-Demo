@@ -13,9 +13,9 @@ public class DSMisc implements PartsInterface {
 
    public static final Position aimPosition            = new Position (12, -4, 0);
    public static final Position tagReadPos             = new Position(-28,-1,0);
-   public static final Position autoLaunchPosKnowlton  = new Position(-33, -4, 0);  // must be updated!!
-   public static final Position autoLaunchPosDemo      = new Position(-75, -4, 0);  // must be updated!!
-   public static Position autoLaunchPos                = new Position(-75, -4, 0);  // must be updated!!
+   public static final Position autoLaunchPosKnowlton  = new Position(-33, -4, 0);  // test with short range
+   public static final Position autoLaunchPosDemo      = new Position(-63, -4, 0);  // demo launch position // was -75
+   public static Position autoLaunchPos                = new Position();
 
    public PositionTolerance toleranceImpossible = new PositionTolerance (0.5, 0.5, 250);
    public PositionTolerance toleranceHigh = new PositionTolerance (1.0, 1.0, 250);
@@ -24,6 +24,8 @@ public class DSMisc implements PartsInterface {
    public PositionTolerance toleranceTransition = new PositionTolerance(4.0,180.0,0);
 
    NavigationTarget test = new NavigationTarget(new Position(-24,0,0), toleranceTransition,1.0,5000,true);
+
+   public static boolean firstLock = true;
 
    /* Constructor */
    public DSMisc(Parts parts){

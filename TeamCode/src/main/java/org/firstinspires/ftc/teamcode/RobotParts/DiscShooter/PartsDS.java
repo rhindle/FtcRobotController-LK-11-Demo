@@ -23,8 +23,6 @@ public class PartsDS extends Parts {
         super(opMode);
     }
 
-    boolean firstLock = true;
-
     @Override
     public void setup(){
         // We do this after the construct because we may want to adjust some settings before creating all the sub-parts
@@ -59,6 +57,7 @@ public class PartsDS extends Parts {
             slamra.slamraFieldStart = fieldStartPosition;
             slamra.slamraRobotOffset = slamraRobotOffset;
         }
+        DSMisc.firstLock = true;
 
         if (useNeoMatrix) neo = new NeoMatrix(opMode, "neo", 8, 8, AdafruitNeoDriver.ColorOrder.GRB);  //RGB for fairy string
     }
@@ -146,8 +145,8 @@ public class PartsDS extends Parts {
             }
             if (dsApriltag.tagRobotPosition!=null){
                 dsLed.updateGraphic('1', DSLed.MessageColor.G_GRUE);
-                if (firstLock && !userDrive.isDriving) {   //todo:make this better
-                    firstLock = false;
+                if (DSMisc.firstLock && !userDrive.isDriving) {   //todo:make this better
+                    DSMisc.firstLock = false;
                     autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, dsMisc.toleranceHigh));
                     dsLed.displayMessage('#', DSLed.MessageColor.GREEN);
                 }

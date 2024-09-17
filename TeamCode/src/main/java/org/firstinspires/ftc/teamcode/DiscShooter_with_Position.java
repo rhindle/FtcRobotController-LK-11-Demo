@@ -17,7 +17,7 @@ public class DiscShooter_with_Position extends LinearOpMode {
 
    public Parts parts;
 
-   boolean testField = true;
+   boolean testField = false;
 
    @Override
    public void runOpMode() {

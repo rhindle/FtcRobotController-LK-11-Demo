@@ -125,6 +125,7 @@ public class ControlsDS extends Controls {
          parts.autoDrive.setNavTarget(new NavigationTarget(DSMisc.tagReadPos, parts.dsMisc.toleranceHigh));
          parts.userDrive.useTargetDirection = false;
          parts.dsLed.displayMessage('#', DSLed.MessageColor.BLUE);
+         DSMisc.firstLock = true;
       }
 
       /* All shooting functions require additional permission: Guest+Team (or just Team) */
@@ -145,7 +146,8 @@ public class ControlsDS extends Controls {
 
       if (teamOrTeamAndGuest(Buttons.y, State.wasTapped)) {
          parts.dsShooter.startFullAuto();
-         parts.dsLed.displayMessage('A', DSLed.MessageColor.BLUE);
+         if (DSShooter.getStateFullAuto()>0) parts.dsLed.displayMessage('A', MessageColor.BLUE);
+         else parts.dsLed.displayMessage('A', MessageColor.YELLOW);
       }
 
       /* Special controls only available to Team, not Guest */

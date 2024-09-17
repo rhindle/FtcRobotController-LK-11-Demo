@@ -17,7 +17,7 @@ public class DSShooter implements PartsInterface {
    static final double pusherRetracted                 = 0.362;
    static final double pusherExtended                  = 0.660;
    static final int pusherSweepTime                    = 225;
-   static final int pusherAutoCycles                   = 5;     // 3 rings, but extra pushes in case miss
+   static final int pusherAutoCycles                   = 4;     // 3 rings, but extra pushes in case miss
 
    static final double gateOpen                        = 0.352;
    static final double gateClosed                      = 0.015;
@@ -288,5 +288,17 @@ public class DSShooter implements PartsInterface {
    }
    public static boolean isServoAtPosition(double servoPosition, double comparePosition) {
       return(Math.round(servoPosition*100.0) == Math.round(comparePosition*100.0));
+   }
+   public static int getStateFullAuto() {
+      return FullAuto.getState();
+   }
+   public static int getStateShoot1() {
+      return Shoot1.getState();
+   }
+   public static int getStateShoot3() {
+      return Shoot3.getState();
+   }
+   public static int getStatePusher() {
+      return Pusher.getState();
    }
 }
