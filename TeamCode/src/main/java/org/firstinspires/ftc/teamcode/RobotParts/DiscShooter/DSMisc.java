@@ -11,10 +11,10 @@ public class DSMisc implements PartsInterface {
    /* Public OpMode members. */
    public Parts parts;
 
-   public static final Position aimPosition            = new Position (12, -4, 0);
+   public static final Position aimPosition            = new Position (0, -4, 0);
    public static final Position tagReadPos             = new Position(-28,-1,0);
    public static final Position autoLaunchPosKnowlton  = new Position(-33, -4, 0);  // test with short range
-   public static final Position autoLaunchPosDemo      = new Position(-63, -4, 0);  // demo launch position // was -75
+   public static final Position autoLaunchPosDemo      = new Position(-72, -4, 0);  // demo launch position // was -75
    public static Position autoLaunchPos                = new Position();
 
    public PositionTolerance toleranceImpossible = new PositionTolerance (0.5, 0.5, 250);

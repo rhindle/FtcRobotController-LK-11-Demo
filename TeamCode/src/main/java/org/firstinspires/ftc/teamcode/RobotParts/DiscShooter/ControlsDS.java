@@ -34,8 +34,8 @@ public class ControlsDS extends Controls {
       //DriveData driveDataTeam = new DriveData(gamepad1.left_stick_y, 0, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
       /* Controls will be in the style of dead man switches */
-      guestOK = buttonMgr.isPressed(1,Buttons.left_trigger);
-      teamOK = buttonMgr.isPressed(1,Buttons.right_trigger);
+      guestOK = buttonMgr.isPressed(1,Buttons.left_bumper);
+      teamOK = buttonMgr.isPressed(1,Buttons.right_bumper);
 
       /* If neither dead man is pressed, stop everything (if needed) and proceed no further */
       if (!guestOK && !teamOK) {
@@ -84,7 +84,7 @@ public class ControlsDS extends Controls {
          parts.dsLed.displayMessage('S', DSLed.MessageColor.GREEN);
       }
 
-      if (eitherGuestOrTeam(Buttons.left_bumper, State.wasTapped)) {
+      if (eitherGuestOrTeam(Buttons.left_trigger, State.wasTapped)) {
          if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeReverse();
             parts.dsLed.displayMessage('I', DSLed.MessageColor.YELLOW);
@@ -96,7 +96,7 @@ public class ControlsDS extends Controls {
          }
       }
 
-      if (eitherGuestOrTeam(Buttons.right_bumper, State.wasTapped)) {
+      if (eitherGuestOrTeam(Buttons.right_trigger, State.wasTapped)) {
          if (DSShooter.intakeState == 0) {
             parts.dsShooter.intakeOn();
             parts.dsLed.displayMessage('I', DSLed.MessageColor.GREEN);
