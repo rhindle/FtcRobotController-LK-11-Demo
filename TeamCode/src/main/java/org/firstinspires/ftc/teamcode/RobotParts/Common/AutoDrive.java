@@ -10,6 +10,10 @@ import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
+import java.util.Arrays;
+import java.util.Deque;
+import java.util.ArrayDeque;
+
 import androidx.annotation.NonNull;
 
 public class AutoDrive implements PartsInterface {
@@ -28,6 +32,7 @@ public class AutoDrive implements PartsInterface {
    PIDCoefficients PIDrotate_calculated = new PIDCoefficients(0,0,0);
    public boolean onTargetByAccuracy = false;
    public boolean isNavigating = false;
+   public boolean isQueueing = false;
    public boolean isHolding = false;
    public boolean isLate = false;
    public boolean abortOnTimeout = true;
@@ -35,6 +40,7 @@ public class AutoDrive implements PartsInterface {
    Error error, errorLast;
    long timeNavStart, timePIDCurrent, timePIDLast;
    double powerTranslate, powerRotate, navAngle, navAngleLast;
+   Deque<NavigationTarget> navQueue = new ArrayDeque<>();
 
    /* Constructor */
    public AutoDrive(Parts parts){
@@ -103,6 +109,13 @@ public class AutoDrive implements PartsInterface {
    public void autoDrivePower () {
       /* This is used for both driving to position and holding a position */
 
+//      /* Sync the navigation target with the first target in the queue, if being used */
+//      //todo: maybe change this so only updated when the queue is modified?
+//      if (isQueueing) {
+//         NavigationTarget target = navQueue.peek();
+//         if (target!=null) navTarget=target.clone();
+//      }
+
       /* If there is no position, don't drive */
       if (parts.positionMgr.noPosition()) {
          //todo: make sure this doesn't leave motors running [now check the work]
@@ -129,6 +142,14 @@ public class AutoDrive implements PartsInterface {
       //todo: Have navigate that ends in holding vs end idle?
       //todo: If Navigating is interrupted by UserDrive, then holding changes the navTarget and onTargetByAccuracy may not represent what we want
       onTargetByAccuracy = navTarget.inToleranceByTime(parts.positionMgr.robotPosition);
+      if (onTargetByAccuracy && isQueueing) {
+         navQueue.poll();  //removeFirst();
+         if (!navQueue.isEmpty()) {
+            onTargetByAccuracy = false;
+            NavigationTarget target = navQueue.peek();
+            if (target!=null) updateNavTarget(target.clone());
+         }
+      }
       if (onTargetByAccuracy) {
          status=isNavigating ? Status.SUCCESS : Status.HOLDING;
          isNavigating=false;
@@ -245,11 +266,20 @@ public class AutoDrive implements PartsInterface {
       setTargetToCurrentPosition(parts.positionMgr.robotPosition.R);
    }
 
-   public void setNavTarget(NavigationTarget navTarget) {
-      setNavTarget(navTarget, true);
+   public void setNavTarget(NavigationTarget target) {
+      setNavTarget(target, true);
    }
 
    public void setNavTarget(NavigationTarget target, boolean hold) {
+      clearNavTargetQueue();         // new target from outside means stop the queue
+      updateNavTarget(target, hold);
+   }
+
+   private void updateNavTarget(NavigationTarget target) {
+      updateNavTarget(target, true);
+   }
+
+   private void updateNavTarget(NavigationTarget target, boolean hold) {
       //if (parts.positionMgr.noPosition()) return;  //todo:Is this necessary? Or just rely on the loop's checks
       this.navTarget = target;
       timeNavStart = System.currentTimeMillis();
@@ -284,12 +314,56 @@ public class AutoDrive implements PartsInterface {
       status = Status.CANCELED;
       isNavigating = false;
       isHolding = false;
-      parts.drivetrain.stopDriveMotors();
+      clearNavTargetQueue();
+      if (!parts.userDrive.isDriving) parts.drivetrain.stopDriveMotors(true);
    }
 
    public void setAutoDrive(boolean boo) {
       if (!boo) isNavigating = false;
       else if (parts.positionMgr.hasPosition()) isNavigating = true;
+   }
+
+   public void addNavTargets(NavigationTarget[] targets) {
+      boolean update = navQueue.isEmpty();
+      navQueue.addAll(Arrays.asList(targets));
+      if (update) {
+         NavigationTarget target = navQueue.peek();
+         if (target!=null) updateNavTarget(target.clone());
+      }
+      isQueueing = true;
+   }
+
+   public void addNavTargetToQueue(NavigationTarget target) {
+      if (target!=null) {
+         navQueue.addLast(target);
+         if (navQueue.size()==1) updateNavTarget(target.clone());
+         isQueueing = true;
+      }
+   }
+
+   public void addNavTargetToQueueStart(NavigationTarget target) {
+      if (target!=null) {
+         navQueue.addFirst(target);
+         updateNavTarget(target.clone());
+         isQueueing = true;
+      }
+   }
+
+   public void clearNavTargetQueue() {
+      navQueue.clear();
+      isQueueing = false;
+      // todo: do we want to stop navigation?
+   }
+
+   public void clearFirstNavTargetFromQueue() {
+      navQueue.poll();   // returns null if empty
+      if (navQueue.isEmpty()) {
+         isQueueing = false;
+      }
+      else {
+         NavigationTarget target = navQueue.peek();
+         if (target!=null) updateNavTarget(target.clone());
+      }
    }
 
    public enum Status {

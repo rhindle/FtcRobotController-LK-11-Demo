@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed.MessageColor;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
+import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 public class ControlsDS extends Controls {
 
@@ -195,6 +196,22 @@ public class ControlsDS extends Controls {
       // Toggle PositionHold
       if (teamControl(Buttons.left_stick_button, State.wasReleased))  {
          parts.dsLed.displayMessage('P', parts.userDrive.togglePositionHold());
+      }
+
+      // Delete this test - position queue
+      if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
+              buttonMgr.getState(1,Buttons.right_trigger, State.isHeld) &&
+              buttonMgr.getState(1,Buttons.left_trigger, State.wasDoubleTapped)) {
+         parts.autoDrive.addNavTargets(new NavigationTarget[]{
+                 new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+                 new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+                 new NavigationTarget(new Position(-12, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,false),
+                 new NavigationTarget(new Position(-30, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+                 new NavigationTarget(new Position(-12, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+                 new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+                 new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false),
+                 });
+//   NavigationTarget test = new NavigationTarget(new Position(-24,0,0), toleranceTransition,1.0,5000,true);
       }
    }
 

@@ -25,7 +25,7 @@ public class DSAprilTag implements PartsInterface {
 
     Parts parts;
 
-    private static final boolean USE_WEBCAM = true;  //false;  // true for webcam, false for phone camera
+    public static boolean USE_WEBCAM = true;  //false;  // true for webcam, false for phone camera
     private AprilTagProcessor aprilTag;
     private VisionPortal visionPortal;
     public Position instantTagRobotPosition;
@@ -36,7 +36,7 @@ public class DSAprilTag implements PartsInterface {
     public boolean strongLocked = false;
     public double strongLockMaxAngle = 10.0;     // in degrees
     public double strongLockMaxDistance = 48.0;  // in inches
-    public Position camOffset = new Position(-8.2, -1.5, 0); //new Position(-1, 3, 0);
+    public static Position camOffset = new Position(-8.2, -1.5, 0); //new Position(-1, 3, 0);
 
     /* Constructor */
     public DSAprilTag(Parts parts) {

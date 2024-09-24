@@ -12,13 +12,13 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.PartsDS;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
-@TeleOp(name = "DiscShooter_with_Position", group = "")
+@TeleOp(name = "Mentor_Test_1", group = "")
 //@Disabled
-public class DiscShooter_with_Position extends LinearOpMode {
+public class Mentor_Test_1 extends LinearOpMode {
 
    public Parts parts;
 
-   boolean testField = false;
+   boolean testField = true;
 
    @Override
    public void runOpMode() {
@@ -28,7 +28,7 @@ public class DiscShooter_with_Position extends LinearOpMode {
       parts.useODO = false;
       parts.useIMU = true;
       parts.useSlamra = true;
-      parts.useNeoMatrix = true;
+      parts.useNeoMatrix = false;
       parts.useAprilTag = true;
       parts.useDrivetrainEncoders = true;
       parts.reverseDrive = false;
@@ -36,7 +36,8 @@ public class DiscShooter_with_Position extends LinearOpMode {
       parts.odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
       parts.slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
       parts.speedMaximum = 1;
-      DSAprilTag.USE_WEBCAM = true;
+      DSAprilTag.USE_WEBCAM = false;
+      DSAprilTag.camOffset = new Position(-1, 3, 0);
 
       settingsOverride();
 
