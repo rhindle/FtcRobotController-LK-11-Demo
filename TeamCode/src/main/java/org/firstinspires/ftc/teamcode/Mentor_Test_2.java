@@ -65,7 +65,8 @@ public class Mentor_Test_2 extends LinearOpMode {
       /* Run Loop */
       if (opModeIsActive()) {
          while (opModeIsActive()) {
-            parts.autoRunLoop();
+            //parts.autoRunLoop();
+            parts.runLoop();
          }
       }
 

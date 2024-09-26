@@ -202,15 +202,16 @@ public class ControlsDS extends Controls {
       if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
               buttonMgr.getState(1,Buttons.right_trigger, State.isHeld) &&
               buttonMgr.getState(1,Buttons.left_trigger, State.wasDoubleTapped)) {
-         parts.autoDrive.addNavTargets(new NavigationTarget[]{
-                 new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-                 new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-                 new NavigationTarget(new Position(-12, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,false),
-                 new NavigationTarget(new Position(-30, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-                 new NavigationTarget(new Position(-12, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-                 new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-                 new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false),
-                 });
+         parts.dsAuto.testAutoMethod();
+//         parts.autoDrive.addNavTargets(new NavigationTarget[]{
+//                 new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+//                 new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+//                 new NavigationTarget(new Position(-12, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,false),
+//                 new NavigationTarget(new Position(-30, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+//                 new NavigationTarget(new Position(-12, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+//                 new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+//                 new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false),
+//                 });
 //   NavigationTarget test = new NavigationTarget(new Position(-24,0,0), toleranceTransition,1.0,5000,true);
       }
    }

@@ -157,6 +157,7 @@ public class AutoDrive implements PartsInterface {
       } else status=Status.DRIVING;
 
       if (!isNavigating && !isHolding) return;
+      if (isNavigating) parts.userDrive.storedHeading=parts.positionMgr.robotPosition.R;   // todo: improve this kludge
 
       updateError();
       navAngle = Math.toDegrees(Math.atan2(error.y,error.x));  // angle to xy destination (vector when combined with distance)
@@ -314,8 +315,10 @@ public class AutoDrive implements PartsInterface {
       status = Status.CANCELED;
       isNavigating = false;
       isHolding = false;
+      parts.dsAuto.setIsAuto(false);
       clearNavTargetQueue();
       if (!parts.userDrive.isDriving) parts.drivetrain.stopDriveMotors(true);
+//      parts.userDrive.storedHeading=parts.positionMgr.robotPosition.R;  //todo: find a way to handle this
    }
 
    public void setAutoDrive(boolean boo) {

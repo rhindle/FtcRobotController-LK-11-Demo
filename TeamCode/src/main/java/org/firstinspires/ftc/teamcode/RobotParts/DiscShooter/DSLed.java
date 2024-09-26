@@ -90,6 +90,7 @@ public class DSLed implements PartsInterface {
 
    public void runLoop() {
       if (parts.useNeoMatrix) {
+         updateGraphic('4', MessageColor.G_LTGRAY);  //outer ring
          updateGraphic('a', parts.userDrive.useHeadingHold ? MessageColor.G_LTGREEN : MessageColor.G_LTORANGE);
          updateGraphic('b', parts.userDrive.useHoldPosition ? MessageColor.G_LTGREEN : MessageColor.G_LTORANGE);
          updateGraphic('c', !parts.userDrive.useFieldCentricDrive ? MessageColor.G_LTGREEN : MessageColor.G_LTORANGE);

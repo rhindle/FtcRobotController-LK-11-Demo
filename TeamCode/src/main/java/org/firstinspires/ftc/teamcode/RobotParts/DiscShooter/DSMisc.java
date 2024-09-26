@@ -21,7 +21,7 @@ public class DSMisc implements PartsInterface {
    public PositionTolerance toleranceHigh = new PositionTolerance (1.0, 1.0, 250);
    public PositionTolerance toleranceMedium = new PositionTolerance (2.0, 2.0, 125);
    public PositionTolerance toleranceLow = new PositionTolerance(2.0,6.0,5.0,50);
-   public PositionTolerance toleranceTransition = new PositionTolerance(4.0,180.0,0);
+   public PositionTolerance toleranceTransition = new PositionTolerance(4.0,90.0,0);
 
    NavigationTarget test = new NavigationTarget(new Position(-24,0,0), toleranceTransition,1.0,5000,true);
 
