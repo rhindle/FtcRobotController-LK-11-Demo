@@ -44,6 +44,9 @@ public class NavigationTarget {
     public NavigationTarget(Position targetPos, long timeLimit) {
         this(targetPos, null, 0.0, timeLimit, false);
     }
+    public NavigationTarget(Position targetPos, PositionTolerance tolerance, double maxSpeed, long timeLimit) {
+        this(targetPos, tolerance, maxSpeed, timeLimit, false);
+    }
 
     //with noslow
     public NavigationTarget(Position targetPos, boolean noSlow) {
@@ -67,7 +70,6 @@ public class NavigationTarget {
     public NavigationTarget(Position targetPos, long timeLimit, boolean noSlow) {
         this(targetPos, null, 0.0, timeLimit, noSlow);
     }
-
 
     @NonNull
     public NavigationTarget clone() {

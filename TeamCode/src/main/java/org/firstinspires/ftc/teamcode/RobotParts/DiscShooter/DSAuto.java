@@ -44,16 +44,10 @@ public class DSAuto implements PartsInterface {
    }
 
    public boolean driveToTargetBackground(NavigationTarget navTarget) {
-//      isAuto = true;
-//      if (!isAutoRunning()) return false;    //exit right away if stopped
-//      parts.autoDrive.setNavTarget(navTarget);
-//      parts.autoRunLoop();                   // todo: do this or not?
-//      return true;
       return driveToTargetsBackground(new NavigationTarget[] {navTarget});
    }
 
    public boolean driveToTargetsBackground(NavigationTarget[] navTargets) {
-//      isAuto = true;
       if (!isAutoRunning()) return false;    //exit right away if stopped
       parts.autoDrive.addNavTargets(navTargets);
       parts.autoRunLoop();                   // todo: do this or not?
@@ -61,15 +55,10 @@ public class DSAuto implements PartsInterface {
    }
 
    public boolean driveToTarget(NavigationTarget navTarget) {
-//      isAuto = true;
-//      if (!isAutoRunning()) return false;    //exit right away if stopped
-//      parts.autoDrive.setNavTarget(navTarget);
-//      return waitForDriveComplete();
       return driveToTargets(new NavigationTarget[] {navTarget});
    }
 
    public boolean driveToTargets(NavigationTarget[] navTargets) {
-//      isAuto = true;
       if (!isAutoRunning()) return false;    //exit right away if stopped
       parts.autoDrive.addNavTargets(navTargets);
       return waitForDriveComplete();
@@ -102,7 +91,6 @@ public class DSAuto implements PartsInterface {
       delay(ms,false);
    }
    public void delay(long ms, boolean blocking) {
-//      isAuto = true;
       if (blocking) {
          parts.opMode.sleep(ms);
       } else {
@@ -127,41 +115,36 @@ public class DSAuto implements PartsInterface {
               new NavigationTarget(new Position(-30, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
               new NavigationTarget(new Position(-12, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
               new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-              new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false),
-      });
+              new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false) });
       waitForDriveComplete();
    }
 
    public void testAutoMethod() {
-
       isAuto = true;
-      boolean stat;
-      stat=driveToTarget( new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceMedium, 1.0,5000,false));
-//      if(!stat) return;
+      boolean result;
+      int timeLimit = 5000;
+      double speed = 1.0;
+      // warning: don't use noSlow=true for tight tolerances or when the robot is simply rotating (the results are terrible jumpy movement)
+      result = driveToTarget( new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceMedium, speed, timeLimit));
+      if (!result) return;  // could branch or something
       delay(500);
-      stat=driveToTarget( new NavigationTarget(new Position(-28,-1,135), parts.dsMisc.toleranceMedium, 1.0,5000,false));
-//      if(!stat) return;
+      driveToTarget( new NavigationTarget(new Position(-28,-1,135), parts.dsMisc.toleranceMedium, speed, timeLimit));
       delay(500);
-      stat=driveToTarget( new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, 1.0,5000,false));
-//      if(!stat) return;
-      stat=driveToTarget( new NavigationTarget(new Position(-28,-1,-90), parts.dsMisc.toleranceTransition, 1.0,5000,false));
-//      if(!stat) return;
-      stat=driveToTarget( new NavigationTarget(new Position(-28,-1,-135), parts.dsMisc.toleranceMedium, 1.0,5000,false));
-//      if(!stat) return;
+      driveToTarget( new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-28,-1,-90), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-28,-1,-135), parts.dsMisc.toleranceMedium, speed, timeLimit));
       delay(500);
-      stat=driveToTarget( new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceMedium, 1.0,5000,false));
-//      if(!stat) return;
+      driveToTarget( new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceMedium, speed, timeLimit));
       delay(1000);
-      double spd = 0.7;
+      speed = 0.7;
       driveToTargetsBackground(new NavigationTarget[]{
-              new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, spd,5000,true),
-              new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, spd,5000,true),
-              new NavigationTarget(new Position(-12, -13, 0), parts.dsMisc.toleranceTransition, spd,5000,false),
-              new NavigationTarget(new Position(-30, -13, 30), parts.dsMisc.toleranceTransition, spd,5000,true),
-              new NavigationTarget(new Position(-12, 13, -30), parts.dsMisc.toleranceTransition, spd,5000,true),
-              new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, spd,5000,true),
-              new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, spd,5000,false) });
+              new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, speed, timeLimit,true),
+              new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, speed, timeLimit,true),
+              new NavigationTarget(new Position(-12, -13, 0), parts.dsMisc.toleranceTransition, speed, timeLimit,false),
+              new NavigationTarget(new Position(-30, -13, 30), parts.dsMisc.toleranceTransition, speed, timeLimit,true),
+              new NavigationTarget(new Position(-12, 13, -30), parts.dsMisc.toleranceTransition, speed, timeLimit,true),
+              new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, speed, timeLimit,true),
+              new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, speed, timeLimit,false) });
       waitForDriveComplete();
    }
-
 }

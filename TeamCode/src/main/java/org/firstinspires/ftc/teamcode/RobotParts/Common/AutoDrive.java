@@ -235,7 +235,6 @@ public class AutoDrive implements PartsInterface {
       TelemetryMgr.message(Category.AUTODRIVE, "DeltaY", JavaUtil.formatNumber(error.y, 2));
    }
 
-   // Get heading error
    public double getHeadingError(double targetAngle) {
 //      if (parts.positionMgr.noPosition()) return 0;
       double robotError;
@@ -318,7 +317,6 @@ public class AutoDrive implements PartsInterface {
       parts.dsAuto.setIsAuto(false);
       clearNavTargetQueue();
       if (!parts.userDrive.isDriving) parts.drivetrain.stopDriveMotors(true);
-//      parts.userDrive.storedHeading=parts.positionMgr.robotPosition.R;  //todo: find a way to handle this
    }
 
    public void setAutoDrive(boolean boo) {

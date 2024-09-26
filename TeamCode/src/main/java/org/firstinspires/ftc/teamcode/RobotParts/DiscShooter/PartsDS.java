@@ -146,7 +146,6 @@ public class PartsDS extends Parts {
         drivetrain.runLoop();
         dsShooter.runLoop();
         tagPositionAndLEDs();
-        //dsLed.runLoop();
         dsLed.autoRunLoop();
 
         addTelemetryLoopEnd();
