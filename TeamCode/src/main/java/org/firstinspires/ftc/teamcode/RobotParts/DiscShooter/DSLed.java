@@ -20,13 +20,15 @@ public class DSLed implements PartsInterface {
    public int cols = 8;  //18,16
    public int rows = 8;
 
-   public int attractDelay = 250;
-   public long attractTime = 0;
+   public int attractDelay = 150;
+   public long attractTime = System.currentTimeMillis();
+   public int counter = -1;
 //   int[][] attractMatrix = new int[1][8];
 
    int[][] messageMatrix = new int[cols][rows];
    int[][] normalMatrix = new int[cols][rows];
    int[][] finalMatrix = new int[cols][rows];
+   int[][][] orbMatrix = new int[16][cols][rows];
 
    private static Servo servoBlinkin;
    int servoBlinkinSetting, servoBlinkinSettingLast;
@@ -50,6 +52,9 @@ public class DSLed implements PartsInterface {
          parts.neo.setDimmingValue(255);
          parts.neo.drawRectangle(0, 7, 0, 7, Color.rgb(10, 10, 0));
          normalMatrix = parts.neo.buildPixelMapFromString("abcd", marquis, Color.rgb(10,10,0), Color.rgb(0,0,0));
+         for (int i=0; i<15; i++) {
+            orbMatrix[i] = parts.neo.buildPixelMapFromString(Character.toString((char)(97+i)), orb, MessageColor.G_ORANGE.color);
+         }
       }
       servoBlinkin = parts.robot.servo2B;
       ServoImplEx adjust = parts.opMode.hardwareMap.get(ServoImplEx.class,"servo2B");
@@ -93,6 +98,22 @@ public class DSLed implements PartsInterface {
          parts.neo.applyPixelMapToBuffer(finalMatrix, 0, 7, 0, true);
 
          //attract();
+         parts.neo.runLoop();
+      }
+      autoSetBlinkin();
+   }
+
+   public void autoRunLoop() {
+      if (parts.useNeoMatrix) {
+         if (System.currentTimeMillis() > attractTime) {
+            attractTime = System.currentTimeMillis() + attractDelay;
+            counter++;
+            if (counter>14) counter=0;
+//            normalMatrix = parts.neo.cloneArray(orbMatrix[counter]);
+         }
+         normalMatrix = parts.neo.cloneArray(orbMatrix[counter]);
+         clearMessage();
+         parts.neo.applyPixelMapToBuffer(finalMatrix, 0, 7, 0, true);
          parts.neo.runLoop();
       }
       autoSetBlinkin();
@@ -213,6 +234,24 @@ public class DSLed implements PartsInterface {
            {'a', 1, 0, 0, 0, 0, 0, 0, 0},
            {'b', 0, 0, 0, 0, 0, 0, 0, 1},
            {'c', 128, 0, 0, 0, 0, 0, 0, 128} };
+
+   public final char[][] orb = {
+           {'a', 0, 0, 7, 15, 0, 0, 0, 0},
+           {'b', 12, 14, 15, 15, 0, 0, 0, 0},
+           {'c', 60, 126, 31, 15, 0, 0, 0, 0},
+           {'d', 60, 126, 255, 255, 0, 0, 0, 0},
+           {'e', 60, 126, 255, 255, 240, 224, 64, 0},
+           {'f', 60, 126, 255, 255, 240, 240, 112, 48},
+           {'g', 60, 126, 255, 255, 248, 252, 126, 60},
+           {'h', 60, 126, 255, 255, 255, 255, 126, 60},
+           {'i', 60, 126, 252, 248, 255, 255, 126, 60},
+           {'j', 48, 112, 240, 240, 255, 255, 126, 60},
+           {'k', 0, 64, 224, 240, 255, 255, 126, 60},
+           {'l', 0, 0, 0, 0, 255, 255, 126, 60},
+           {'m', 0, 0, 0, 0, 15, 31, 126, 60},
+           {'n', 0, 0, 0, 0, 15, 15, 14, 12},
+           {'o', 0, 0, 0, 0, 15, 7, 0, 0},
+           {'p', 0, 0, 0, 0, 0, 0, 0, 0} };
 
    public final int[] chase = { 10, 20, 40, 60, 20, 0, 0, 0};
 }

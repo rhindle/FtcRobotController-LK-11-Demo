@@ -45,6 +45,7 @@ public class PartsDS extends Parts {
         dsShooter = new DSShooter(this);
         dsSpeedControl = new DSSpeedControl(this);
         dsMisc = new DSMisc(this);
+        dsAuto = new DSAuto(this);
 
         if (useAprilTag) dsApriltag = new DSAprilTag(this);
         if (useODO) {
@@ -121,6 +122,32 @@ public class PartsDS extends Parts {
         dsShooter.runLoop();
         tagPositionAndLEDs();
         dsLed.runLoop();
+
+        addTelemetryLoopEnd();
+        TelemetryMgr.Update();
+    }
+
+    @Override
+    public void autoRunLoop() {
+        if (!opMode.opModeIsActive()) return;
+        addTelemetryLoopStart();
+
+        robot.runLoop();
+        buttonMgr.runLoop();
+        if (useIMU) imuMgr.runLoop();
+        if (useSlamra) slamra.runLoop();
+        if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
+        if (useAprilTag) dsApriltag.runLoop();
+        positionMgr.runLoop();
+        controls.runLoop();
+//        userDrive.runLoop();
+//        dsSpeedControl.runLoop();
+        autoDrive.runLoop();
+        drivetrain.runLoop();
+        dsShooter.runLoop();
+        tagPositionAndLEDs();
+        //dsLed.runLoop();
+        dsLed.autoRunLoop();
 
         addTelemetryLoopEnd();
         TelemetryMgr.Update();

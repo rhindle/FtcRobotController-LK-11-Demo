@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.Common;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSAprilTag;
+import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSAuto;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSSpeedControl;
@@ -50,6 +51,7 @@ public class Parts implements PartsInterface {
    public DSShooter dsShooter;
    public DSSpeedControl dsSpeedControl;
    public DSMisc dsMisc;
+   public DSAuto dsAuto;
    //---
 
    /* Constructor */
@@ -78,6 +80,9 @@ public class Parts implements PartsInterface {
    }
 
    public void runLoop() {
+   }
+
+   public void autoRunLoop() {
    }
 
    public void stop() {

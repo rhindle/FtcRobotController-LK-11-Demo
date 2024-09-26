@@ -366,6 +366,10 @@ public class AutoDrive implements PartsInterface {
       }
    }
 
+   public Status getStatus() {
+      return status;
+   }
+
    public enum Status {
       DRIVING,
       HOLDING,

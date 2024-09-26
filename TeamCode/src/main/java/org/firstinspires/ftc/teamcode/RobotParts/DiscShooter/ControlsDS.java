@@ -240,6 +240,7 @@ public class ControlsDS extends Controls {
          parts.dsShooter.eStop();
          parts.autoDrive.eStop();
          parts.userDrive.eStop();
+         parts.dsAuto.eStop();
          // set internal variables
          isStopped = true;
       }
