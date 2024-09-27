@@ -82,7 +82,7 @@ public class PositionTolerance {
         double posErrorDist = Math.sqrt(posError.X*posError.X + posError.Y*posError.Y);
         posError.abs();
         if (xyPreferred) {
-            if (posError.X <= X && posError.Y <= Y & posError.R <= R) return true;
+            if (posError.X <= X && posError.Y <= Y && posError.R <= R) return true;  // todo:should this be false otherwise?
         }
         if (posErrorDist <= dist && posError.R <= R) return true;
         toleranceTime = System.currentTimeMillis();
@@ -97,5 +97,18 @@ public class PositionTolerance {
     }
     public boolean inToleranceByTime (Position target, Position current) {
         return inToleranceByTime(target, current, dwell);
+    }
+
+    public boolean inToleranceExceptRotation (Position target, Position current) {
+        Position posError = target.clone();
+        posError.subtract(current);
+        posError.normalize();
+        double posErrorDist = Math.sqrt(posError.X*posError.X + posError.Y*posError.Y);
+        posError.abs();
+        if (xyPreferred) {
+            if (posError.X <= X && posError.Y <= Y) return true;
+        }
+        if (posErrorDist <= dist) return true;
+        return false;
     }
 }

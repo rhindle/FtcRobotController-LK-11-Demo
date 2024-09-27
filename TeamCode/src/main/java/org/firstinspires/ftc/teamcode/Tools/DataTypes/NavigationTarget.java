@@ -82,5 +82,7 @@ public class NavigationTarget {
     public boolean inToleranceByTime (Position currentPos) {
         return tolerance.inToleranceByTime(targetPos, currentPos);
     }
-
+    public boolean inToleranceExceptRotation (Position currentPos) {
+        return tolerance.inToleranceExceptRotation(targetPos, currentPos);
+    }
 }

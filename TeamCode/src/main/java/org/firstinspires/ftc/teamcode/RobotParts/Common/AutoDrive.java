@@ -174,7 +174,9 @@ public class AutoDrive implements PartsInterface {
       } else {
          powerTranslate = PIDmovement_calculated.p +  PIDmovement_calculated.i +  PIDmovement_calculated.d;
       }
-      if (navTarget.noSlow) powerTranslate = 1;  // don't bother with proportional when hitting transitional destinations
+      //if (navTarget.noSlow) powerTranslate = 1;  // don't bother with proportional when hitting transitional destinations
+      // Don't use proportional when hitting transitional destinations unless still waiting for rotation
+      if (navTarget.noSlow && !navTarget.inToleranceExceptRotation(parts.positionMgr.robotPosition)) powerTranslate = 1; ;
       powerTranslate = Math.max(Math.min(powerTranslate, powerMotorMaximum), powerMotorMinimum);
 
       /* Calculate rotation PID and power */
