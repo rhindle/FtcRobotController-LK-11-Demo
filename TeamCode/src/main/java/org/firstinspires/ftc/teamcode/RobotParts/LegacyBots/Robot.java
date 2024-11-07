@@ -280,6 +280,6 @@ public class Robot {
 //        sensor2MLeft = hardwareMap.get(DistanceSensor.class, "2MdistL");
 //        sensor2MMiddle = hardwareMap.get(DistanceSensor.class, "2MdistM");
 //        sensor2MRight = hardwareMap.get(DistanceSensor.class, "2MdistR");
-//        qled = hardwareMap.get(QwiicLEDStick.class, "led");
+        qled = hardwareMap.get(QwiicLEDStick_.class, "led");
     }
 }

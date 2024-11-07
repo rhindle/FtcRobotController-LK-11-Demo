@@ -316,7 +316,7 @@ public class AutoDrive implements PartsInterface {
       status = Status.CANCELED;
       isNavigating = false;
       isHolding = false;
-      parts.dsAuto.setIsAuto(false);
+//      parts.dsAuto.setIsAuto(false);    //lk need to put this back?  20241107
       clearNavTargetQueue();
       if (!parts.userDrive.isDriving) parts.drivetrain.stopDriveMotors(true);
    }
