@@ -39,10 +39,10 @@ public class ZZ_TestBot_02_V2 extends LinearOpMode {
         telemetry.update();
 
         // make sure the gyro is calibrated before continuing
-        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
-            sleep(50);
-            idle();
-        }
+//        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
+//            sleep(50);
+//            idle();
+//        }
 
         telemetry.addData(">", "Robot Ready.");    //
         telemetry.update();
@@ -60,7 +60,7 @@ public class ZZ_TestBot_02_V2 extends LinearOpMode {
         // Wait for the game to start (Display Gyro value), and reset gyro before we move..
         while (!isStarted()) {
             //angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            telemetry.addData(">", "Robot Heading = %.1f", robot.returnImuHeading(true));
+//            telemetry.addData(">", "Robot Heading = %.1f", robot.returnImuHeading(true));
             telemetry.update();
             sleep(100);
         }

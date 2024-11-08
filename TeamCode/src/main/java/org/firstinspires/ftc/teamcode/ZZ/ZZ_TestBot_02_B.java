@@ -45,10 +45,10 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
         telemetry.update();
 
         // make sure the gyro is calibrated before continuing
-        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
-            sleep(50);
-            idle();
-        }
+//        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
+//            sleep(50);
+//            idle();
+//        }
 
         telemetry.addData(">", "Robot Ready.");    //
         telemetry.update();
@@ -73,8 +73,8 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
 
         // Wait for the game to start (Display Gyro value), and reset gyro before we move..
         while (!isStarted()) {
-            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            telemetry.addData(">", "Robot Heading = %.1f", angles.firstAngle);
+//            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//            telemetry.addData(">", "Robot Heading = %.1f", angles.firstAngle);
             telemetry.update();
             sleep(100);
         }
@@ -114,7 +114,7 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
             //     hsvValues);
 
             /* IMU */
-            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
             /* Check for button presses to switch test motor & servo */
             // Left bumper switches motors
@@ -281,7 +281,7 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
                             " | 5 : " + (robot.digital5.getState() ? "T" : "F") +
                             " | 6 : " + (robot.digital6.getState() ? "T" : "F") +
                             " | 7 : " + (robot.digital7.getState() ? "T" : "F"));
-            telemetry.addData("Heading", "%.1f", angles.firstAngle);
+//            telemetry.addData("Heading", "%.1f", angles.firstAngle);
             //telemetry.addData("Counter", counter);
             //telemetry.addData("LoopSpeed","%.1f",calcLoopSpeed());
             telemetry.addData("LoopTime(ms)","%.1f",loopElapsedTime.milliseconds());

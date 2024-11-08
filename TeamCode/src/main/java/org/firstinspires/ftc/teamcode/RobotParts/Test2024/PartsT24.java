@@ -36,6 +36,9 @@ public class PartsT24 extends Parts {
         controls = new ControlsT24(this);
         drivetrain = new DrivetrainT24(this);
 
+        drivetrain.accelControl = false;
+        drivetrain.minimizeCycleTime = false;
+
         if (useIMU) imuMgr = new ImuMgr(this);
         positionMgr = new PositionMgr(this);
 //        autoDrive = new AutoDriveT24(this);

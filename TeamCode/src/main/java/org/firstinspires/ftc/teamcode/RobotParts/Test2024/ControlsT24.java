@@ -14,6 +14,7 @@ public class ControlsT24 extends Controls {
 
    boolean isStopped = false;
    boolean guestOK, teamOK;
+   float speedFactor = 1;
 
    public ControlsT24(Parts parts) {
       super(parts);
@@ -29,7 +30,17 @@ public class ControlsT24 extends Controls {
    @Override
    public void userInput() {
 
-      driveData = new DriveData(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
+      speedFactor = 0.5f;
+      if (buttonMgr.getState(1, Buttons.right_bumper, State.isPressed)) {
+         speedFactor=1f;
+      }
+      if (buttonMgr.getState(1, Buttons.left_bumper, State.isPressed)) {
+         speedFactor=0.25f;
+      }
+
+      driveData = new DriveData(gamepad1.left_stick_x * speedFactor,
+              gamepad1.left_stick_y * speedFactor,
+              gamepad1.right_stick_x * speedFactor);
       //forza
       //DriveData driveDataForza = new DriveData(gamepad1.left_stick_y, 0, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
