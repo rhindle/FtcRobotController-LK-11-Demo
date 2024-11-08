@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.RobotParts.Test2024;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.PositionTolerance;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 

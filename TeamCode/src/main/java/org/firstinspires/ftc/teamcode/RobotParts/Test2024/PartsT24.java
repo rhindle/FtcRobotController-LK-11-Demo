@@ -13,7 +13,6 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.PositionMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Slamra;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
 import org.firstinspires.ftc.teamcode.Tools.i2c.AdafruitNeoDriver;
 

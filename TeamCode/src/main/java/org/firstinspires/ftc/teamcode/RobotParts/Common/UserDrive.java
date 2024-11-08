@@ -23,6 +23,7 @@ public class UserDrive implements PartsInterface {
    public double deltaHeading = 0;
    public double speedMaximum = 1;
    public Position directionTarget;
+   public boolean lockRear = false;
 
    boolean useHoldOK = false;
    long idleDelay = System.currentTimeMillis();
@@ -117,6 +118,10 @@ public class UserDrive implements PartsInterface {
       }
       // scale to no higher than 1
       drivePowers.scaleMax(1);
+      if (lockRear) {   //added to test pivoting at the rear
+         drivePowers.v2 = 0;
+         drivePowers.v3 = 0;
+      }
       parts.drivetrain.setDrivePowers(drivePowers);
       TelemetryMgr.message(Category.USERDRIVE, "pow", drivePowers.toString(2));
    }

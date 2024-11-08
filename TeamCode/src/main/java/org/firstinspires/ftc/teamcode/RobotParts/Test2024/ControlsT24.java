@@ -4,11 +4,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.Buttons;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed.MessageColor;
-import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
-import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
 
 public class ControlsT24 extends Controls {
 
@@ -31,11 +27,14 @@ public class ControlsT24 extends Controls {
    public void userInput() {
 
       speedFactor = 0.5f;
+      parts.userDrive.setSpeedMaximum(0.5);
       if (buttonMgr.getState(1, Buttons.right_bumper, State.isPressed)) {
          speedFactor=1f;
+         parts.userDrive.setSpeedMaximum(1);
       }
       if (buttonMgr.getState(1, Buttons.left_bumper, State.isPressed)) {
          speedFactor=0.25f;
+         parts.userDrive.setSpeedMaximum(0.25);
       }
 
       driveData = new DriveData(gamepad1.left_stick_x * speedFactor,
@@ -43,6 +42,11 @@ public class ControlsT24 extends Controls {
               gamepad1.right_stick_x * speedFactor);
       //forza
       //DriveData driveDataForza = new DriveData(gamepad1.left_stick_y, 0, gamepad1.left_stick_x, gamepad1.right_stick_x);
+
+      // Toggle pivot
+      if (buttonMgr.getState(1, Buttons.b, State.wasDoubleTapped)) {
+         parts.userDrive.lockRear = !parts.userDrive.lockRear;
+      }
 
       // Toggle FCD
       if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
