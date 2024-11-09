@@ -23,7 +23,8 @@ public class UserDrive implements PartsInterface {
    public double deltaHeading = 0;
    public double speedMaximum = 1;
    public Position directionTarget;
-   public boolean lockRear = false;
+   boolean lockRear = false;
+   boolean lockFront = false;
 
    boolean useHoldOK = false;
    long idleDelay = System.currentTimeMillis();
@@ -118,9 +119,12 @@ public class UserDrive implements PartsInterface {
       }
       // scale to no higher than 1
       drivePowers.scaleMax(1);
-      if (lockRear) {   //added to test pivoting at the rear
+      if (lockRear) {   //added to test pivoting at the rear or front
          drivePowers.v2 = 0;
          drivePowers.v3 = 0;
+      } else if (lockFront) {
+         drivePowers.v0 = 0;
+         drivePowers.v1 = 0;
       }
       parts.drivetrain.setDrivePowers(drivePowers);
       TelemetryMgr.message(Category.USERDRIVE, "pow", drivePowers.toString(2));
@@ -222,5 +226,20 @@ public class UserDrive implements PartsInterface {
       double x = directionTarget.X - parts.positionMgr.robotPosition.X;
       double y = directionTarget.Y - parts.positionMgr.robotPosition.Y;
       return Math.toDegrees(Math.atan2(y,x));
+   }
+
+   public void setLockRear(boolean setting) {
+      lockRear = setting;
+      if (lockRear) lockFront = false;
+   }
+   public void setLockFront(boolean setting) {
+      lockFront = setting;
+      if (lockFront) lockRear = false;
+   }
+   public boolean getLockRear() {
+      return lockRear;
+   }
+   public boolean getLockFront() {
+      return lockFront;
    }
 }

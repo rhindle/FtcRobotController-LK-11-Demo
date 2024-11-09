@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 public class ControlsT24 extends Controls {
 
    boolean isStopped = false;
-   boolean guestOK, teamOK;
    float speedFactor = 1;
 
    public ControlsT24(Parts parts) {
@@ -45,7 +44,10 @@ public class ControlsT24 extends Controls {
 
       // Toggle pivot
       if (buttonMgr.getState(1, Buttons.b, State.wasDoubleTapped)) {
-         parts.userDrive.lockRear = !parts.userDrive.lockRear;
+         parts.userDrive.setLockRear(!parts.userDrive.getLockRear());
+      }
+      if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
+         parts.userDrive.setLockFront(!parts.userDrive.getLockFront());
       }
 
       // Toggle FCD

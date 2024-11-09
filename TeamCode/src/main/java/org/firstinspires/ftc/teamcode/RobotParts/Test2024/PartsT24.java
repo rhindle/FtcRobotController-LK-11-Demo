@@ -35,9 +35,6 @@ public class PartsT24 extends Parts {
         controls = new ControlsT24(this);
         drivetrain = new DrivetrainT24(this);
 
-        drivetrain.accelControl = false;
-        drivetrain.minimizeCycleTime = false;
-
         if (useIMU) imuMgr = new ImuMgr(this);
         positionMgr = new PositionMgr(this);
 //        autoDrive = new AutoDriveT24(this);
@@ -58,6 +55,11 @@ public class PartsT24 extends Parts {
         }
 
         if (useNeoMatrix) neo = new NeoMatrix(opMode, "neo", 8, 8, AdafruitNeoDriver.ColorOrder.GRB);  //RGB for fairy string
+
+        drivetrain.accelControl = false;
+        drivetrain.minimizeCycleTime = false;
+        userDrive.useHeadingHold = false;
+
     }
 
     @Override
