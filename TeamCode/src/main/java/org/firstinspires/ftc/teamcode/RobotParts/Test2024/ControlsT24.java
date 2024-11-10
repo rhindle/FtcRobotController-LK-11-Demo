@@ -42,11 +42,34 @@ public class ControlsT24 extends Controls {
       //forza
       //DriveData driveDataForza = new DriveData(gamepad1.left_stick_y, 0, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
+      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
+         parts.t24Grabber.grabberSafe();
+      }
+      if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
+         parts.t24Grabber.grabberArmed();
+      }
+      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
+         parts.t24Grabber.grabberStartGrab();
+      }
+      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
+         parts.t24Grabber.grabberGrab();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
+         parts.t24Grabber.grabberVertical();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasTapped)) {
+         parts.t24Grabber.grabberMaxBack();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasTapped)) {
+         parts.t24Grabber.grabberRelease();
+      }
+
+
       // Toggle pivot
-      if (buttonMgr.getState(1, Buttons.b, State.wasDoubleTapped)) {
+      if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
          parts.userDrive.setLockRear(!parts.userDrive.getLockRear());
       }
-      if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
+      if (buttonMgr.getState(1, Buttons.y, State.wasHeld)) {
          parts.userDrive.setLockFront(!parts.userDrive.getLockFront());
       }
 

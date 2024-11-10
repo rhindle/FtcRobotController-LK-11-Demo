@@ -41,6 +41,7 @@ public class PartsT24 extends Parts {
         autoDrive = new AutoDrive(this);
         userDrive = new UserDriveT24(this);
         t24Misc = new T24Misc(this);
+        t24Grabber = new T24Grabber(this);
 //        t24Auto = new T24Auto(this);
 
         if (useODO) {
@@ -68,6 +69,7 @@ public class PartsT24 extends Parts {
         if (useIMU) imuMgr.initialize();
         positionMgr.initialize();
         if (useSlamra) slamra.initialize();
+        t24Grabber.initialize();
     }
 
     @Override
@@ -105,6 +107,7 @@ public class PartsT24 extends Parts {
         userDrive.runLoop();
 //        autoDrive.runLoop();
         drivetrain.runLoop();
+        t24Grabber.runLoop();
 
         addTelemetryLoopEnd();
         TelemetryMgr.Update();
