@@ -62,7 +62,7 @@ public class T24MultiGrabber implements PartsInterface {
       servoPinch = parts.robot.servo0;
       servoWrist = parts.robot.servo2;
       servoPinch.setPosition(pinchSlightOpen);
-      servoWrist.setPosition(wristHorizontal);
+//      servoWrist.setPosition(wristHorizontal);
    }
 
    public void preInit() {
@@ -90,29 +90,29 @@ public class T24MultiGrabber implements PartsInterface {
 
    // this all needs to be improved to prevent crashes, etc.
    public static void grabberSafe() {
-      setWristServo(wristHorizontal);
+//      setWristServo(wristHorizontal);
       setPinchServo(pinchFullOpen);
    }
    public static void grabberArmed() {
-      setWristServo(wristReady);
+//      setWristServo(wristReady);
       setPinchServo(pinchFullOpen);
 //      setPinchServo(pinchSlightOpen);
    }
    public static void grabberStartGrab() {
-      setWristServo(wristGrab);
+//      setWristServo(wristGrab);
       setPinchServo(pinchFullOpen);
 //      setPinchServo(pinchSlightOpen);
    }
    public static void grabberGrab() {
-      setWristServo(wristGrab);
+//      setWristServo(wristGrab);
       setPinchServo(pinchClosed);
    }
    public static void grabberVertical() {
-      setWristServo(wristVertical);
+//      setWristServo(wristVertical);
       setPinchServo(pinchClosed);
    }
    public static void grabberMaxBack() {
-      setWristServo(wristMaxBack);
+//      setWristServo(wristMaxBack);
       setPinchServo(pinchClosed);
    }
    public static void grabberRelease() {
