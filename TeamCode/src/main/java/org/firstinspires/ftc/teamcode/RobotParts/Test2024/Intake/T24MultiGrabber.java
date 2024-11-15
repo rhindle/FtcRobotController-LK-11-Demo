@@ -1,11 +1,10 @@
-package org.firstinspires.ftc.teamcode.RobotParts.Test2024;
+package org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.RobotParts.LegacyBots.LiftbotLifter;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class T24MultiGrabber implements PartsInterface {
@@ -37,7 +36,11 @@ public class T24MultiGrabber implements PartsInterface {
    static final double shoulderCapture              = 0.201;
    static final double shoulderSafe                 = 0.350;   // Todo THIS IS NOT REAL - GET VALUE
 
-   private int slideTargetPosition;
+   final int positionSlideMin                = 0;
+   final int positionSlideMax                = 3200;   //todo: get real number
+   final int positionSlideStartIntake        = 1500;   //todo: get real number
+   final int positionSlidePitMin             = 500;    //todo: get real number
+   int toleranceSlide                        = 20;
 
    /* Internal use */
    private static Servo servoPinch;
@@ -56,15 +59,15 @@ public class T24MultiGrabber implements PartsInterface {
    public static long dropTimer = System.currentTimeMillis();
    public static boolean isArmed = false;
    public static int intakeState = 0;
-
+   private static int slideTargetPosition;
    boolean isSlideUnderManualControl = false;
    boolean isSlideHomed = false;
    boolean isSlideHoldDeferred = false;
-   final int positionSlideMin                = 0;
-   final int positionSlideMax                = 3200;   //todo: get real number
-   final int positionSlideStartIntake        = 1500;   //todo: get real number
-   final int positionSlidePitMin             = 500;    //todo: get real number
-   int toleranceSlide                        = 20;
+
+   /* Internal use (Needs access by state machines in package) */
+
+
+
 
    /* Public OpMode members. */
    public static Parts parts;
@@ -105,10 +108,21 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    public void eStop() {
+      stopMotors();
+      cancelStateMachines();
       parts.robot.disableServo(servoPinch);
       parts.robot.disableServo(servoWrist);
+      parts.robot.disableServo(servoShoulder);
+      parts.robot.disableServo(servoRotator);
       servoPinchDisabled = true;
       servoWristDisabled = true;
+      servoshoulderDisabled = true;
+      servoRotatorDisabled = true;
+      isArmed = false;
+   }
+
+   public void cancelStateMachines() {
+//      Shoot1.stop();
       isArmed = false;
    }
 
