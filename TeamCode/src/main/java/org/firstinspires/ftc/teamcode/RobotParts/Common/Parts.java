@@ -8,6 +8,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSSpeedControl;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.T24Grabber;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.T24Misc;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
@@ -59,6 +60,7 @@ public class Parts implements PartsInterface {
    //---Test24 Unique
    public T24Misc t24Misc;
    public T24Grabber t24Grabber;
+   public T24MultiGrabber t24MultiGrabber;
 //   public T24Auto t24Auto;
    //---
 

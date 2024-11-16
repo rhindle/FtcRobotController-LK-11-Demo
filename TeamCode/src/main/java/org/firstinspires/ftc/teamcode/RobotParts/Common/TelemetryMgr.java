@@ -142,6 +142,7 @@ public class TelemetryMgr {
         APRILTAG_EXT("TAX"),
         SPEED("SPD"),
         DISCSHOOTER("DSS"),
+        T24MULTIGRAB("GRB"),
         NAVIGATOR("NAV");   //navigator is deprecated
 
         public final String label;

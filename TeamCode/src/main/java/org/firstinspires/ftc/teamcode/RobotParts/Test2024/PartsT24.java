@@ -13,6 +13,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.PositionMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Slamra;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
 import org.firstinspires.ftc.teamcode.Tools.i2c.AdafruitNeoDriver;
 
@@ -41,7 +42,8 @@ public class PartsT24 extends Parts {
         autoDrive = new AutoDrive(this);
         userDrive = new UserDriveT24(this);
         t24Misc = new T24Misc(this);
-        t24Grabber = new T24Grabber(this);
+//        t24Grabber = new T24Grabber(this);
+        t24MultiGrabber = new T24MultiGrabber(this);
 //        t24Auto = new T24Auto(this);
 
         if (useODO) {
@@ -69,7 +71,8 @@ public class PartsT24 extends Parts {
         if (useIMU) imuMgr.initialize();
         positionMgr.initialize();
         if (useSlamra) slamra.initialize();
-        t24Grabber.initialize();
+//        t24Grabber.initialize();
+        t24MultiGrabber.initialize();
     }
 
     @Override
@@ -107,7 +110,8 @@ public class PartsT24 extends Parts {
         userDrive.runLoop();
 //        autoDrive.runLoop();
         drivetrain.runLoop();
-        t24Grabber.runLoop();
+//        t24Grabber.runLoop();
+        t24MultiGrabber.runLoop();
 
         addTelemetryLoopEnd();
         TelemetryMgr.Update();

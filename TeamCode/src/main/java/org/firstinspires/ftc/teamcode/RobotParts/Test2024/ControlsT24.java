@@ -4,6 +4,8 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.Buttons;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber.IntakeActions;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 
 public class ControlsT24 extends Controls {
@@ -42,28 +44,54 @@ public class ControlsT24 extends Controls {
       //forza
       //DriveData driveDataForza = new DriveData(gamepad1.left_stick_y, 0, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
-      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
-         parts.t24Grabber.grabberSafe();
-      }
-      if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
-         parts.t24Grabber.grabberArmed();
-      }
-      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
-         parts.t24Grabber.grabberStartGrab();
-      }
-      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
-         parts.t24Grabber.grabberGrab();
-      }
-      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
-         parts.t24Grabber.grabberVertical();
-      }
-      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasTapped)) {
-         parts.t24Grabber.grabberMaxBack();
-      }
-      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasTapped)) {
-         parts.t24Grabber.grabberRelease();
-      }
+//      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
+//         parts.t24Grabber.grabberSafe();
+//      }
+//      if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
+//         parts.t24Grabber.grabberArmed();
+//      }
+//      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
+//         parts.t24Grabber.grabberStartGrab();
+//      }
+//      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
+//         parts.t24Grabber.grabberGrab();
+//      }
+//      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
+//         parts.t24Grabber.grabberVertical();
+//      }
+//      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasTapped)) {
+//         parts.t24Grabber.grabberMaxBack();
+//      }
+//      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasTapped)) {
+//         parts.t24Grabber.grabberRelease();
+//      }
 
+      if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.SAFE_IN);
+      }
+      if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.SAFE_OUT);
+      }
+      if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.GRAB_HOVER);
+      }
+      if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.GRAB_OPEN);
+      }
+      if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.GRAB_CLOSE);
+      }
+      if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
+         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.AUTO_EXTEND_TO_GRAB);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_right, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.AUTO_GRAB_AND_RETRACT);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.AUTO_MAKE_SPACE);
+         }
+      }
 
       // Toggle pivot
       if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
