@@ -13,6 +13,8 @@ public class ControlsT24 extends Controls {
    boolean isStopped = false;
    float speedFactor = 1;
 
+   double slideSpeed = 0;
+
    public ControlsT24(Parts parts) {
       super(parts);
    }
@@ -22,6 +24,7 @@ public class ControlsT24 extends Controls {
       driveData = new DriveData();
       userInput();
       parts.userDrive.setUserDriveSettings(driveData);
+      parts.t24MultiGrabber.setUserDriveSettings(slideSpeed*0.5);
    }
 
    @Override
@@ -66,21 +69,8 @@ public class ControlsT24 extends Controls {
 //         parts.t24Grabber.grabberRelease();
 //      }
 
-      if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
-         T24MultiGrabber.action(IntakeActions.SAFE_IN);
-      }
-      if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
-         T24MultiGrabber.action(IntakeActions.SAFE_OUT);
-      }
-      if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
-         T24MultiGrabber.action(IntakeActions.GRAB_HOVER);
-      }
-      if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
-         T24MultiGrabber.action(IntakeActions.GRAB_OPEN);
-      }
-      if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
-         T24MultiGrabber.action(IntakeActions.GRAB_CLOSE);
-      }
+      slideSpeed = -gamepad2.left_stick_y;
+
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
          if (buttonMgr.getState(2, Buttons.dpad_left, State.wasTapped)) {
             T24MultiGrabber.action(IntakeActions.AUTO_EXTEND_TO_GRAB);
@@ -91,7 +81,30 @@ public class ControlsT24 extends Controls {
          if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
             T24MultiGrabber.action(IntakeActions.AUTO_MAKE_SPACE);
          }
+         if (buttonMgr.getState(2,Buttons.dpad_down, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.SHOULDER_ALLBACK);
+         }
+      } else {
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.SAFE_IN);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.SAFE_OUT);
+         }
+         if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.GRAB_HOVER);
+         }
+         if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.GRAB_OPEN);
+         }
+         if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.GRAB_CLOSE);
+         }
+         if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.SHOULDER_PUSH);
+         }
       }
+
 
       // Toggle pivot
       if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {

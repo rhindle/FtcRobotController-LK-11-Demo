@@ -19,11 +19,11 @@ public class goFish {
         if (state == 2) {                 // wait for servos to complete, extend
             if (T24MultiGrabber.isShoulderDone() && T24MultiGrabber.isPinchDone()) {
                 state++;
-                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlideStartIntake,0.25);
+                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlideStartIntake,1);
             }
         }
         if (state == 3) {                // wait for slide to extend paste safe point
-            if (T24MultiGrabber.isSlideInsidePit()) {
+            if (T24MultiGrabber.isSlideInTolerance()) { //   isSlideInsidePit()) {  // i don't like this anymore
                 state++;
                 T24MultiGrabber.action(IntakeActions.GRAB_HOVER);
             }
@@ -47,6 +47,10 @@ public class goFish {
     public static void stop() {
         // make it safe?
         T24MultiGrabber.action(IntakeActions.SAFE_OUT);
+        state = -1;
+    }
+
+    public static void mildStop() {
         state = -1;
     }
 

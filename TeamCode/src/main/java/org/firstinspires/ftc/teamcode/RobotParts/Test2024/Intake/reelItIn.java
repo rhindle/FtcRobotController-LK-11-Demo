@@ -26,17 +26,18 @@ public class reelItIn {
             if (T24MultiGrabber.isPinchDone()) {
                 state++;
                 T24MultiGrabber.action(IntakeActions.SAFE_OUT);
-                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlidePitMin,0.25);
+                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlidePitMin,1);
             }
         }
         if (state == 4) {                 // if shoulder is in safe position, retract he rest of the way
             if (T24MultiGrabber.isShoulderDone()) {
                 state++;
-                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlideMin,0.25);
+                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlideMin,1);
             }
         }
         if (state == 5) {                 // wait until slide is retracted
             if (T24MultiGrabber.isSlideInTolerance()) {
+
                 state++;
             }
         }
@@ -54,6 +55,10 @@ public class reelItIn {
     public static void stop() {
         // make it safe?
         T24MultiGrabber.action(IntakeActions.SAFE_OUT);
+        state = -1;
+    }
+
+    public static void mildStop() {
         state = -1;
     }
 

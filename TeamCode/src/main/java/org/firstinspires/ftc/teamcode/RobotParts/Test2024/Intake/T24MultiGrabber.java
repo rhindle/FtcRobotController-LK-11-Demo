@@ -33,7 +33,7 @@ public class T24MultiGrabber implements PartsInterface {
    static final double rotator45Left            = 0.695;
    static final double rotator45Right           = 0.276;
    static final double rotatorMildLeft          = 0.595;
-   static final double rotatorMild5Right        = 0.362;
+   static final double rotatorMildRight        = 0.362;
    static final int rotatorSweepTime            = 1500;
 
    static final double shoulderVertical             = 0.580;
@@ -42,6 +42,7 @@ public class T24MultiGrabber implements PartsInterface {
    static final double shoulderHover               = 0.230;
    static final double shoulderCapture              = 0.201;
    static final double shoulderDrag             = 0.180;
+   static final double shoulderPush             = 0.200;
    static final double shoulderBalanced             = 0.643;
    static final double shoulderSafeOut           = 0.356;  //0.339;   // Todo THIS IS NOT REAL - GET VALUE
    static final double shoulderSafeIn            = 0.314;
@@ -126,6 +127,7 @@ public class T24MultiGrabber implements PartsInterface {
 
       goFish.stateMachine();
       reelItIn.stateMachine();
+      makeSpace.stateMachine();
 
       TelemetryMgr.message(TelemetryMgr.Category.T24MULTIGRAB,
               "States: " +
@@ -154,9 +156,16 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    public void cancelStateMachines() {
-//      Shoot1.stop();
+      goFish.mildStop();
+      reelItIn.mildStop();
+      makeSpace.mildStop();
+      isArmed = false;
+   }
+
+   public void stopStateMachines() {
       goFish.stop();
       reelItIn.stop();
+      makeSpace.stop();
       isArmed = false;
    }
 
@@ -316,19 +325,19 @@ public class T24MultiGrabber implements PartsInterface {
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    //       Manual User Drive
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   public void setUserDriveSettings(double driveSpeed) {
-      if (driveSpeed == 0 && !isSlideUnderManualControl) return;
+   public void setUserDriveSettings(double slideSpeed) {
+      if (slideSpeed == 0 && !isSlideUnderManualControl) return;
 
-      if (driveSpeed != 0) {
+      if (slideSpeed != 0) {
          int currentPos = motorSlide.getCurrentPosition();
          //enforce upper limits
-         if (driveSpeed > 0 && currentPos > positionSlideMax) driveSpeed = 0;
+         if (slideSpeed > 0 && currentPos > positionSlideMax) slideSpeed = 0;
          //enforce lower limits
-         if (driveSpeed < 0 && currentPos < positionSlideMin) driveSpeed = 0;
-//         if (driveSpeed < 0 && isLimitSwitchPressed()) driveSpeed = 0;
+         if (slideSpeed < 0 && currentPos < positionSlidePitMin) slideSpeed = 0;   //positionSlideMin
+//         if (slideSpeed < 0 && isLimitSwitchPressed()) slideSpeed = 0;
       }
 
-      if (driveSpeed == 0) {  // when it drops out of manual control, hold
+      if (slideSpeed == 0) {  // when it drops out of manual control, hold
          isSlideUnderManualControl = false;
          stopMotors();
          isSlideHoldDeferred = true;
@@ -337,13 +346,13 @@ public class T24MultiGrabber implements PartsInterface {
 
       if (!isSlideUnderManualControl) {
          isSlideUnderManualControl = true;
-         //stopStateMachine();
+         cancelStateMachines();
          stopMotors();
          motorSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
          return;  // we'll set the speed next time... jerky if you do it immediately after changing mode
       }
 
-      setSlidePower(driveSpeed);
+      setSlidePower(slideSpeed);
    }
 
    public void delayedActions() {
@@ -423,6 +432,15 @@ public class T24MultiGrabber implements PartsInterface {
          case SHOULDER_DRAG:
             setShoulderServo(shoulderDrag);
             break;
+         case SHOULDER_PUSH:
+            setShoulderServo(shoulderPush);
+            setPinchServo(pinchFullOpen);
+            break;
+         case SHOULDER_ALLBACK:
+            setShoulderServo(shoulderFullBack);
+            setRotatorServo(rotatorCenter);
+            setWristServo(wristCenter);
+            break;
          case GRAB_LOOSE:
             setPinchServo(pinchLoose);
             break;
@@ -450,6 +468,7 @@ public class T24MultiGrabber implements PartsInterface {
       SHOULDER_CAPTURE,
       SHOULDER_DRAG,
       SHOULDER_ALLBACK,
+      SHOULDER_PUSH,
       CANCEL
    }
 }

@@ -57,6 +57,10 @@ public class makeSpace {
         state = -1;
     }
 
+    public static void mildStop() {
+        state = -1;
+    }
+
     public static boolean isRunning() {
         return (state>0);
     }
