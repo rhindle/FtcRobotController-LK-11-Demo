@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber.IntakeActions;
 
-public class reelItIn {
+public class smMakeSpace {
 
     private static int state = 0;
     private static boolean complete = false;
@@ -13,31 +13,30 @@ public class reelItIn {
         if (state < 1) return;  // not running
 
         if (state == 1) {                 // make sure shoulder is ready
-            T24MultiGrabber.action(IntakeActions.SHOULDER_CAPTURE);
+            T24MultiGrabber.action(IntakeActions.GRAB_WIDEOPEN);
+            T24MultiGrabber.action(IntakeActions.SHOULDER_DRAG);
             state++;
         }
-        if (state == 2) {                 // activate the grabber
+        if (state == 2) {                 // sweep left
             if (T24MultiGrabber.isShoulderDone()) {
                 state++;
-                T24MultiGrabber.action(IntakeActions.GRAB_CLOSE);
+                T24MultiGrabber.setRotatorServo(T24MultiGrabber.rotator45Left);
             }
         }
-        if (state == 3) {                 // when grabber is done, put in safe position and retract to safe point
-            if (T24MultiGrabber.isPinchDone()) {
+        if (state == 3) {                 // sweep right
+            if (T24MultiGrabber.isRotatorDone()) {
                 state++;
-                T24MultiGrabber.action(IntakeActions.SAFE_OUT);
-                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlidePitMin,1);
+                T24MultiGrabber.setRotatorServo(T24MultiGrabber.rotator45Right);
             }
         }
-        if (state == 4) {                 // if shoulder is in safe position, retract he rest of the way
-            if (T24MultiGrabber.isShoulderDone()) {
+        if (state == 4) {                 // sweep center
+            if (T24MultiGrabber.isRotatorDone()) {
                 state++;
-                T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlideMin,1);
+                T24MultiGrabber.setRotatorServo(T24MultiGrabber.rotatorCenter);
             }
         }
-        if (state == 5) {                 // wait until slide is retracted
-            if (T24MultiGrabber.isSlideInTolerance()) {
-
+        if (state == 5) {                 // wait until centered
+            if (T24MultiGrabber.isRotatorDone()) {
                 state++;
             }
         }

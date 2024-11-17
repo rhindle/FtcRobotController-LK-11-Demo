@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber.IntakeActions;
 
-public class goFish {
+public class smGoFish {
 
     private static int state = 0;
     private static boolean complete = false;

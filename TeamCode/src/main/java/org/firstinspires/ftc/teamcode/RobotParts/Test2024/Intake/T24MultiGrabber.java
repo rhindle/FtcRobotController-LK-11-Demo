@@ -19,63 +19,77 @@ public class T24MultiGrabber implements PartsInterface {
    static final double pinchFullOpen            = 0.340;
    static final double pinchLongDirection       = 0.560;
    static final int pinchSweepTime              = 1500;   // spec is 1250
-//   static final int pinchCloseTime              = 250;
-//   static final int pinchOpenTime               = 250;
 
    static final double wristCenter              = 0.500;
    static final double wrist90Left              = 0.140;
    static final double wrist90Right             = 0.877;
+   static final double wristTransfer            = 0.467;
    static final int wristSweepTime              = 1500;
-//   static final int wristReadyToGrabTime        = 500;
-//   static final int wristHorizToReadyTime       = 750;
 
    static final double rotatorCenter            = 0.500;
    static final double rotator45Left            = 0.695;
    static final double rotator45Right           = 0.276;
    static final double rotatorMildLeft          = 0.595;
-   static final double rotatorMildRight        = 0.362;
+   static final double rotatorMildRight         = 0.362;
+   static final double rotatorTransfer          = 0.536;
    static final int rotatorSweepTime            = 1500;
 
-   static final double shoulderVertical             = 0.580;
-   static final double shoulderFullBack             = 0.920;
-   static final double shoulderHorizontal           = 0.260;
-   static final double shoulderHover               = 0.230;
-   static final double shoulderCapture              = 0.201;
+   static final double shoulderVertical         = 0.580;
+   static final double shoulderFullBack         = 0.920;
+   static final double shoulderHorizontal       = 0.260;
+   static final double shoulderHover            = 0.230;
+   static final double shoulderCapture          = 0.201;
    static final double shoulderDrag             = 0.180;
    static final double shoulderPush             = 0.200;
-   static final double shoulderBalanced             = 0.643;
-   static final double shoulderSafeOut           = 0.356;  //0.339;   // Todo THIS IS NOT REAL - GET VALUE
-   static final double shoulderSafeIn            = 0.314;
-   static final int shoulderSweepTime            = 1500;    // this is faster, but under load; need actual estimate
+   static final double shoulderBalanced         = 0.643;
+   static final double shoulderSafeOut          = 0.356;  //0.339;   // Todo THIS IS NOT REAL - GET VALUE
+   static final double shoulderSafeIn           = 0.314;
+   static final int shoulderSweepTime           = 1500;    // this is faster, but under load; need actual estimate
 
-   static final int positionSlideMin                = 0;
-   static final int positionSlideMax                = 1500;
-   static final int positionSlideStartIntake        = 650;   //todo: finalize number
-   static final int positionSlidePitMin             = 160;    //todo: finalize number
-   static final int toleranceSlide                  = 20;
+   static final double liftShoulderTransfer     = 0.831;
+   static final double liftShoulderBack         = 0.000;
+   static final double liftShoulderSafe         = 0.522;
+   static final int liftShoulderSweepTime       = 1500;
 
-   static final int positionLiftMin                 = 0;
-   static final int positionLiftMax                 = 4350;   //todo:reverse direction
-   static final int toleranceLift                   = 20;
+   static final double liftPinchTransfer        = 0.905;
+   static final double liftPinchSafe            = 0.854;
+   static final double liftPinchWide            = 0.810;
+   static final int liftPinchSweepTime          = 1500;
+
+   static final int positionSlideMin            = 0;
+   static final int positionSlideMax            = 1500;
+   static final int positionSlideStartIntake    = 650;   //todo: finalize number
+   static final int positionSlidePitMin         = 160;    //todo: finalize number
+   static final int toleranceSlide              = 20;
+
+   static final int positionLiftMin             = 0;
+   static final int positionLiftMax             = 4000; //4350;   //todo:reverse direction
+   static final int positionLiftTransfer        = 125;
+   static final int toleranceLift               = 20;
+
 
    /* Internal use */
    private static Servo servoPinch;
    private static Servo servoWrist;
    private static Servo servoRotator;
    private static Servo servoShoulder;
+   static Servo servoLiftShoulder;
+   private static Servo servoLiftPinch;
    private static DcMotorEx motorSlide;
    private static DcMotorEx motorLift;
    private static boolean servoPinchDisabled = false;
    private static boolean servoWristDisabled = false;
    private static boolean servoShoulderDisabled = false;
    private static boolean servoRotatorDisabled = false;
+   private static boolean servoLiftShoulderDisabled = false;
+   private static boolean servoLiftPinchDisabled = false;
    private static long timerWrist = System.currentTimeMillis();
    private static long timerPinch = System.currentTimeMillis();
    private static long timerShoulder = System.currentTimeMillis();
    private static long timerRotator = System.currentTimeMillis();
-   public static long dropTimer = System.currentTimeMillis();
-   public static boolean isArmed = false;
-   public static int intakeState = 0;
+   private static long timerLiftShoulder = System.currentTimeMillis();
+   private static long timerLiftPinch = System.currentTimeMillis();
+//   public static int intakeState = 0;
    private static int slideTargetPosition;
    private static int liftTargetPosition;
    static boolean isSlideUnderManualControl = false;
@@ -107,6 +121,8 @@ public class T24MultiGrabber implements PartsInterface {
       servoShoulder = parts.robot.servo2;
       servoWrist = parts.robot.servo4;
       servoPinch = parts.robot.servo0B;
+      servoLiftShoulder = parts.robot.servo2B;
+      servoLiftPinch = parts.robot.servo4B;
       motorSlide = parts.robot.motor0B;
       motorLift = parts.robot.motor1B;
       initServos();
@@ -125,16 +141,17 @@ public class T24MultiGrabber implements PartsInterface {
    public void runLoop() {
       delayedActions();
 
-      goFish.stateMachine();
-      reelItIn.stateMachine();
-      makeSpace.stateMachine();
+      smGoFish.stateMachine();
+      smReelIn.stateMachine();
+      smMakeSpace.stateMachine();
+      smTransfer.stateMachine();
 
       TelemetryMgr.message(TelemetryMgr.Category.T24MULTIGRAB,
               "States: " +
-                      "GF: " + String.format("%02d", goFish.getState()) +
-                      ", RI: " + String.format("%02d", reelItIn.getState()) +
-                      ", MS: " + String.format("%02d", makeSpace.getState()) +
-//                      ", FA: " + String.format("%02d", FullAuto.getState()) +
+                      "GF: " + String.format("%02d", smGoFish.getState()) +
+                      ", RI: " + String.format("%02d", smReelIn.getState()) +
+                      ", MS: " + String.format("%02d", smMakeSpace.getState()) +
+                      ", TR: " + String.format("%02d", smTransfer.getState()) +
                       "");
    }
 
@@ -148,25 +165,31 @@ public class T24MultiGrabber implements PartsInterface {
       parts.robot.disableServo(servoWrist);
       parts.robot.disableServo(servoShoulder);
       parts.robot.disableServo(servoRotator);
+      parts.robot.disableServo(servoLiftShoulder);
+      parts.robot.disableServo(servoLiftPinch);
       servoPinchDisabled = true;
       servoWristDisabled = true;
       servoShoulderDisabled = true;
       servoRotatorDisabled = true;
-      isArmed = false;
+      servoLiftShoulderDisabled = true;
+      servoLiftPinchDisabled = true;
+//      isArmed = false;
    }
 
    public void cancelStateMachines() {
-      goFish.mildStop();
-      reelItIn.mildStop();
-      makeSpace.mildStop();
-      isArmed = false;
+      smGoFish.mildStop();
+      smReelIn.mildStop();
+      smMakeSpace.mildStop();
+      smTransfer.mildStop();
+//      isArmed = false;
    }
 
    public void stopStateMachines() {
-      goFish.stop();
-      reelItIn.stop();
-      makeSpace.stop();
-      isArmed = false;
+      smGoFish.stop();
+      smReelIn.stop();
+      smMakeSpace.stop();
+      smTransfer.stop();
+//      isArmed = false;
    }
 
 
@@ -180,7 +203,6 @@ public class T24MultiGrabber implements PartsInterface {
       timerWrist = getServoSweepTimerValue(servoWrist,newPosition,wristSweepTime);  // get timer before setting position!
       servoWrist.setPosition(newPosition);
    }
-
    public static void setPinchServo(double newPosition) {
       if (servoPinchDisabled) {
          servoPinchDisabled = false;
@@ -190,7 +212,6 @@ public class T24MultiGrabber implements PartsInterface {
       timerPinch = getServoSweepTimerValue(servoPinch,newPosition,pinchSweepTime);  // get timer before setting position!
       servoPinch.setPosition(newPosition);
    }
-
    public static void setRotatorServo(double newPosition) {
       if (servoRotatorDisabled) {
          servoRotatorDisabled = false;
@@ -210,6 +231,25 @@ public class T24MultiGrabber implements PartsInterface {
       servoShoulder.setPosition(newPosition);
    }
 
+   public static void setLiftShoulderServo(double newPosition) {
+      if (servoLiftShoulderDisabled) {
+         servoLiftShoulderDisabled = false;
+         parts.robot.enableServo(servoLiftShoulder);
+      }
+      if (isServoAtPosition(servoLiftShoulder, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
+      timerLiftShoulder = getServoSweepTimerValue(servoLiftShoulder,newPosition,liftShoulderSweepTime);  // get timer before setting position!
+      servoLiftShoulder.setPosition(newPosition);
+   }
+   public static void setLiftPinchServo(double newPosition) {
+      if (servoLiftPinchDisabled) {
+         servoLiftPinchDisabled = false;
+         parts.robot.enableServo(servoLiftPinch);
+      }
+      if (isServoAtPosition(servoLiftPinch, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
+      timerLiftPinch = getServoSweepTimerValue(servoLiftPinch,newPosition,liftPinchSweepTime);  // get timer before setting position!
+      servoLiftPinch.setPosition(newPosition);
+   }
+
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    //       Status Responders
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -218,31 +258,17 @@ public class T24MultiGrabber implements PartsInterface {
    public static boolean isPinchDone() {return System.currentTimeMillis() >= timerPinch;}
    public static boolean isShoulderDone() {return System.currentTimeMillis() >= timerShoulder;}
    public static boolean isRotatorDone() {return System.currentTimeMillis() >= timerRotator;}
-
-//
-//   public static boolean isGateOpen() {
-//      return isServoAtPosition(servoWrist,gateOpen, timerWrist);
-//   }
-//   public boolean isGateClosed() {
-//      return isServoAtPosition(servoWrist,gateClosed, timerWrist);
-//   }
-//   public boolean isGateDoneMoving () {
-//      return System.currentTimeMillis() >= timerWrist;
-//   }
-//
-//   public static boolean isPusherExtended() {
-//      return isServoAtPosition(servoPinch,pusherExtended, timerPinch);
-//   }
-//   public static boolean isPusherRetracted() {
-//      return isServoAtPosition(servoPinch,pusherRetracted, timerPinch);
-//   }
-//   public boolean isPusherDoneMoving () {
-//      return System.currentTimeMillis() >= timerPinch;
-//   }
+   public static boolean isLiftShoulderDone() {return System.currentTimeMillis() >= timerLiftShoulder;}
+   public static boolean isLiftPinchDone() {return System.currentTimeMillis() >= timerLiftPinch;}
 
    public static boolean isSlideInTolerance(int pos) {return Math.abs(motorSlide.getCurrentPosition() - pos) < toleranceSlide;}
    public static boolean isSlideInTolerance() {return isSlideInTolerance(slideTargetPosition);}
    public static boolean isSlideInsidePit() {return (motorSlide.getCurrentPosition() > positionSlidePitMin);}
+   public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
+   public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
+
+   // special case for state machine
+   public static boolean isLiftShoulderAtTransfer() {return isServoAtPosition(servoLiftShoulder, liftShoulderTransfer, timerLiftShoulder);}
 
    public static boolean isServoAtPosition(Servo servo, double comparePosition, long servoTimer) {
       return isServoAtPosition(servo.getPosition(), comparePosition) && System.currentTimeMillis() >= servoTimer;
@@ -267,11 +293,15 @@ public class T24MultiGrabber implements PartsInterface {
       servoShoulder.setDirection(Servo.Direction.FORWARD);
       servoWrist.setDirection(Servo.Direction.FORWARD);
       servoPinch.setDirection(Servo.Direction.FORWARD);
+      servoLiftShoulder.setDirection(Servo.Direction.FORWARD);
+      servoLiftPinch.setDirection(Servo.Direction.FORWARD);
 
       servoRotator.setPosition(rotatorCenter);
       servoShoulder.setPosition(shoulderBalanced);
       servoWrist.setPosition(wristCenter);
       servoPinch.setPosition(pinchFullOpen);
+      servoLiftPinch.setPosition(liftPinchSafe);
+      servoLiftShoulder.setPosition(liftShoulderTransfer);
    }
 
    public void initMotors () {
@@ -298,16 +328,13 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    public static void stopSlide() { motorSlide.setPower(0); }
-
    public static void stopLift() { motorLift.setPower(0); }
 
-   public static void setSlidePower (double m0) {
-      motorSlide.setPower(m0);
-   }
+   public static void setSlidePower (double m0) { motorSlide.setPower(m0); }
+   public static void setLiftPower (double m1) { motorLift.setPower(m1); }
 
-   public static void stopSlideAndHold() {
-      setSlidePosition(motorSlide.getCurrentPosition(),0.5);
-   }
+   public static void stopSlideAndHold() { setSlidePosition(motorSlide.getCurrentPosition(),0.5); }
+   public static void stopLiftAndHold() { setLiftPosition(motorLift.getCurrentPosition(),0.5); }
 
 //   public void setGrabServo (double goTo) {
 //      grabOpenRequested = -1;
@@ -325,34 +352,52 @@ public class T24MultiGrabber implements PartsInterface {
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    //       Manual User Drive
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   public void setUserDriveSettings(double slideSpeed) {
+   public void manualSlideControl(double slideSpeed) {
       if (slideSpeed == 0 && !isSlideUnderManualControl) return;
-
       if (slideSpeed != 0) {
          int currentPos = motorSlide.getCurrentPosition();
-         //enforce upper limits
-         if (slideSpeed > 0 && currentPos > positionSlideMax) slideSpeed = 0;
-         //enforce lower limits
-         if (slideSpeed < 0 && currentPos < positionSlidePitMin) slideSpeed = 0;   //positionSlideMin
+         if (slideSpeed > 0 && currentPos > positionSlideMax) slideSpeed = 0;           //enforce upper limits
+         if (slideSpeed < 0 && currentPos < positionSlidePitMin) slideSpeed = 0;   //positionSlideMin          //enforce lower limits
 //         if (slideSpeed < 0 && isLimitSwitchPressed()) slideSpeed = 0;
       }
-
       if (slideSpeed == 0) {  // when it drops out of manual control, hold
          isSlideUnderManualControl = false;
-         stopMotors();
+         stopSlide();
          isSlideHoldDeferred = true;
          return;
       }
-
       if (!isSlideUnderManualControl) {
          isSlideUnderManualControl = true;
          cancelStateMachines();
-         stopMotors();
+         stopSlide();
          motorSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
          return;  // we'll set the speed next time... jerky if you do it immediately after changing mode
       }
-
       setSlidePower(slideSpeed);
+   }
+
+   public void manualLiftControl(double liftSpeed) {
+      if (liftSpeed == 0 && !isLiftUnderManualControl) return;
+      if (liftSpeed != 0) {
+         int currentPos = motorLift.getCurrentPosition();
+         if (liftSpeed > 0 && currentPos > positionLiftMax) liftSpeed = 0;           //enforce upper limits
+         if (liftSpeed < 0 && currentPos < positionLiftMin) liftSpeed = 0;   //positionSlideMin          //enforce lower limits
+//         if (liftSpeed < 0 && isLimitSwitchPressed()) liftSpeed = 0;
+      }
+      if (liftSpeed == 0) {  // when it drops out of manual control, hold
+         isLiftUnderManualControl = false;
+         stopLift();
+         isLiftHoldDeferred = true;
+         return;
+      }
+      if (!isLiftUnderManualControl) {
+         isLiftUnderManualControl = true;
+         cancelStateMachines();
+         stopLift();
+         motorLift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+         return;  // we'll set the speed next time... jerky if you do it immediately after changing mode
+      }
+      setLiftPower(liftSpeed);
    }
 
    public void delayedActions() {
@@ -360,25 +405,43 @@ public class T24MultiGrabber implements PartsInterface {
       if (isSlideHoldDeferred) {
          stopSlideAndHold();
          isSlideHoldDeferred = false;
-      };
+      }
+      if (isLiftHoldDeferred) {
+         stopLiftAndHold();
+         isLiftHoldDeferred = false;
+      }
    }
 
    public static void setSlidePosition(int goTo) {
       setSlidePosition(goTo, 1);
    }
-
    public static void setSlidePosition(int goTo, double pwr) {
-//      if (stateMachineType != 0) {    // limits ignored if homing
-         if (goTo < positionSlideMin || goTo > positionSlideMax) {  // something very wrong so bail
-            stopMotors();
-            return;
-         }
-//      }
+      // todo: limits ignored if homing
+      if (goTo < positionSlideMin || goTo > positionSlideMax) {  // something very wrong so bail
+         stopSlide();
+         return;
+      }
       slideTargetPosition = goTo;
-      stopMotors();   // todo: don't do this if wanting to move both at the same time
+      stopSlide();   // todo: don't do this if wanting to move both at the same time
       motorSlide.setTargetPosition(slideTargetPosition);
       motorSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
       setSlidePower(pwr);
+   }
+
+   public static void setLiftPosition(int goTo) {
+      setLiftPosition(goTo, 1);
+   }
+   public static void setLiftPosition(int goTo, double pwr) {
+      // todo: limits ignored if homing
+      if (goTo < positionLiftMin || goTo > positionLiftMax) {  // something very wrong so bail
+         stopLift();
+         return;
+      }
+      liftTargetPosition = goTo;
+      stopLift();   // todo: don't do this if wanting to move both at the same time
+      motorLift.setTargetPosition(liftTargetPosition);
+      motorLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+      setLiftPower(pwr);
    }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -387,19 +450,22 @@ public class T24MultiGrabber implements PartsInterface {
    public static void action(IntakeActions action) {
       switch (action) {
          case AUTO_EXTEND_TO_GRAB:
-            goFish.start();
+            smGoFish.start();
             break;
          case AUTO_RETRACT:
             break;
          case AUTO_GRAB:
             break;
          case AUTO_GRAB_AND_RETRACT:
-            reelItIn.start();
+            smReelIn.start();
             break;
          case AUTO_HOME:
             break;
          case AUTO_MAKE_SPACE:
-            makeSpace.start();
+            smMakeSpace.start();
+            break;
+         case AUTO_TRANSFER:
+            smTransfer.start();
             break;
          case SAFE_IN:   // no checks for interference here; would need a state machine
             setRotatorServo(rotatorCenter);
@@ -438,8 +504,8 @@ public class T24MultiGrabber implements PartsInterface {
             break;
          case SHOULDER_ALLBACK:
             setShoulderServo(shoulderFullBack);
-            setRotatorServo(rotatorCenter);
-            setWristServo(wristCenter);
+            setRotatorServo(rotatorTransfer);
+            setWristServo(wristTransfer);
             break;
          case GRAB_LOOSE:
             setPinchServo(pinchLoose);
@@ -458,6 +524,7 @@ public class T24MultiGrabber implements PartsInterface {
       AUTO_GRAB_AND_RETRACT,
       AUTO_HOME,
       AUTO_MAKE_SPACE,
+      AUTO_TRANSFER,
       SAFE_IN,
       SAFE_OUT,
       GRAB_HOVER,

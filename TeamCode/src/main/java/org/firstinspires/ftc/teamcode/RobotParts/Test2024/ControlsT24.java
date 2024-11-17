@@ -14,6 +14,7 @@ public class ControlsT24 extends Controls {
    float speedFactor = 1;
 
    double slideSpeed = 0;
+   double liftSpeed = 0;
 
    public ControlsT24(Parts parts) {
       super(parts);
@@ -24,7 +25,8 @@ public class ControlsT24 extends Controls {
       driveData = new DriveData();
       userInput();
       parts.userDrive.setUserDriveSettings(driveData);
-      parts.t24MultiGrabber.setUserDriveSettings(slideSpeed*0.5);
+      parts.t24MultiGrabber.manualSlideControl(slideSpeed*0.5);
+      parts.t24MultiGrabber.manualLiftControl(liftSpeed*0.5);
    }
 
    @Override
@@ -70,6 +72,7 @@ public class ControlsT24 extends Controls {
 //      }
 
       slideSpeed = -gamepad2.left_stick_y;
+      liftSpeed = gamepad2.right_trigger - gamepad2.left_trigger;
 
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
          if (buttonMgr.getState(2, Buttons.dpad_left, State.wasTapped)) {
@@ -78,8 +81,11 @@ public class ControlsT24 extends Controls {
          if (buttonMgr.getState(2, Buttons.dpad_right, State.wasTapped)) {
             T24MultiGrabber.action(IntakeActions.AUTO_GRAB_AND_RETRACT);
          }
-         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasSingleTapped)) {
             T24MultiGrabber.action(IntakeActions.AUTO_MAKE_SPACE);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasDoubleTapped)) {
+            T24MultiGrabber.action(IntakeActions.AUTO_TRANSFER);
          }
          if (buttonMgr.getState(2,Buttons.dpad_down, State.wasTapped)) {
             T24MultiGrabber.action(IntakeActions.SHOULDER_ALLBACK);
