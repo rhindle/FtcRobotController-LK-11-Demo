@@ -2,10 +2,12 @@ package org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
+import org.firstinspires.ftc.teamcode.Tools.Functions;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class T24MultiGrabber implements PartsInterface {
@@ -74,9 +76,18 @@ public class T24MultiGrabber implements PartsInterface {
    private static Servo servoRotator;
    private static Servo servoShoulder;
    static Servo servoLiftShoulder;
+   static double shoulderNominalPosition;
    private static Servo servoLiftPinch;
    private static DcMotorEx motorSlide;
    private static DcMotorEx motorLift;
+   public static DigitalChannel slideLimitSwitchNO = null;
+   public static DigitalChannel slideLimitSwitchNC = null;
+   public static DigitalChannel liftLimitSwitchNO = null;
+   public static DigitalChannel liftLimitSwitchNC = null;
+   private static byte slideLimit = -1;
+   private static byte liftLimit = -1;
+   private static boolean slideLimitJustPressed = false;
+   private static boolean liftLimitJustPressed = false;
    private static boolean servoPinchDisabled = false;
    private static boolean servoWristDisabled = false;
    private static boolean servoShoulderDisabled = false;
@@ -125,6 +136,10 @@ public class T24MultiGrabber implements PartsInterface {
       servoLiftPinch = parts.robot.servo4B;
       motorSlide = parts.robot.motor0B;
       motorLift = parts.robot.motor1B;
+      slideLimitSwitchNO = parts.robot.digital1B;
+      slideLimitSwitchNC = parts.robot.digital0B;
+      liftLimitSwitchNO = parts.robot.digital3B;
+      liftLimitSwitchNC = parts.robot.digital2B;
       initServos();
       initMotors();
    }
@@ -139,7 +154,9 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    public void runLoop() {
+      updateLimits();
       delayedActions();
+      fineTuneShoulder();
 
       smGoFish.stateMachine();
       smReelIn.stateMachine();
@@ -192,6 +209,46 @@ public class T24MultiGrabber implements PartsInterface {
 //      isArmed = false;
    }
 
+   public void updateLimits() {
+      byte slideTemp;
+      byte liftTemp;
+      // Figure out current state
+      if (slideLimitSwitchNO.getState() && !slideLimitSwitchNC.getState()) slideTemp=0;
+      else if (slideLimitSwitchNC.getState() && !slideLimitSwitchNO.getState()) slideTemp=1;
+      else slideTemp = -1;
+      if (liftLimitSwitchNO.getState() && !liftLimitSwitchNC.getState()) liftTemp=0;
+      else if (liftLimitSwitchNC.getState() && !liftLimitSwitchNO.getState()) liftTemp=1;
+      else liftTemp = -1;
+      // Figure out if state changed to pressed
+      slideLimitJustPressed = false;
+      liftLimitJustPressed = false;
+      if (slideLimit==0 && slideTemp==1) slideLimitJustPressed=true;
+      if (liftLimit==0 && liftTemp==1) liftLimitJustPressed=true;
+      // update state variables
+      slideLimit = slideTemp;
+      liftLimit = liftTemp;
+      // reset encoders?
+      if (slideLimitJustPressed) motorSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+      if (liftLimitJustPressed) motorLift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+   }
+
+   public void fineTuneShoulder() {
+      //adjusts the shoulder to account for droop over extended distance
+      //measured 0.230 @ 150, 0.253 @ 1500 (difference of 0.023)
+      // ignore if slide retracted
+      if (!isSamplingInProcess()) return;
+      int slideCurrentPosition = motorSlide.getCurrentPosition();
+//      if (slideCurrentPosition < positionSlidePitMin) return;
+//      // ignore if servo isn't lowered to an intake position
+//      if (shoulderNominalPosition >= shoulderSafeIn) return;
+      // now calculate
+      double adjustDiff = 0.023;
+      double currentPosition = servoShoulder.getPosition();
+      double newPosition = shoulderNominalPosition + Functions.interpolate(slideCurrentPosition, positionSlidePitMin, positionSlideMax, 0, adjustDiff);
+      double change = newPosition - currentPosition;
+      // only adjust if there's been enough change.  0.003 corresponds to 7 increments.
+      if (Math.abs(change) > 0.003) servoShoulder.setPosition(newPosition);
+   }
 
    ////// Probably should set up a new class to hold servos, enabled state, timer, etc.
    public static void setWristServo(double newPosition) {
@@ -226,7 +283,9 @@ public class T24MultiGrabber implements PartsInterface {
          servoShoulderDisabled = false;
          parts.robot.enableServo(servoShoulder);
       }
-      if (isServoAtPosition(servoShoulder, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
+      if (shoulderNominalPosition==newPosition) return;
+      //if (isServoAtPosition(servoShoulder, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
+      shoulderNominalPosition = newPosition;  // special case for the shoulder servo only
       timerShoulder = getServoSweepTimerValue(servoShoulder,newPosition,shoulderSweepTime);  // get timer before setting position!
       servoShoulder.setPosition(newPosition);
    }
@@ -266,6 +325,15 @@ public class T24MultiGrabber implements PartsInterface {
    public static boolean isSlideInsidePit() {return (motorSlide.getCurrentPosition() > positionSlidePitMin);}
    public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
    public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
+
+   public static boolean isSamplingInProcess() {
+//      // ignore if slide retracted
+//      if (motorSlide.getCurrentPosition() < positionSlidePitMin) return false;
+//      // ignore if servo isn't lowered to an intake position
+//      if (shoulderNominalPosition >= shoulderSafeIn) return false;
+//      return true;
+      return motorSlide.getCurrentPosition()>=positionSlidePitMin && shoulderNominalPosition<shoulderSafeIn;
+   }
 
    // special case for state machine
    public static boolean isLiftShoulderAtTransfer() {return isServoAtPosition(servoLiftShoulder, liftShoulderTransfer, timerLiftShoulder);}
@@ -358,6 +426,7 @@ public class T24MultiGrabber implements PartsInterface {
          int currentPos = motorSlide.getCurrentPosition();
          if (slideSpeed > 0 && currentPos > positionSlideMax) slideSpeed = 0;           //enforce upper limits
          if (slideSpeed < 0 && currentPos < positionSlidePitMin) slideSpeed = 0;   //positionSlideMin          //enforce lower limits
+         if (slideSpeed < 0 && slideLimit == 1) slideSpeed = 0;
 //         if (slideSpeed < 0 && isLimitSwitchPressed()) slideSpeed = 0;
       }
       if (slideSpeed == 0) {  // when it drops out of manual control, hold
@@ -382,6 +451,7 @@ public class T24MultiGrabber implements PartsInterface {
          int currentPos = motorLift.getCurrentPosition();
          if (liftSpeed > 0 && currentPos > positionLiftMax) liftSpeed = 0;           //enforce upper limits
          if (liftSpeed < 0 && currentPos < positionLiftMin) liftSpeed = 0;   //positionSlideMin          //enforce lower limits
+         if (liftSpeed < 0 && liftLimit == 1) liftSpeed = 0;
 //         if (liftSpeed < 0 && isLimitSwitchPressed()) liftSpeed = 0;
       }
       if (liftSpeed == 0) {  // when it drops out of manual control, hold
@@ -398,6 +468,29 @@ public class T24MultiGrabber implements PartsInterface {
          return;  // we'll set the speed next time... jerky if you do it immediately after changing mode
       }
       setLiftPower(liftSpeed);
+   }
+
+   public void manualRotatorControl(double rotatorSpeed) {
+      if (!isSamplingInProcess()) return;
+      rotatorSpeed *= .008;
+      double newRotatorPosition = servoRotator.getPosition() - rotatorSpeed;
+      double newWristPosition = servoWrist.getPosition() - rotatorSpeed;
+      if (newRotatorPosition<rotator45Right) return;
+      if (newRotatorPosition>rotator45Left) return;
+      servoRotator.setPosition(newRotatorPosition);
+      if (newWristPosition<wrist90Left) return;
+      if (newWristPosition>wrist90Right) return;
+      servoWrist.setPosition(newWristPosition);
+   }
+
+   public void manualWristControl(double wristAngle) {
+      if (!isSamplingInProcess()) return;
+      double rotatorAngle = Functions.interpolate(servoRotator.getPosition(),rotator45Left,rotator45Right,45,-45);
+      double newAngle = wristAngle - rotatorAngle;
+      double newPosition = Functions.interpolate(newAngle, 90, -90, wrist90Left, wrist90Right);
+      if (newPosition<wrist90Left) return;
+      if (newPosition>wrist90Right) return;
+      servoWrist.setPosition(newPosition);
    }
 
    public void delayedActions() {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.RobotParts.Test2024;
 
+import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.Buttons;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
@@ -7,6 +8,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber.IntakeActions;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
+import org.firstinspires.ftc.teamcode.Tools.Functions;
 
 public class ControlsT24 extends Controls {
 
@@ -15,6 +17,9 @@ public class ControlsT24 extends Controls {
 
    double slideSpeed = 0;
    double liftSpeed = 0;
+   double rotatorSpeed = 0;
+   double wristAngle = 0;
+   double wristMagnitude = 0;
 
    public ControlsT24(Parts parts) {
       super(parts);
@@ -27,6 +32,8 @@ public class ControlsT24 extends Controls {
       parts.userDrive.setUserDriveSettings(driveData);
       parts.t24MultiGrabber.manualSlideControl(slideSpeed*0.5);
       parts.t24MultiGrabber.manualLiftControl(liftSpeed*0.5);
+      parts.t24MultiGrabber.manualRotatorControl(rotatorSpeed);
+      if (Math.abs(wristMagnitude)>0.5) parts.t24MultiGrabber.manualWristControl(wristAngle);
    }
 
    @Override
@@ -73,6 +80,9 @@ public class ControlsT24 extends Controls {
 
       slideSpeed = -gamepad2.left_stick_y;
       liftSpeed = gamepad2.right_trigger - gamepad2.left_trigger;
+      rotatorSpeed = gamepad2.left_stick_x;
+      wristAngle = Math.toDegrees(Math.atan2(-gamepad2.right_stick_x, -gamepad2.right_stick_y));
+      wristMagnitude = Functions.mathHypotenuse(gamepad2.right_stick_x, gamepad2.right_stick_y);
 
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
          if (buttonMgr.getState(2, Buttons.dpad_left, State.wasTapped)) {

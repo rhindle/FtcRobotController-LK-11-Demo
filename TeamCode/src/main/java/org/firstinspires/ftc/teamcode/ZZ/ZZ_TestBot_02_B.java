@@ -74,7 +74,8 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
         // Wait for the game to start (Display Gyro value), and reset gyro before we move..
         while (!isStarted()) {
 //            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-//            telemetry.addData(">", "Robot Heading = %.1f", angles.firstAngle);
+            angles = robot.sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            telemetry.addData(">", "Robot Heading = %.1f", angles.firstAngle);
             telemetry.update();
             sleep(100);
         }
@@ -115,6 +116,7 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
 
             /* IMU */
 //            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            angles = robot.sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
             /* Check for button presses to switch test motor & servo */
             // Left bumper switches motors
@@ -281,7 +283,16 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
                             " | 5 : " + (robot.digital5.getState() ? "T" : "F") +
                             " | 6 : " + (robot.digital6.getState() ? "T" : "F") +
                             " | 7 : " + (robot.digital7.getState() ? "T" : "F"));
-//            telemetry.addData("Heading", "%.1f", angles.firstAngle);
+            telemetry.addLine()
+                    .addData("D 0B", (robot.digital0b.getState() ? "T" : "F") +
+                            " | 1B : " + (robot.digital1b.getState() ? "T" : "F") +
+                            " | 2B : " + (robot.digital2b.getState() ? "T" : "F")  +
+                            " | 3B : " + (robot.digital3b.getState() ? "T" : "F")+
+                            " | 4B : " + (robot.digital4b.getState() ? "T" : "F") +
+                            " | 5B : " + (robot.digital5b.getState() ? "T" : "F") +
+                            " | 6B : " + (robot.digital6b.getState() ? "T" : "F") +
+                            " | 7B : " + (robot.digital7b.getState() ? "T" : "F"));
+            telemetry.addData("Heading", "%.1f", angles.firstAngle);
             //telemetry.addData("Counter", counter);
             //telemetry.addData("LoopSpeed","%.1f",calcLoopSpeed());
             telemetry.addData("LoopTime(ms)","%.1f",loopElapsedTime.milliseconds());

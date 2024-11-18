@@ -30,10 +30,12 @@
 package org.firstinspires.ftc.teamcode.ZZ;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -94,13 +96,30 @@ public class ZZ_Hardware_TestBot_B
    public DigitalChannel digital5 = null;
    public DigitalChannel digital6 = null;
    public DigitalChannel digital7 = null;
+   public DigitalChannel digital0b = null;
+   public DigitalChannel digital1b = null;
+   public DigitalChannel digital2b = null;
+   public DigitalChannel digital3b = null;
+   public DigitalChannel digital4b = null;
+   public DigitalChannel digital5b = null;
+   public DigitalChannel digital6b = null;
+   public DigitalChannel digital7b = null;
 
    public AnalogInput analog0 = null;
    public AnalogInput analog1 = null;
    public AnalogInput analog2 = null;
    public AnalogInput analog3 = null;
+   public AnalogInput analog0b = null;
+   public AnalogInput analog1b = null;
+   public AnalogInput analog2b = null;
+   public AnalogInput analog3b = null;
 
-   public BNO055IMU      sensorIMU      = null;
+   //public BNO055IMU      sensorIMU      = null;
+   public IMU sensorIMU        = null;
+   public RevHubOrientationOnRobot hubOrientation = new RevHubOrientationOnRobot(
+           RevHubOrientationOnRobot.LogoFacingDirection.UP,
+           RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+   );
 
 //    public Orientation    angles;
 
@@ -179,6 +198,14 @@ public class ZZ_Hardware_TestBot_B
       digital5 = hwMap.get(DigitalChannel.class, "digital5");
       digital6 = hwMap.get(DigitalChannel.class, "digital6");
       digital7 = hwMap.get(DigitalChannel.class, "digital7");
+      digital0b = hwMap.get(DigitalChannel.class, "digital0B");
+      digital1b = hwMap.get(DigitalChannel.class, "digital1B");
+      digital2b = hwMap.get(DigitalChannel.class, "digital2B");
+      digital3b = hwMap.get(DigitalChannel.class, "digital3B");
+      digital4b = hwMap.get(DigitalChannel.class, "digital4B");
+      digital5b = hwMap.get(DigitalChannel.class, "digital5B");
+      digital6b = hwMap.get(DigitalChannel.class, "digital6B");
+      digital7b = hwMap.get(DigitalChannel.class, "digital7B");
 
       digital0.setMode(DigitalChannel.Mode.INPUT);
       digital1.setMode(DigitalChannel.Mode.INPUT);
@@ -188,19 +215,38 @@ public class ZZ_Hardware_TestBot_B
       digital5.setMode(DigitalChannel.Mode.INPUT);
       digital6.setMode(DigitalChannel.Mode.INPUT);
       digital7.setMode(DigitalChannel.Mode.INPUT);
+      digital0b.setMode(DigitalChannel.Mode.INPUT);
+      digital1b.setMode(DigitalChannel.Mode.INPUT);
+      digital2b.setMode(DigitalChannel.Mode.INPUT);
+      digital3b.setMode(DigitalChannel.Mode.INPUT);
+      digital4b.setMode(DigitalChannel.Mode.INPUT);
+      digital5b.setMode(DigitalChannel.Mode.INPUT);
+      digital6b.setMode(DigitalChannel.Mode.INPUT);
+      digital7b.setMode(DigitalChannel.Mode.INPUT);
 
       analog0 = hwMap.get(AnalogInput.class, "analog0");
       analog1 = hwMap.get(AnalogInput.class, "analog1");
       analog2 = hwMap.get(AnalogInput.class, "analog2");
       analog3 = hwMap.get(AnalogInput.class, "analog3");
+      analog0b = hwMap.get(AnalogInput.class, "analog0B");
+      analog1b = hwMap.get(AnalogInput.class, "analog1B");
+      analog2b = hwMap.get(AnalogInput.class, "analog2B");
+      analog3b = hwMap.get(AnalogInput.class, "analog3B");
 
       // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
       // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
       // and named "sensorIMU".
-      sensorIMU = hwMap.get(BNO055IMU.class, "imu");
-      BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-      parameters.angleUnit            = BNO055IMU.AngleUnit.DEGREES;
-      sensorIMU.initialize(parameters);
+//      sensorIMU = hwMap.get(BNO055IMU.class, "imu");
+//      BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+//      parameters.angleUnit            = BNO055IMU.AngleUnit.DEGREES;
+//      sensorIMU.initialize(parameters);
+      sensorIMU = hwMap.get(IMU.class, "imu");
+      sensorIMU.initialize(
+         new IMU.Parameters(
+            hubOrientation
+         )
+      );
+
 
       //    sensorColor = hwMap.get(ColorSensor.class, "topSensor");
       //    sensorDistance = hwMap.get(DistanceSensor.class, "topSensor");
