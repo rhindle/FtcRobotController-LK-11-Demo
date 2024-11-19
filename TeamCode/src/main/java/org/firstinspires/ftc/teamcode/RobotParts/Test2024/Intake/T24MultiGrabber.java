@@ -101,7 +101,6 @@ public class T24MultiGrabber implements PartsInterface {
    private static long timerRotator = System.currentTimeMillis();
    private static long timerLiftShoulder = System.currentTimeMillis();
    private static long timerLiftPinch = System.currentTimeMillis();
-//   public static int intakeState = 0;
    private static int slideTargetPosition;
    private static int liftTargetPosition;
    static boolean isSlideUnderManualControl = false;
@@ -112,8 +111,6 @@ public class T24MultiGrabber implements PartsInterface {
    static boolean isLiftHoldDeferred = false;
 
    /* Internal use (Needs access by state machines in package) */
-
-
 
 
    /* Public OpMode members. */
@@ -181,21 +178,9 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    public void eStop() {
-      stopMotors();
       cancelStateMachines();
-      parts.robot.disableServo(servoPinch);
-      parts.robot.disableServo(servoWrist);
-      parts.robot.disableServo(servoShoulder);
-      parts.robot.disableServo(servoRotator);
-      parts.robot.disableServo(servoLiftShoulder);
-      parts.robot.disableServo(servoLiftPinch);
-      servoPinchDisabled = true;
-      servoWristDisabled = true;
-      servoShoulderDisabled = true;
-      servoRotatorDisabled = true;
-      servoLiftShoulderDisabled = true;
-      servoLiftPinchDisabled = true;
-//      isArmed = false;
+      stopMotors();
+      disableServos();
    }
 
    public void cancelStateMachines() {
@@ -205,7 +190,6 @@ public class T24MultiGrabber implements PartsInterface {
       smTransfer.mildStop();
       smGrabAndInspect.mildStop();
       smRetract.mildStop();
-//      isArmed = false;
    }
 
    public void stopStateMachines() {
@@ -215,7 +199,6 @@ public class T24MultiGrabber implements PartsInterface {
       smTransfer.stop();
       smGrabAndInspect.stop();
       smRetract.stop();
-//      isArmed = false;
    }
 
    public void updateLimits() {
@@ -241,15 +224,23 @@ public class T24MultiGrabber implements PartsInterface {
       if (liftLimitJustPressed) motorLift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
    }
 
+   public void delayedActions() {
+//      if (grabOpenRequested!=-1) setGrabServo(grabOpenRequested);  // simple handling of delayed servo opening
+      if (isSlideHoldDeferred) {
+         stopSlideAndHold();
+         isSlideHoldDeferred = false;
+      }
+      if (isLiftHoldDeferred) {
+         stopLiftAndHold();
+         isLiftHoldDeferred = false;
+      }
+   }
+
    public void fineTuneShoulder() {
       //adjusts the shoulder to account for droop over extended distance
       //measured 0.230 @ 150, 0.253 @ 1500 (difference of 0.023)
-      // ignore if slide retracted
       if (!isSamplingInProcess()) return;
       int slideCurrentPosition = motorSlide.getCurrentPosition();
-//      if (slideCurrentPosition < positionSlidePitMin) return;
-//      // ignore if servo isn't lowered to an intake position
-//      if (shoulderNominalPosition >= shoulderSafeIn) return;
       // now calculate
       double adjustDiff = 0.023;
       double currentPosition = servoShoulder.getPosition();
@@ -258,6 +249,10 @@ public class T24MultiGrabber implements PartsInterface {
       // only adjust if there's been enough change.  0.003 corresponds to 7 increments.
       if (Math.abs(change) > 0.003) servoShoulder.setPosition(newPosition);
    }
+
+   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   //            Servos
+   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    ////// Probably should set up a new class to hold servos, enabled state, timer, etc.
    public static void setWristServo(double newPosition) {
@@ -318,45 +313,6 @@ public class T24MultiGrabber implements PartsInterface {
       servoLiftPinch.setPosition(newPosition);
    }
 
-   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   //       Status Responders
-   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-   public static boolean isWristDone() {return System.currentTimeMillis() >= timerWrist;}
-   public static boolean isPinchDone() {return System.currentTimeMillis() >= timerPinch;}
-   public static boolean isShoulderDone() {return System.currentTimeMillis() >= timerShoulder;}
-   public static boolean isRotatorDone() {return System.currentTimeMillis() >= timerRotator;}
-   public static boolean isLiftShoulderDone() {return System.currentTimeMillis() >= timerLiftShoulder;}
-   public static boolean isLiftPinchDone() {return System.currentTimeMillis() >= timerLiftPinch;}
-
-   public static boolean isSlideInTolerance(int pos) {return Math.abs(motorSlide.getCurrentPosition() - pos) < toleranceSlide;}
-   public static boolean isSlideInTolerance() {return isSlideInTolerance(slideTargetPosition);}
-   public static boolean isSlideInsidePit() {return (motorSlide.getCurrentPosition() > positionSlidePitMin);}
-   public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
-   public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
-
-   public static boolean isSamplingInProcess() {
-//      // ignore if slide retracted
-//      if (motorSlide.getCurrentPosition() < positionSlidePitMin) return false;
-//      // ignore if servo isn't lowered to an intake position
-//      if (shoulderNominalPosition >= shoulderSafeIn) return false;
-//      return true;
-      return motorSlide.getCurrentPosition()>=positionSlidePitMin && shoulderNominalPosition<shoulderSafeIn;
-   }
-
-   // special case for state machine
-   public static boolean isLiftShoulderAtTransfer() {return isServoAtPosition(servoLiftShoulder, liftShoulderTransfer, timerLiftShoulder);}
-
-   public static boolean isServoAtPosition(Servo servo, double comparePosition, long servoTimer) {
-      return isServoAtPosition(servo.getPosition(), comparePosition) && System.currentTimeMillis() >= servoTimer;
-   }
-   public static boolean isServoAtPosition(Servo servo, double comparePosition) {
-      return isServoAtPosition(servo.getPosition(), comparePosition);
-   }
-   public static boolean isServoAtPosition(double servoPosition, double comparePosition) {
-      return(Math.round(servoPosition*100.0) == Math.round(comparePosition*100.0));
-   }
-
    public static double getServoSweepChange(Servo servo, double newPosition) {
       return Math.abs(servo.getPosition()-newPosition);
    }
@@ -364,6 +320,75 @@ public class T24MultiGrabber implements PartsInterface {
    public static long getServoSweepTimerValue(Servo servo, double newPosition, int sweepTime) {
       return System.currentTimeMillis() + (long)(getServoSweepChange(servo, newPosition) * (long)sweepTime);
    }
+
+   public static void disableServos() {
+      parts.robot.disableServo(servoPinch);
+      parts.robot.disableServo(servoWrist);
+      parts.robot.disableServo(servoShoulder);
+      parts.robot.disableServo(servoRotator);
+      parts.robot.disableServo(servoLiftShoulder);
+      parts.robot.disableServo(servoLiftPinch);
+      servoPinchDisabled = true;
+      servoWristDisabled = true;
+      servoShoulderDisabled = true;
+      servoRotatorDisabled = true;
+      servoLiftShoulderDisabled = true;
+      servoLiftPinchDisabled = true;
+   }
+
+   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   //            Motors
+   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   public static void stopMotors() {
+      stopSlide();
+      stopLift();
+   }
+
+   public static void stopSlide() { motorSlide.setPower(0); }
+   public static void stopLift() { motorLift.setPower(0); }
+
+   public static void setSlidePower (double m0) { motorSlide.setPower(m0); }
+   public static void setLiftPower (double m1) { motorLift.setPower(m1); }
+
+   public static void stopSlideAndHold() { setSlidePosition(motorSlide.getCurrentPosition(),0.5); }
+   public static void stopLiftAndHold() { setLiftPosition(motorLift.getCurrentPosition(),0.5); }
+
+   public static void setSlidePosition(int goTo) {
+      setSlidePosition(goTo, 1);
+   }
+   public static void setSlidePosition(int goTo, double pwr) {
+      // todo: limits ignored if homing
+      if (goTo < positionSlideMin || goTo > positionSlideMax) {  // something very wrong so bail
+         stopSlide();
+         return;
+      }
+      slideTargetPosition = goTo;
+      stopSlide();   // todo: don't do this if wanting to move both at the same time
+      motorSlide.setTargetPosition(slideTargetPosition);
+      motorSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+      setSlidePower(pwr);
+   }
+
+   public static void setLiftPosition(int goTo) {
+      setLiftPosition(goTo, 1);
+   }
+   public static void setLiftPosition(int goTo, double pwr) {
+      // todo: limits ignored if homing
+      if (goTo < positionLiftMin || goTo > positionLiftMax) {  // something very wrong so bail
+         stopLift();
+         return;
+      }
+      liftTargetPosition = goTo;
+      stopLift();   // todo: don't do this if wanting to move both at the same time
+      motorLift.setTargetPosition(liftTargetPosition);
+      motorLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+      setLiftPower(pwr);
+   }
+
+   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   //   Init Motors & Servos
+   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    public void initServos () {
       servoRotator.setDirection(Servo.Direction.FORWARD);
@@ -396,39 +421,43 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   //  Actuators: Motors and Servos
+   //       Status Responders
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   public static void stopMotors() {
-      stopSlide();
-      stopLift();
+   public static boolean isWristDone() {return System.currentTimeMillis() >= timerWrist;}
+   public static boolean isPinchDone() {return System.currentTimeMillis() >= timerPinch;}
+   public static boolean isShoulderDone() {return System.currentTimeMillis() >= timerShoulder;}
+   public static boolean isRotatorDone() {return System.currentTimeMillis() >= timerRotator;}
+   public static boolean isLiftShoulderDone() {return System.currentTimeMillis() >= timerLiftShoulder;}
+   public static boolean isLiftPinchDone() {return System.currentTimeMillis() >= timerLiftPinch;}
+
+   public static boolean isSlideInTolerance(int pos) {return Math.abs(motorSlide.getCurrentPosition() - pos) < toleranceSlide;}
+   public static boolean isSlideInTolerance() {return isSlideInTolerance(slideTargetPosition);}
+   public static boolean isSlideInsidePit() {return (motorSlide.getCurrentPosition() > positionSlidePitMin);}
+   public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
+   public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
+
+   public static boolean isSamplingInProcess() {
+      return motorSlide.getCurrentPosition()>=positionSlidePitMin && shoulderNominalPosition<shoulderSafeIn;
    }
 
-   public static void stopSlide() { motorSlide.setPower(0); }
-   public static void stopLift() { motorLift.setPower(0); }
+   // special case for state machine
+   public static boolean isLiftShoulderAtTransfer() {return isServoAtPosition(servoLiftShoulder, liftShoulderTransfer, timerLiftShoulder);}
 
-   public static void setSlidePower (double m0) { motorSlide.setPower(m0); }
-   public static void setLiftPower (double m1) { motorLift.setPower(m1); }
-
-   public static void stopSlideAndHold() { setSlidePosition(motorSlide.getCurrentPosition(),0.5); }
-   public static void stopLiftAndHold() { setLiftPosition(motorLift.getCurrentPosition(),0.5); }
-
-//   public void setGrabServo (double goTo) {
-//      grabOpenRequested = -1;
-//      if (!isServoAtPosition(servoGrab, goTo)) {
-//         if (goTo == grabberServoClosePos) {   // Closing should always be safe
-//            servoGrab.setPosition(goTo);
-//         } else if (isGrabberSafeToOpen()) {   // Opening is safe if enough time has passed
-//            servoGrab.setPosition(goTo);
-//         } else {
-//            grabOpenRequested = goTo;         // for delayed opening
-//         }
-//      }
-//   }
+   public static boolean isServoAtPosition(Servo servo, double comparePosition, long servoTimer) {
+      return isServoAtPosition(servo.getPosition(), comparePosition) && System.currentTimeMillis() >= servoTimer;
+   }
+   public static boolean isServoAtPosition(Servo servo, double comparePosition) {
+      return isServoAtPosition(servo.getPosition(), comparePosition);
+   }
+   public static boolean isServoAtPosition(double servoPosition, double comparePosition) {
+      return(Math.round(servoPosition*100.0) == Math.round(comparePosition*100.0));
+   }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   //       Manual User Drive
+   //     Manual User Controls
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
    public void manualSlideControl(double slideSpeed) {
       if (slideSpeed == 0 && !isSlideUnderManualControl) return;
       if (slideSpeed != 0) {
@@ -436,7 +465,6 @@ public class T24MultiGrabber implements PartsInterface {
          if (slideSpeed > 0 && currentPos > positionSlideMax) slideSpeed = 0;           //enforce upper limits
          if (slideSpeed < 0 && currentPos < positionSlidePitMin && !slideOverride) slideSpeed = 0;   //positionSlideMin          //enforce lower limits
          if (slideSpeed < 0 && slideLimit == 1) slideSpeed = 0;
-//         if (slideSpeed < 0 && isLimitSwitchPressed()) slideSpeed = 0;
       }
       if (slideSpeed == 0) {  // when it drops out of manual control, hold
          isSlideUnderManualControl = false;
@@ -461,7 +489,6 @@ public class T24MultiGrabber implements PartsInterface {
          if (liftSpeed > 0 && currentPos > positionLiftMax) liftSpeed = 0;           //enforce upper limits
          if (liftSpeed < 0 && currentPos < positionLiftMin && !slideOverride) liftSpeed = 0;   //positionSlideMin          //enforce lower limits
          if (liftSpeed < 0 && liftLimit == 1) liftSpeed = 0;
-//         if (liftSpeed < 0 && isLimitSwitchPressed()) liftSpeed = 0;
       }
       if (liftSpeed == 0) {  // when it drops out of manual control, hold
          isLiftUnderManualControl = false;
@@ -502,53 +529,34 @@ public class T24MultiGrabber implements PartsInterface {
       servoWrist.setPosition(newPosition);
    }
 
-   public void delayedActions() {
-//      if (grabOpenRequested!=-1) setGrabServo(grabOpenRequested);  // simple handling of delayed servo opening
-      if (isSlideHoldDeferred) {
-         stopSlideAndHold();
-         isSlideHoldDeferred = false;
-      }
-      if (isLiftHoldDeferred) {
-         stopLiftAndHold();
-         isLiftHoldDeferred = false;
-      }
-   }
-
-   public static void setSlidePosition(int goTo) {
-      setSlidePosition(goTo, 1);
-   }
-   public static void setSlidePosition(int goTo, double pwr) {
-      // todo: limits ignored if homing
-      if (goTo < positionSlideMin || goTo > positionSlideMax) {  // something very wrong so bail
-         stopSlide();
-         return;
-      }
-      slideTargetPosition = goTo;
-      stopSlide();   // todo: don't do this if wanting to move both at the same time
-      motorSlide.setTargetPosition(slideTargetPosition);
-      motorSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-      setSlidePower(pwr);
-   }
-
-   public static void setLiftPosition(int goTo) {
-      setLiftPosition(goTo, 1);
-   }
-   public static void setLiftPosition(int goTo, double pwr) {
-      // todo: limits ignored if homing
-      if (goTo < positionLiftMin || goTo > positionLiftMax) {  // something very wrong so bail
-         stopLift();
-         return;
-      }
-      liftTargetPosition = goTo;
-      stopLift();   // todo: don't do this if wanting to move both at the same time
-      motorLift.setTargetPosition(liftTargetPosition);
-      motorLift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-      setLiftPower(pwr);
-   }
-
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    //            Actions
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   public enum IntakeActions {
+      AUTO_EXTEND_TO_GRAB,
+      AUTO_RETRACT,
+      AUTO_GRAB,
+      AUTO_GRAB_AND_RETRACT,
+      AUTO_HOME,
+      AUTO_MAKE_SPACE,
+      AUTO_TRANSFER,
+      AUTO_GRAB_AND_INSPECT,
+      SAFE_IN,
+      SAFE_OUT,
+      GRAB_HOVER,
+      GRAB_OPEN,
+      GRAB_WIDEOPEN,
+      GRAB_CLOSE,
+      GRAB_LOOSE,
+      SHOULDER_CAPTURE,
+      SHOULDER_DRAG,
+      SHOULDER_ALLBACK,
+      SHOULDER_PUSH,
+      DROP_SAMPLE,
+      CANCEL
+   }
+
    public static void action(IntakeActions action) {
       switch (action) {
          case AUTO_EXTEND_TO_GRAB:
@@ -624,29 +632,5 @@ public class T24MultiGrabber implements PartsInterface {
          default:
             break;
       }
-   }
-
-   public enum IntakeActions {
-      AUTO_EXTEND_TO_GRAB,
-      AUTO_RETRACT,
-      AUTO_GRAB,
-      AUTO_GRAB_AND_RETRACT,
-      AUTO_HOME,
-      AUTO_MAKE_SPACE,
-      AUTO_TRANSFER,
-      AUTO_GRAB_AND_INSPECT,
-      SAFE_IN,
-      SAFE_OUT,
-      GRAB_HOVER,
-      GRAB_OPEN,
-      GRAB_WIDEOPEN,
-      GRAB_CLOSE,
-      GRAB_LOOSE,
-      SHOULDER_CAPTURE,
-      SHOULDER_DRAG,
-      SHOULDER_ALLBACK,
-      SHOULDER_PUSH,
-      DROP_SAMPLE,
-      CANCEL
    }
 }
