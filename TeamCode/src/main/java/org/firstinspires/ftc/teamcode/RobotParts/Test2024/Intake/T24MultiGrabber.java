@@ -58,17 +58,18 @@ public class T24MultiGrabber implements PartsInterface {
    static final double liftPinchWide            = 0.810;
    static final int liftPinchSweepTime          = 1500;
 
-   static final int positionSlideMin            = 0;
+   static final int positionSlideMin            = 10;
    static final int positionSlideMax            = 1500;
    static final int positionSlideStartIntake    = 650;   //todo: finalize number
    static final int positionSlidePitMin         = 160;    //todo: finalize number
    static final int toleranceSlide              = 20;
 
-   static final int positionLiftMin             = 0;
+   static final int positionLiftMin             = 10;
    static final int positionLiftMax             = 4000; //4350;   //todo:reverse direction
    static final int positionLiftTransfer        = 125;
    static final int toleranceLift               = 20;
 
+   public static boolean slideOverride          = false;
 
    /* Internal use */
    private static Servo servoPinch;
@@ -159,16 +160,20 @@ public class T24MultiGrabber implements PartsInterface {
       fineTuneShoulder();
 
       smGoFish.stateMachine();
-      smReelIn.stateMachine();
+      smGrabAndRetract.stateMachine();
       smMakeSpace.stateMachine();
       smTransfer.stateMachine();
+      smGrabAndInspect.stateMachine();
+      smRetract.stateMachine();
 
       TelemetryMgr.message(TelemetryMgr.Category.T24MULTIGRAB,
               "States: " +
                       "GF: " + String.format("%02d", smGoFish.getState()) +
-                      ", RI: " + String.format("%02d", smReelIn.getState()) +
+                      ", RI: " + String.format("%02d", smGrabAndRetract.getState()) +
                       ", MS: " + String.format("%02d", smMakeSpace.getState()) +
                       ", TR: " + String.format("%02d", smTransfer.getState()) +
+                      ", GI: " + String.format("%02d", smGrabAndInspect.getState()) +
+                      ", RE: " + String.format("%02d", smRetract.getState()) +
                       "");
    }
 
@@ -195,17 +200,21 @@ public class T24MultiGrabber implements PartsInterface {
 
    public void cancelStateMachines() {
       smGoFish.mildStop();
-      smReelIn.mildStop();
+      smGrabAndRetract.mildStop();
       smMakeSpace.mildStop();
       smTransfer.mildStop();
+      smGrabAndInspect.mildStop();
+      smRetract.mildStop();
 //      isArmed = false;
    }
 
    public void stopStateMachines() {
       smGoFish.stop();
-      smReelIn.stop();
+      smGrabAndRetract.stop();
       smMakeSpace.stop();
       smTransfer.stop();
+      smGrabAndInspect.stop();
+      smRetract.stop();
 //      isArmed = false;
    }
 
@@ -222,8 +231,8 @@ public class T24MultiGrabber implements PartsInterface {
       // Figure out if state changed to pressed
       slideLimitJustPressed = false;
       liftLimitJustPressed = false;
-      if (slideLimit==0 && slideTemp==1) slideLimitJustPressed=true;
-      if (liftLimit==0 && liftTemp==1) liftLimitJustPressed=true;
+      if (slideLimit!=1 && slideTemp==1) slideLimitJustPressed=true;
+      if (liftLimit!=1 && liftTemp==1) liftLimitJustPressed=true;
       // update state variables
       slideLimit = slideTemp;
       liftLimit = liftTemp;
@@ -369,7 +378,7 @@ public class T24MultiGrabber implements PartsInterface {
       servoWrist.setPosition(wristCenter);
       servoPinch.setPosition(pinchFullOpen);
       servoLiftPinch.setPosition(liftPinchSafe);
-      servoLiftShoulder.setPosition(liftShoulderTransfer);
+      servoLiftShoulder.setPosition(liftShoulderSafe);
    }
 
    public void initMotors () {
@@ -425,7 +434,7 @@ public class T24MultiGrabber implements PartsInterface {
       if (slideSpeed != 0) {
          int currentPos = motorSlide.getCurrentPosition();
          if (slideSpeed > 0 && currentPos > positionSlideMax) slideSpeed = 0;           //enforce upper limits
-         if (slideSpeed < 0 && currentPos < positionSlidePitMin) slideSpeed = 0;   //positionSlideMin          //enforce lower limits
+         if (slideSpeed < 0 && currentPos < positionSlidePitMin && !slideOverride) slideSpeed = 0;   //positionSlideMin          //enforce lower limits
          if (slideSpeed < 0 && slideLimit == 1) slideSpeed = 0;
 //         if (slideSpeed < 0 && isLimitSwitchPressed()) slideSpeed = 0;
       }
@@ -450,7 +459,7 @@ public class T24MultiGrabber implements PartsInterface {
       if (liftSpeed != 0) {
          int currentPos = motorLift.getCurrentPosition();
          if (liftSpeed > 0 && currentPos > positionLiftMax) liftSpeed = 0;           //enforce upper limits
-         if (liftSpeed < 0 && currentPos < positionLiftMin) liftSpeed = 0;   //positionSlideMin          //enforce lower limits
+         if (liftSpeed < 0 && currentPos < positionLiftMin && !slideOverride) liftSpeed = 0;   //positionSlideMin          //enforce lower limits
          if (liftSpeed < 0 && liftLimit == 1) liftSpeed = 0;
 //         if (liftSpeed < 0 && isLimitSwitchPressed()) liftSpeed = 0;
       }
@@ -546,11 +555,15 @@ public class T24MultiGrabber implements PartsInterface {
             smGoFish.start();
             break;
          case AUTO_RETRACT:
+            smRetract.start();
             break;
          case AUTO_GRAB:
             break;
          case AUTO_GRAB_AND_RETRACT:
-            smReelIn.start();
+            smGrabAndRetract.start();
+            break;
+         case AUTO_GRAB_AND_INSPECT:
+            smGrabAndInspect.start();
             break;
          case AUTO_HOME:
             break;
@@ -603,6 +616,9 @@ public class T24MultiGrabber implements PartsInterface {
          case GRAB_LOOSE:
             setPinchServo(pinchLoose);
             break;
+         case DROP_SAMPLE:
+            setLiftPinchServo(liftPinchSafe);
+            break;
          case CANCEL:
             break;
          default:
@@ -618,6 +634,7 @@ public class T24MultiGrabber implements PartsInterface {
       AUTO_HOME,
       AUTO_MAKE_SPACE,
       AUTO_TRANSFER,
+      AUTO_GRAB_AND_INSPECT,
       SAFE_IN,
       SAFE_OUT,
       GRAB_HOVER,
@@ -629,6 +646,7 @@ public class T24MultiGrabber implements PartsInterface {
       SHOULDER_DRAG,
       SHOULDER_ALLBACK,
       SHOULDER_PUSH,
+      DROP_SAMPLE,
       CANCEL
    }
 }

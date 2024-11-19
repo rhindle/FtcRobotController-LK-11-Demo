@@ -85,21 +85,24 @@ public class ControlsT24 extends Controls {
       wristMagnitude = Functions.mathHypotenuse(gamepad2.right_stick_x, gamepad2.right_stick_y);
 
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
-         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasTapped)) {
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
             T24MultiGrabber.action(IntakeActions.AUTO_EXTEND_TO_GRAB);
          }
          if (buttonMgr.getState(2, Buttons.dpad_right, State.wasTapped)) {
-            T24MultiGrabber.action(IntakeActions.AUTO_GRAB_AND_RETRACT);
+            T24MultiGrabber.action(IntakeActions.AUTO_GRAB_AND_INSPECT);
          }
-         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasSingleTapped)) {
-            T24MultiGrabber.action(IntakeActions.AUTO_MAKE_SPACE);
+         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.AUTO_RETRACT);
          }
-         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasDoubleTapped)) {
+//         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasSingleTapped)) {
+//            T24MultiGrabber.action(IntakeActions.AUTO_MAKE_SPACE);
+//         }
+         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasDoubleTapped)) {
             T24MultiGrabber.action(IntakeActions.AUTO_TRANSFER);
          }
-         if (buttonMgr.getState(2,Buttons.dpad_down, State.wasTapped)) {
-            T24MultiGrabber.action(IntakeActions.SHOULDER_ALLBACK);
-         }
+//         if (buttonMgr.getState(2,Buttons.dpad_down, State.wasTapped)) {
+//            T24MultiGrabber.action(IntakeActions.SHOULDER_ALLBACK);
+//         }
       } else {
          if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
             T24MultiGrabber.action(IntakeActions.SAFE_IN);
@@ -107,20 +110,24 @@ public class ControlsT24 extends Controls {
          if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
             T24MultiGrabber.action(IntakeActions.SAFE_OUT);
          }
-         if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
-            T24MultiGrabber.action(IntakeActions.GRAB_HOVER);
-         }
-         if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
-            T24MultiGrabber.action(IntakeActions.GRAB_OPEN);
-         }
-         if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
-            T24MultiGrabber.action(IntakeActions.GRAB_CLOSE);
-         }
-         if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
-            T24MultiGrabber.action(IntakeActions.SHOULDER_PUSH);
+         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasTapped)) {
+            T24MultiGrabber.action(IntakeActions.DROP_SAMPLE);
          }
       }
-
+      if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.GRAB_HOVER);
+      }
+      if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.GRAB_OPEN);
+      }
+      if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.GRAB_CLOSE);
+      }
+      if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
+         T24MultiGrabber.action(IntakeActions.SHOULDER_PUSH);
+      }
+      if (buttonMgr.getState(2, Buttons.start, State.isPressed)) T24MultiGrabber.slideOverride = true;
+      else T24MultiGrabber.slideOverride = false;
 
       // Toggle pivot
       if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {

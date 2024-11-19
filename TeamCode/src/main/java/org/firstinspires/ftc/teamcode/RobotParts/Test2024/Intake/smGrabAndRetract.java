@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber.IntakeActions;
 
-public class smReelIn {
+public class smGrabAndRetract {
 
     private static int state = 0;
     private static boolean complete = false;
@@ -29,7 +29,7 @@ public class smReelIn {
                 T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlidePitMin,1);
             }
         }
-        if (state == 4) {                 // if shoulder is in safe position, retract he rest of the way
+        if (state == 4) {                 // if shoulder is in safe position, retract the rest of the way
             if (T24MultiGrabber.isShoulderDone()) {
                 state++;
                 T24MultiGrabber.setSlidePosition(T24MultiGrabber.positionSlideMin,1);
