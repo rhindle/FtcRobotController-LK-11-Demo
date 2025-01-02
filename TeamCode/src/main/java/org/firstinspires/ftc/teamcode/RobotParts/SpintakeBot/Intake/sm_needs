@@ -1,0 +1,77 @@
+Everything safe / parked
+
+    Open Pincher to Max
+    Shoulder to Park
+    Lift to 0
+    Spintake to Park
+    Spinner off
+    Slide to 0
+
+Get specimen
+
+    Open Pincher to Max
+    Lift to specimen height
+    ...
+    Close Pincher
+
+Hang specimen
+
+    Pincher must be closed
+    Lift to pipe height
+    ...
+    (pincher powered off???)
+    Lift to specimen release height
+    Pincher open (short timer before driving?)
+
+Start Fishing
+
+    Spintake to safe horizontal position
+    Slide out to minimum fishing distance
+    Spintake to floor
+    (spintake powered off???)
+    ? Spinner running
+
+Retract from submersible
+
+    Spintake to safe horizontal position (wait)
+    Spintake to park
+    Slide to zero
+
+Intake sample (no automation)
+
+    Start Spinner
+    Start reading distance sensor
+    If distance sensor < 2...
+    Start reading color sensor instead
+    If color legal...
+        reverse spinner for ___ ms
+        stop spinner
+        RETRACT
+        (?TRANSFER)
+    If color not legal...
+        reverse spinner for ___ ms
+        (? START OVER? MOVE FIRST?)
+
+Transfer sample
+
+    SAFE, which is:
+        Open Pincher to Max
+        Shoulder to Park
+        Lift to 0
+        Spintake to Park
+        Spinner off
+        Slide to 0
+    Spinner Reverse for ___ ms
+    Spinner off
+
+Deposit sample
+
+    Spinner must be off
+        (if not, stop and wait ___ ms)
+    Banana to near level
+    Lift to high position
+    wait for user confirmation? ... then
+        Banana to high position for ___ ms
+    SAFE
+
+
