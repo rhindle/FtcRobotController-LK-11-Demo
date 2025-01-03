@@ -143,6 +143,7 @@ public class TelemetryMgr {
         SPEED("SPD"),
         DISCSHOOTER("DSS"),
         T24MULTIGRAB("GRB"),
+        SB_INTAKE("SBI"),
         NAVIGATOR("NAV");   //navigator is deprecated
 
         public final String label;

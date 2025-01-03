@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -16,35 +17,48 @@ public class SB_Intake implements PartsInterface {
    static final double spinnerIn                = 1;
    static final double spinnerOff               = 0.5;
    static final double spinnerOut               = 0;
-   static final double spinnerSlowOut           = 0.3;  //todo: number
+   static final double spinnerSlowOut           = 0.4;  //todo: finalize number
    static final int spinnerSweepTime            = 100;  //probably not relevant
 
-   static final double spintakeFloor            = 0;   //todo: number
-   static final double spintakeSafe             = 0.2; //todo: number
-   static final double spintakeParked           = 1;   //todo: number
+   static final double spintakeFloor            = 0.859;
+   static final double spintakeAlmostFloor      = 0.844;
+   static final double spintakeSafe             = 0.698;
+   static final double spintakeVertical         = 0.527;
+   static final double spintakeBalanced         = 0.468;
+   static final double spintakeParked           = 0.275;
    static final int spintakeSweepTime           = 1500;   // spec is 1250
 
-   static final double chuteParked              = 0;    //todo: number
-   static final double chuteReady               = 0.5; //todo: number
-   static final double chuteDeposit             = 1; //todo: number
+   static final double chuteParked              = 0.689;
+   static final double chuteReady               = 0.535;
+   static final double chuteDeposit             = 0.327;
    static final int chuteSweepTime              = 1500;   // spec is 1250
 
-   static final double pinchFullOpen            = 0; //todo: number
-   static final double pinchReady               = 0.5; //todo: number
-   static final double pinchClosed              = 1; //todo: number
-   static final double getPinchLoose            = 0.9;  //todo: number
+   static final double pinchFullOpen            = 0.364;
+   static final double pinchReady               = 0.407;
+   static final double pinchClosed              = 0.589;
+   static final double pinchLoose               = 0.563;
+   static final double pinchSuperLoose          = 0.545;
    static final int pinchSweepTime              = 1500;   // spec is 1250
 
    static final int positionSlideMin            = 10;
    static final int positionSlideMax            = 1500;
-   static final int positionSlideStartIntake    = 650;   //todo: finalize number
-   static final int positionSlidePitMin         = 160;    //todo: finalize number
+   static final int positionSlideStartIntake    = 450;   //todo: finalize number
+   static final int positionSlidePitMin         = 250;    //todo: finalize number
    static final int toleranceSlide              = 20;
 
    static final int positionLiftMin             = 10;
-   static final int positionLiftMax             = 4000; //4350;
-   static final int positionLiftTransfer        = 125;
+   static final int positionLiftMax             = 4200; //4350;
+   static final int positionLiftGetSpecimen     = 10;     //todo: finalize number
+   static final int positionLiftHangReady       = 2500;   //todo: get number
+   static final int positionLiftHangRelease     = 2000;   //todo: get number
+   static final int positionLiftTransfer        = 10;
    static final int toleranceLift               = 20;
+
+   static final int positionHangMin             = 20;
+   static final int positionHangMax             = 9600; //4350;
+   static final int positionHangReady           = 3000; //todo: get number
+   static final int positionHangFinal           = 1000; //todo: get number
+   static final int toleranceHang               = 20;
 
    public static boolean slideOverride          = false;
 
@@ -55,14 +69,13 @@ public class SB_Intake implements PartsInterface {
    private static Servo servoPinch;
    private static DcMotorEx motorSlide;
    private static DcMotorEx motorLift;
+   private static DcMotorEx motorHang;
    public static DigitalChannel slideLimitSwitchNO = null;
    public static DigitalChannel slideLimitSwitchNC = null;
    public static DigitalChannel liftLimitSwitchNO = null;
    public static DigitalChannel liftLimitSwitchNC = null;
    private static byte slideLimit = -1;
    private static byte liftLimit = -1;
-   private static boolean slideLimitJustPressed = false;
-   private static boolean liftLimitJustPressed = false;
    private static boolean servoSpinnerDisabled = false;
    private static boolean servoSpintakeDisabled = false;
    private static boolean servoChuteDisabled = false;
@@ -73,6 +86,7 @@ public class SB_Intake implements PartsInterface {
    private static long timerPinch = System.currentTimeMillis();
    private static int slideTargetPosition;
    private static int liftTargetPosition;
+   private static int hangTargetPosition;
    static boolean isSlideUnderManualControl = false;
    static boolean isLiftUnderManualControl = false;
    static boolean isSlideHomed = false;
@@ -102,6 +116,7 @@ public class SB_Intake implements PartsInterface {
       servoPinch = parts.robot.servo1;
       motorSlide = parts.robot.motor0B;
       motorLift = parts.robot.motor1B;
+      motorHang = parts.robot.motor2B;
       slideLimitSwitchNO = parts.robot.digital1;
       slideLimitSwitchNC = parts.robot.digital0;
       liftLimitSwitchNO = parts.robot.digital3;
@@ -130,7 +145,7 @@ public class SB_Intake implements PartsInterface {
       smGrabAndInspect.stateMachine();
       smRetract.stateMachine();
 
-      TelemetryMgr.message(TelemetryMgr.Category.T24MULTIGRAB,
+      TelemetryMgr.message(TelemetryMgr.Category.SB_INTAKE,
               "States: " +
                       "GF: " + String.format("%02d", smStartSampling.getState()) +
                       ", RI: " + String.format("%02d", smGrabAndRetract.getState()) +
@@ -179,8 +194,8 @@ public class SB_Intake implements PartsInterface {
       else if (liftLimitSwitchNC.getState() && !liftLimitSwitchNO.getState()) liftTemp=1;
       else liftTemp = -1;
       // Figure out if state changed to pressed
-      slideLimitJustPressed = false;
-      liftLimitJustPressed = false;
+      boolean slideLimitJustPressed = false;
+      boolean liftLimitJustPressed = false;
       if (slideLimit!=1 && slideTemp==1) slideLimitJustPressed=true;
       if (liftLimit!=1 && liftTemp==1) liftLimitJustPressed=true;
       // update state variables
@@ -333,14 +348,19 @@ public class SB_Intake implements PartsInterface {
       stopMotors();
       motorSlide.setDirection(DcMotorEx.Direction.FORWARD);
       motorLift.setDirection(DcMotorEx.Direction.REVERSE);
+      motorHang.setDirection(DcMotorEx.Direction.FORWARD);
       motorSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
       motorLift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+      motorHang.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
       slideTargetPosition = 0;
       liftTargetPosition = 0;
+      hangTargetPosition = 0;
       motorSlide.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
       motorLift.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorHang.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
       motorSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
       motorLift.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+      motorHang.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
    }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
