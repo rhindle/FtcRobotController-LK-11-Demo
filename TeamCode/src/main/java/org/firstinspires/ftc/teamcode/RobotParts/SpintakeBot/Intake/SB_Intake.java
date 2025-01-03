@@ -4,10 +4,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.smGoFish;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class SB_Intake implements PartsInterface {
@@ -74,6 +76,7 @@ public class SB_Intake implements PartsInterface {
    public static DigitalChannel slideLimitSwitchNC = null;
    public static DigitalChannel liftLimitSwitchNO = null;
    public static DigitalChannel liftLimitSwitchNC = null;
+   public static NormalizedColorSensor sensorColor = null;
    private static byte slideLimit = -1;
    private static byte liftLimit = -1;
    private static boolean servoSpinnerDisabled = false;
@@ -121,6 +124,7 @@ public class SB_Intake implements PartsInterface {
       slideLimitSwitchNC = parts.robot.digital0;
       liftLimitSwitchNO = parts.robot.digital3;
       liftLimitSwitchNC = parts.robot.digital2;
+      sensorColor = parts.opMode.hardwareMap.get(NormalizedColorSensor.class, "color");
       initServos();
       initMotors();
    }
@@ -138,6 +142,8 @@ public class SB_Intake implements PartsInterface {
       updateLimits();
       delayedActions();
 
+      smSafePark.stateMachine();
+
       smStartSampling.stateMachine();
       smGrabAndRetract.stateMachine();
       smMakeSpace.stateMachine();
@@ -147,7 +153,8 @@ public class SB_Intake implements PartsInterface {
 
       TelemetryMgr.message(TelemetryMgr.Category.SB_INTAKE,
               "States: " +
-                      "GF: " + String.format("%02d", smStartSampling.getState()) +
+                      "PK: " + String.format("%02d", smSafePark.getState()) +
+                      ", GF: " + String.format("%02d", smStartSampling.getState()) +
                       ", RI: " + String.format("%02d", smGrabAndRetract.getState()) +
                       ", MS: " + String.format("%02d", smMakeSpace.getState()) +
                       ", TR: " + String.format("%02d", smTransfer.getState()) +
@@ -159,13 +166,15 @@ public class SB_Intake implements PartsInterface {
    public void stop() {
    }
 
-   public void eStop() {
+   public static void eStop() {
       cancelStateMachines();
       stopMotors();
       disableServos();
    }
 
-   public void cancelStateMachines() {
+   public static void cancelStateMachines() {
+      smSafePark.mildStop();
+
       smStartSampling.mildStop();
       smGrabAndRetract.mildStop();
       smMakeSpace.mildStop();
@@ -174,7 +183,9 @@ public class SB_Intake implements PartsInterface {
       smRetract.mildStop();
    }
 
-   public void stopStateMachines() {
+   public static void stopStateMachines() {
+      smSafePark.stop();
+
       smStartSampling.stop();
       smGrabAndRetract.stop();
       smMakeSpace.stop();
@@ -183,7 +194,7 @@ public class SB_Intake implements PartsInterface {
       smRetract.stop();
    }
 
-   public void updateLimits() {
+   public static void updateLimits() {
       byte slideTemp;
       byte liftTemp;
       // Figure out current state
@@ -206,7 +217,7 @@ public class SB_Intake implements PartsInterface {
       if (liftLimitJustPressed) motorLift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
    }
 
-   public void delayedActions() {
+   public static void delayedActions() {
 //      if (grabOpenRequested!=-1) setGrabServo(grabOpenRequested);  // simple handling of delayed servo opening
       if (isSlideHoldDeferred) {
          stopSlideAndHold();
@@ -332,7 +343,7 @@ public class SB_Intake implements PartsInterface {
    //   Init Motors & Servos
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   public void initServos () {
+   public static void initServos () {
       servoSpinner.setDirection(Servo.Direction.FORWARD);
       servoSpintake.setDirection(Servo.Direction.FORWARD);
       servoChute.setDirection(Servo.Direction.FORWARD);
@@ -344,7 +355,7 @@ public class SB_Intake implements PartsInterface {
       servoPinch.setPosition(pinchFullOpen);
    }
 
-   public void initMotors () {
+   public static void initMotors () {
       stopMotors();
       motorSlide.setDirection(DcMotorEx.Direction.FORWARD);
       motorLift.setDirection(DcMotorEx.Direction.REVERSE);
@@ -401,7 +412,7 @@ public class SB_Intake implements PartsInterface {
    //     Manual User Controls
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   public void manualSlideControl(double slideSpeed) {
+   public static void manualSlideControl(double slideSpeed) {
       if (slideSpeed == 0 && !isSlideUnderManualControl) return;
       if (slideSpeed != 0) {
          int currentPos = motorSlide.getCurrentPosition();
@@ -425,7 +436,7 @@ public class SB_Intake implements PartsInterface {
       setSlidePower(slideSpeed);
    }
 
-   public void manualLiftControl(double liftSpeed) {
+   public static void manualLiftControl(double liftSpeed) {
       if (liftSpeed == 0 && !isLiftUnderManualControl) return;
       if (liftSpeed != 0) {
          int currentPos = motorLift.getCurrentPosition();
@@ -454,6 +465,8 @@ public class SB_Intake implements PartsInterface {
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    public enum IntakeActions {
+      AUTO_SAFE_PARK,
+
       AUTO_EXTEND_TO_GRAB,
       AUTO_RETRACT,
 //      AUTO_GRAB,
@@ -474,6 +487,33 @@ public class SB_Intake implements PartsInterface {
 //      SHOULDER_ALLBACK,
       SHOULDER_PUSH,
       DROP_SAMPLE,
+
+      SPINTAKE_PARK,
+      SPINTAKE_FLOOR,
+      SPINTAKE_ALMOSTFLOOR,
+      SPINTAKE_SAFE,
+      SPINTAKE_VERTICAL,
+      SPINTAKE_BALANCED,
+      CHUTE_PARK,
+      CHUTE_READY,
+      CHUTE_DROP,
+      PINCH_WIDEOPEN,
+      PINCH_READY,
+      PINCH_TIGHT,
+      PINCH_LOOSE,
+      PINCH_VERYLOOSE,
+      SPINNER_IN,
+      SPINNER_OUT,
+      SPINNER_SLOWOUT,
+      SPINNER_OFF,
+      SPINTAKE_DISABLE,
+      SPINNER_DISABLE,
+      CHUTE_DISABLE,
+      PINCH_DISABLE,
+      SLIDE_ZERO,
+      SLIDE_RETRACT,
+      LIFT_ZERO,
+      LIFT_RETRACT,
       CANCEL
    }
 
@@ -507,6 +547,94 @@ public class SB_Intake implements PartsInterface {
 //            setPinchServo(pinchFullOpen);     // might want to return a sample, though?
 //            setWristServo(wristCenter);
 //            break;
+
+         case AUTO_SAFE_PARK:
+            smSafePark.start();
+            break;
+
+         case SPINTAKE_PARK:
+            setSpintakeServo(spintakeParked);
+            break;
+         case SPINTAKE_FLOOR:
+            setSpintakeServo(spintakeFloor);
+            break;
+         case SPINTAKE_ALMOSTFLOOR:
+            setSpintakeServo(spintakeAlmostFloor);
+            break;
+         case SPINTAKE_SAFE:
+            setSpintakeServo(spintakeSafe);
+            break;
+         case SPINTAKE_BALANCED:
+            setSpintakeServo(spintakeBalanced);
+            break;
+         case SPINTAKE_VERTICAL:
+            setSpintakeServo(spintakeVertical);
+            break;
+         case CHUTE_PARK:
+            setChuteServo(chuteParked);
+            break;
+         case CHUTE_READY:
+            setChuteServo(chuteReady);
+            break;
+         case CHUTE_DROP:
+            setChuteServo(chuteDeposit);
+            break;
+         case PINCH_WIDEOPEN:
+            setPinchServo(pinchFullOpen);
+            break;
+         case PINCH_READY:
+            setPinchServo(pinchReady);
+            break;
+         case PINCH_TIGHT:
+            setPinchServo(pinchClosed);
+            break;
+         case PINCH_LOOSE:
+            setPinchServo(pinchLoose);
+            break;
+         case PINCH_VERYLOOSE:
+            setPinchServo(pinchSuperLoose);
+            break;
+         case SPINNER_IN:
+            setSpinnerServo(spinnerIn);
+            break;
+         case SPINNER_OUT:
+            setSpinnerServo(spinnerOut);
+            break;
+         case SPINNER_SLOWOUT:
+            setSpinnerServo(spinnerSlowOut);
+            break;
+         case SPINNER_OFF:
+            setSpinnerServo(spinnerOff);
+            break;
+         case SPINTAKE_DISABLE:
+            parts.robot.disableServo(servoSpintake);
+            servoSpintakeDisabled = true;
+            break;
+         case SPINNER_DISABLE:
+            parts.robot.disableServo(servoSpinner);
+            servoSpinnerDisabled = true;
+            break;
+         case CHUTE_DISABLE:
+            parts.robot.disableServo(servoChute);
+            servoChuteDisabled = true;
+            break;
+         case PINCH_DISABLE:
+            parts.robot.disableServo(servoPinch);
+            servoPinchDisabled = true;
+            break;
+         case SLIDE_ZERO:
+            setSlidePosition(-5000,.25);
+            break;
+         case SLIDE_RETRACT:
+            setSlidePosition(positionSlideMin,1);
+            break;
+         case LIFT_ZERO:
+            setLiftPosition(-5000,.25);
+            break;
+         case LIFT_RETRACT:
+            setLiftPosition(positionLiftMin,1);
+            break;
+
 //         case SAFE_OUT:
 //            setRotatorServo(rotatorCenter);
 //            setShoulderServo(shoulderSafeOut);

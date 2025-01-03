@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot;
 import android.annotation.SuppressLint;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.AutoDrive;
@@ -78,7 +80,11 @@ public class PartsSB extends Parts {
     public void preInit() {
         robot.initialize();
         if (useIMU) imuMgr.initialize();
-        if (usePinpoint) pinpoint.initialize();
+        if (usePinpoint) {
+            pinpoint.initialize();
+            opMode.sleep(500);
+            pinpoint.preInit();
+        }
         positionMgr.initialize();
         if (useSlamra) slamra.initialize();
         sb_Intake.initialize();

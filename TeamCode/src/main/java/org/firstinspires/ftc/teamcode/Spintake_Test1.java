@@ -32,7 +32,8 @@ public class Spintake_Test1 extends LinearOpMode {
         parts.useDrivetrainEncoders = true;
         parts.reverseDrive = false;
         parts.useDistanceSensors = false;
-        parts.fieldStartPosition = new Position(36,-63,-90);  // red side, to the right, facing forward
+        parts.fieldStartPosition = new Position(36,-63,90);  // red side, to the right, facing forward
+            // reminder: Y goes away from red.
 //        parts.odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
 //        parts.slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
 //        parts.pinpointRobotOffset = new Position (-56.0,52.0,0);  // In mm, Refer to User Guide, Y offset of X, X offset of Y, R will be ignored

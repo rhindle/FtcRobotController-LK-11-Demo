@@ -44,6 +44,7 @@ public class Pinpoint implements PartsInterface {
    }
 
    public void preInit() {
+      setPosition(pinpointFieldStart);
    }
 
    public void initLoop() {
@@ -51,6 +52,7 @@ public class Pinpoint implements PartsInterface {
    }
 
    public void preRun() {
+      setPosition(pinpointFieldStart);
    }
 
    public void runLoop() {
@@ -58,6 +60,10 @@ public class Pinpoint implements PartsInterface {
    }
 
    public void stop() {
+   }
+
+   public void setPosition(Position pos) {
+      pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, pos.X, pos.Y, AngleUnit.DEGREES, pos.R));
    }
 
    public void update() {
@@ -100,7 +106,7 @@ public class Pinpoint implements PartsInterface {
    /* this method is separated with the intent to be overridden */
    public void pinpointSettings() {
       deviceName = "pinpoint";
-      xDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
+      xDirection = GoBildaPinpointDriver.EncoderDirection.REVERSED;
       yDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
       resolution = 13.26291192f;
       // private static final float goBILDA_SWINGARM_POD = 13.26291192f; //ticks-per-mm for the goBILDA Swingarm Pod

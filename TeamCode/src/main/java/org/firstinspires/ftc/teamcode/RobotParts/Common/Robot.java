@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -46,7 +47,7 @@ public class Robot implements PartsInterface {
     public Servo    servo5B   = null;
 
     // todo: May want to divvy up robot-unique variables like done in Parts class?
-    public ColorSensor sensorColor    = null;
+    public NormalizedColorSensor sensorColor    = null;
     public DistanceSensor sensor2MLeft = null;
     public DistanceSensor sensor2MMiddle = null;
     public DistanceSensor sensor2MRight = null;
@@ -95,7 +96,7 @@ public class Robot implements PartsInterface {
     private ElapsedTime period  = new ElapsedTime();
 
     LinearOpMode opMode;
-    HardwareMap hardwareMap;
+    public HardwareMap hardwareMap;
 
     /* Constructor */
     public Robot(Parts parts){

@@ -64,9 +64,9 @@ public class ControlsSB extends Controls {
 //      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
 //         parts.t24Grabber.grabberStartGrab();
 //      }
-//      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
-//         parts.t24Grabber.grabberGrab();
-//      }
+      if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
+         SB_Intake.action(IntakeActions.AUTO_SAFE_PARK);
+      }
 //      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
 //         parts.t24Grabber.grabberVertical();
 //      }
