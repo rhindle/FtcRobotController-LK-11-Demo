@@ -43,6 +43,7 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
         // Send telemetry message to alert driver that we are calibrating;
         telemetry.addData(">", "Calibrating Gyro");    //
         telemetry.update();
+        robot.sensorIMU.resetYaw();
 
         // make sure the gyro is calibrated before continuing
 //        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {

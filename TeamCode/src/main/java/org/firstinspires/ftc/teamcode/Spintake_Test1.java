@@ -24,6 +24,7 @@ public class Spintake_Test1 extends LinearOpMode {
         parts = new PartsSB(this);
 
         parts.useODO = false;
+        parts.usePinpoint = true;
         parts.useIMU = false;
         parts.useSlamra = false;
         parts.useNeoMatrix = false;
@@ -31,8 +32,10 @@ public class Spintake_Test1 extends LinearOpMode {
         parts.useDrivetrainEncoders = true;
         parts.reverseDrive = false;
         parts.useDistanceSensors = false;
-        parts.odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
-        parts.slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
+        parts.fieldStartPosition = new Position(36,-63,-90);  // red side, to the right, facing forward
+//        parts.odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
+//        parts.slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
+//        parts.pinpointRobotOffset = new Position (-56.0,52.0,0);  // In mm, Refer to User Guide, Y offset of X, X offset of Y, R will be ignored
         parts.speedMaximum = 1;
 //        DSAprilTag.USE_WEBCAM = true;
 

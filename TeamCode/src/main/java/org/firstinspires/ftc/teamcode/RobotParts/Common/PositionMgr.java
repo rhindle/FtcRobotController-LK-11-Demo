@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.RobotParts.Common;
 
+import com.qualcomm.robotcore.hardware.IMU;
+
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
@@ -12,14 +14,16 @@ public class PositionMgr implements PartsInterface {
    public Position odoPosition;
    public Position slamraPosition;
    public Position tagPosition;
+   public Position pinpointPosition;
    public Position imuHeading;
    public Position headingOnly;
    public Position imusHeadingOnly;
    public Position slamraHeading;
+   public Position pinpointHeading;
 
-   public PosSource[] priorityList = {PosSource.ODO, PosSource.SLAMRA, PosSource.TAG};
-   public PosSource[] headingOnlyPriority = {PosSource.IMU, PosSource.SLAMRA_R, PosSource.ODO, PosSource.TAG};
-   public PosSource[] imusOnlyPriority = {PosSource.IMU, PosSource.SLAMRA_R};
+   public PosSource[] priorityList = {PosSource.PINPOINT, PosSource.ODO, PosSource.SLAMRA, PosSource.TAG};
+   public PosSource[] headingOnlyPriority = {PosSource.PINPOINT_R, PosSource.IMU, PosSource.SLAMRA_R, PosSource.ODO, PosSource.TAG};
+   public PosSource[] imusOnlyPriority = {PosSource.PINPOINT_R, PosSource.IMU, PosSource.SLAMRA_R};
    public Boolean prioritizeSlamraRforODO = false;      // use Slamra R instead of IMU for ODO
    public Boolean prioritizeIMUforSLAMRA = false;       // use IMU instead of Slarma R for SLAMRA
    public PosSource posSource;
@@ -54,6 +58,9 @@ public class PositionMgr implements PartsInterface {
       if (parts.useODO) {
          odoPosition = parts.odometry.isOdoPositionGood() ? parts.odometry.odoRobotPosition : null;
       }
+      if (parts.usePinpoint) {
+         pinpointPosition = parts.pinpoint.pinpointRobotPosition;   // could be null
+      }
       if (parts.useSlamra) {
          slamraPosition = parts.slamra.isSlamraPositionGood() ? parts.slamra.slamraRobotPosition : null;
          slamraHeading = parts.slamra.slamraRobotPosition;
@@ -69,6 +76,7 @@ public class PositionMgr implements PartsInterface {
       robotPosition = normalUpdate();
 
       TelemetryMgr.message(Category.POSITION, "odo__", (odoPosition==null) ? "(null)" : odoPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION, "pinpt", (pinpointPosition==null) ? "(null)" : pinpointPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "slmra", (slamraPosition==null) ? "(null)" : slamraPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "tag__", (tagPosition==null) ? "(null)" : tagPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "imu__", (imuHeading==null) ? "(null)" : imuHeading.toString(2));
@@ -101,6 +109,8 @@ public class PositionMgr implements PartsInterface {
                return odoPosition.withR(slamraPosition.R);
             }
             return odoPosition;
+         case PINPOINT:
+            return pinpointPosition;
          case SLAMRA:
             //todo: finish/check this
             if (prioritizeIMUforSLAMRA && imuHeading!=null) {
@@ -120,6 +130,9 @@ public class PositionMgr implements PartsInterface {
       switch (posSource) {
          case IMU:
             return new Position().withR(imuHeading.R);
+         case PINPOINT:
+         case PINPOINT_R:
+            return new Position().withR(pinpointPosition.R);
          case ODO:
             return new Position().withR(odoPosition.R);
          case SLAMRA:
@@ -138,6 +151,9 @@ public class PositionMgr implements PartsInterface {
          switch (source) {
             case ODO:
                if (odoPosition!=null) return PosSource.ODO;
+               break;
+            case PINPOINT:
+               if (pinpointPosition!=null) return PosSource.PINPOINT;
                break;
             case SLAMRA:
                if (slamraPosition!=null) return PosSource.SLAMRA;
@@ -159,6 +175,8 @@ public class PositionMgr implements PartsInterface {
 
    public enum PosSource {
       NONE,
+      PINPOINT,
+      PINPOINT_R,   // todo: needed?
       ODO,
       SLAMRA,
       TAG,

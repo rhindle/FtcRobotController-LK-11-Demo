@@ -144,6 +144,8 @@ public class TelemetryMgr {
         DISCSHOOTER("DSS"),
         T24MULTIGRAB("GRB"),
         SB_INTAKE("SBI"),
+        PINPOINT ("PPT"),
+        PINPOINT_EXT ("PPX"),
         NAVIGATOR("NAV");   //navigator is deprecated
 
         public final String label;

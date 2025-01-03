@@ -11,10 +11,12 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ImuMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.NeoMatrix;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Odometry;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Pinpoint;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.PositionMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Slamra;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
+import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
 import org.firstinspires.ftc.teamcode.Tools.i2c.AdafruitNeoDriver;
 
@@ -30,8 +32,11 @@ public class PartsSB extends Parts {
             //throw new RuntimeException("Parts can only be setup once");
             return;
         }
-//        odoRobotOffset = new Position (2.25,0,0);          // map odo to robot (so it holds turn position better)
         isSetup = true;
+        pinpointRobotOffset = new Position(-56.0,52.0,0);  // In mm, Refer to User Guide, Y offset of X, X offset of Y, R will be ignored
+        odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
+        slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
+
         robot = new RobotSB(this);
         buttonMgr = new ButtonMgr(opMode);
         controls = new ControlsSB(this);
@@ -49,6 +54,11 @@ public class PartsSB extends Parts {
             odometry = new Odometry(this);
             odometry.odoFieldStart = fieldStartPosition;
             odometry.odoRobotOffset = odoRobotOffset;
+        }
+        if (usePinpoint) {
+            pinpoint = new PinpointSB(this);
+            pinpoint.pinpointFieldStart = fieldStartPosition;
+            pinpoint.pinpointRobotOffset = pinpointRobotOffset;  // Rotation will be ignored
         }
         if (useSlamra) {
             slamra = new Slamra(this);
@@ -68,6 +78,7 @@ public class PartsSB extends Parts {
     public void preInit() {
         robot.initialize();
         if (useIMU) imuMgr.initialize();
+        if (usePinpoint) pinpoint.initialize();
         positionMgr.initialize();
         if (useSlamra) slamra.initialize();
         sb_Intake.initialize();
@@ -77,6 +88,7 @@ public class PartsSB extends Parts {
     public void initLoop() {
         buttonMgr.initLoop();
         if (useIMU) imuMgr.initLoop();
+        if (usePinpoint) pinpoint.initLoop();
         if (useSlamra) slamra.initLoop();
         positionMgr.initLoop();
         TelemetryMgr.Update();
@@ -86,6 +98,7 @@ public class PartsSB extends Parts {
     public void preRun() {
         drivetrain.initialize();
         if (useIMU) imuMgr.preRun();
+        if (usePinpoint) pinpoint.preRun();
         if (useODO) odometry.initialize();
         userDrive.initialize();
 //        autoDrive.initialize();
@@ -101,6 +114,7 @@ public class PartsSB extends Parts {
         robot.runLoop();
         buttonMgr.runLoop();
         if (useIMU) imuMgr.runLoop();
+        if (usePinpoint) pinpoint.runLoop();
         if (useSlamra) slamra.runLoop();
         if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
         positionMgr.runLoop();
@@ -123,6 +137,7 @@ public class PartsSB extends Parts {
         robot.runLoop();
         buttonMgr.runLoop();
         if (useIMU) imuMgr.runLoop();
+        if (usePinpoint) pinpoint.runLoop();
         if (useSlamra) slamra.runLoop();
         if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
         positionMgr.runLoop();

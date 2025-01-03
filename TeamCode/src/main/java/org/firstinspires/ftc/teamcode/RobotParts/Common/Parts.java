@@ -27,6 +27,7 @@ public class Parts implements PartsInterface {
    public Drivetrain drivetrain;
    public ImuMgr imuMgr;
    public Odometry odometry;
+   public Pinpoint pinpoint;
    public Slamra slamra;
    public PositionMgr positionMgr;
    public AutoDrive autoDrive;
@@ -36,6 +37,7 @@ public class Parts implements PartsInterface {
    public NeoMatrix neo;
 
    public boolean useODO = false;
+   public boolean usePinpoint = false;
    public boolean reverseDrive = false;
    public boolean useDistanceSensors = true;
    public boolean useDrivetrainEncoders = true;
@@ -47,6 +49,7 @@ public class Parts implements PartsInterface {
    public Position robotPosition = new Position();
    public Position fieldStartPosition;
    public Position odoRobotOffset;
+   public Position pinpointRobotOffset;
    public Position slamraRobotOffset;
    public boolean isSetup = false;
    public double speedMaximum = 1;

@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.i2c.DFR304Range;
-import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStick_;
+import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
 
 import java.util.List;
 
@@ -51,7 +51,7 @@ public class Robot implements PartsInterface {
     public DistanceSensor sensor2MMiddle = null;
     public DistanceSensor sensor2MRight = null;
     public DFR304Range ultraSensor = null;
-    public QwiicLEDStick_ qled = null;
+    public QwiicLEDStickLK qled = null;
 
     public DigitalChannel   digital0 = null;
     public DigitalChannel   digital1 = null;

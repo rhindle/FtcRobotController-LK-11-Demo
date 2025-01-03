@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.LegacyBots.Robot;
 //import com.qualcomm.robotcore.util.Range;
 //import java.util.Locale;
 
-@TeleOp (name="ZZ_TestBot_02(J)", group="Test")
+@TeleOp (name="ZZ_TestBot_02(J)1hub", group="Test")
 //@Disabled
 public class ZZ_TestBot_02_V2 extends LinearOpMode {
 

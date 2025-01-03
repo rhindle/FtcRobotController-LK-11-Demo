@@ -18,8 +18,8 @@ import java.lang.reflect.Field;
 import androidx.annotation.ColorInt;
 
 @I2cDeviceType()
-@DeviceProperties(name = "QWIIC LED Stick_", description = "Sparkfun QWIIC LED Stick_", xmlTag = "QWIIC_LED_STICK_")
-public class QwiicLEDStick_ extends I2cDeviceSynchDevice<I2cDeviceSynchSimple> implements OpModeManagerNotifier.Notifications {
+@DeviceProperties(name = "QWIIC LED Stick LK", description = "Sparkfun QWIIC LED Stick LK", xmlTag = "QWIIC_LED_STICK_LK")
+public class QwiicLEDStickLK extends I2cDeviceSynchDevice<I2cDeviceSynchSimple> implements OpModeManagerNotifier.Notifications {
 
     private enum Commands {
         CHANGE_LED_LENGTH(0x70),
@@ -256,7 +256,7 @@ public class QwiicLEDStick_ extends I2cDeviceSynchDevice<I2cDeviceSynchSimple> i
 
     private static final String TAG = "QwiicLED";
 
-    public QwiicLEDStick_(I2cDeviceSynchSimple deviceClient) {
+    public QwiicLEDStickLK(I2cDeviceSynchSimple deviceClient) {
         super(deviceClient, true);
 
         this.deviceClient.setI2cAddress(ADDRESS_I2C_DEFAULT);
