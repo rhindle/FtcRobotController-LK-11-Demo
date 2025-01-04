@@ -57,6 +57,8 @@ public class Spintake_Test1 extends LinearOpMode {
             parts.initLoop();
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
                 teamBlue = !teamBlue;
+            if (parts.buttonMgr.getState(2, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
+                teamBlue = !teamBlue;
             sleep(20);
         }
 

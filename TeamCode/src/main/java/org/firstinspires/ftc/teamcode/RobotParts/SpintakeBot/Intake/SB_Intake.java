@@ -17,7 +17,7 @@ public class SB_Intake implements PartsInterface {
    static final double spinnerIn                = 1;
    static final double spinnerOff               = 0.5;
    static final double spinnerOut               = 0;
-   static final double spinnerSlowOut           = 0.4;  //todo: finalize number
+   static final double spinnerSlowOut           = 0.35;  //todo: finalize number
    static final int spinnerSweepTime            = 100;  //probably not relevant
 
    static final double spintakeFloor            = 0.859;
@@ -593,6 +593,7 @@ public class SB_Intake implements PartsInterface {
          case SPINNER_OFF:
             setSpinnerServo(spinnerOff);
             break;
+
          case SPINTAKE_DISABLE:
             parts.robot.disableServo(servoSpintake);
             servoSpintakeDisabled = true;

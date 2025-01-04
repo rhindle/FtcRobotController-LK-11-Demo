@@ -94,8 +94,8 @@ public class smAutoIntake {
         Color.colorToHSV(colors.toColor(), hsvValues);
         int hue = (int) hsvValues[0];
         int type = -1;
-        if (hue < 60) type = 1;                //red
-        if (hue >= 60 && hue <= 160) type = 2; //yellow
+        if (hue < 60) type = 1;                //red     // red sometimes triggers as 60. Better to wait for a better read?
+        if (hue >= 65 && hue <= 160) type = 2; //yellow
         if (hue > 160) type = 3;               //blue
         if (hue == 0) type = 0;
 //        if (type==1 && SB_Intake.isRedLegal) return true;

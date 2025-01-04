@@ -10,6 +10,9 @@ public class Functions {
     public static double mathHypotenuse(float arg0, float arg1) {
         return Math.sqrt(Math.pow(arg0, 2) + Math.pow(arg1, 2));
     }
+    public static double mathHypotenuse(double arg0, double arg1) {
+        return Math.sqrt(Math.pow(arg0, 2) + Math.pow(arg1, 2));
+    }
 
     public static double normalizeAngle(double A) {
         // normalize angle A to -179 to +180 range
