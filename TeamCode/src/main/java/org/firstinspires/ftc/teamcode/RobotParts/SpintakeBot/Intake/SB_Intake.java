@@ -2,14 +2,12 @@ package org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.smGoFish;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class SB_Intake implements PartsInterface {
@@ -97,6 +95,10 @@ public class SB_Intake implements PartsInterface {
    static boolean isSlideHoldDeferred = false;
    static boolean isLiftHoldDeferred = false;
 
+   public static boolean isBlueLegal = false;
+   public static boolean isRedLegal = true;
+   public static boolean isYellowLegal = true;
+
    /* Internal use (Needs access by state machines in package) */
 
 
@@ -143,23 +145,20 @@ public class SB_Intake implements PartsInterface {
       delayedActions();
 
       smSafePark.stateMachine();
-
-      smStartSampling.stateMachine();
-      smGrabAndRetract.stateMachine();
-      smMakeSpace.stateMachine();
+      smDeposit.stateMachine();
+      smPrepareDeposit.stateMachine();
       smTransfer.stateMachine();
-      smGrabAndInspect.stateMachine();
-      smRetract.stateMachine();
+      smStartFishing.stateMachine();
+      smAutoIntake.stateMachine();
 
       TelemetryMgr.message(TelemetryMgr.Category.SB_INTAKE,
               "States: " +
                       "PK: " + String.format("%02d", smSafePark.getState()) +
-                      ", GF: " + String.format("%02d", smStartSampling.getState()) +
-                      ", RI: " + String.format("%02d", smGrabAndRetract.getState()) +
-                      ", MS: " + String.format("%02d", smMakeSpace.getState()) +
+                      ", GF: " + String.format("%02d", smStartFishing.getState()) +
+                      ", AI: " + String.format("%02d", smAutoIntake.getState()) +
                       ", TR: " + String.format("%02d", smTransfer.getState()) +
-                      ", GI: " + String.format("%02d", smGrabAndInspect.getState()) +
-                      ", RE: " + String.format("%02d", smRetract.getState()) +
+                      ", PD: " + String.format("%02d", smPrepareDeposit.getState()) +
+                      ", DE: " + String.format("%02d", smDeposit.getState()) +
                       "");
    }
 
@@ -174,24 +173,20 @@ public class SB_Intake implements PartsInterface {
 
    public static void cancelStateMachines() {
       smSafePark.mildStop();
-
-      smStartSampling.mildStop();
-      smGrabAndRetract.mildStop();
-      smMakeSpace.mildStop();
+      smDeposit.mildStop();
+      smPrepareDeposit.mildStop();
       smTransfer.mildStop();
-      smGrabAndInspect.mildStop();
-      smRetract.mildStop();
+      smStartFishing.mildStop();
+      smAutoIntake.mildStop();
    }
 
    public static void stopStateMachines() {
       smSafePark.stop();
-
-      smStartSampling.stop();
-      smGrabAndRetract.stop();
-      smMakeSpace.stop();
+      smDeposit.stop();
+      smPrepareDeposit.stop();
       smTransfer.stop();
-      smGrabAndInspect.stop();
-      smRetract.stop();
+      smStartFishing.stop();
+      smAutoIntake.stop();
    }
 
    public static void updateLimits() {
@@ -466,27 +461,31 @@ public class SB_Intake implements PartsInterface {
 
    public enum IntakeActions {
       AUTO_SAFE_PARK,
-
-      AUTO_EXTEND_TO_GRAB,
-      AUTO_RETRACT,
-//      AUTO_GRAB,
-//      AUTO_GRAB_AND_RETRACT,
-//      AUTO_HOME,
-//      AUTO_MAKE_SPACE,
+      AUTO_START_SAMPLING,
       AUTO_TRANSFER,
-      AUTO_GRAB_AND_INSPECT,
-      SAFE_IN,
-      SAFE_OUT,
-      GRAB_HOVER,
-      GRAB_OPEN,
-      GRAB_WIDEOPEN,
-      GRAB_CLOSE,
-//      GRAB_LOOSE,
-      SHOULDER_CAPTURE,
-      SHOULDER_DRAG,
-//      SHOULDER_ALLBACK,
-      SHOULDER_PUSH,
-      DROP_SAMPLE,
+      AUTO_INTAKE,
+      AUTO_PREP_DEPOSIT,
+      AUTO_DEPOSIT,
+
+//      AUTO_RETRACT,
+////      AUTO_GRAB,
+////      AUTO_GRAB_AND_RETRACT,
+////      AUTO_HOME,
+////      AUTO_MAKE_SPACE,
+//
+//      AUTO_GRAB_AND_INSPECT,
+//      SAFE_IN,
+//      SAFE_OUT,
+//      GRAB_HOVER,
+//      GRAB_OPEN,
+//      GRAB_WIDEOPEN,
+//      GRAB_CLOSE,
+////      GRAB_LOOSE,
+//      SHOULDER_CAPTURE,
+//      SHOULDER_DRAG,
+////      SHOULDER_ALLBACK,
+//      SHOULDER_PUSH,
+//      DROP_SAMPLE,
 
       SPINTAKE_PARK,
       SPINTAKE_FLOOR,
@@ -519,37 +518,23 @@ public class SB_Intake implements PartsInterface {
 
    public static void action(IntakeActions action) {
       switch (action) {
-//         case AUTO_EXTEND_TO_GRAB:
-//            smGoFish.start();
-//            break;
-//         case AUTO_RETRACT:
-//            smRetract.start();
-//            break;
-//         case AUTO_GRAB:
-//            break;
-//         case AUTO_GRAB_AND_RETRACT:
-//            smGrabAndRetract.start();
-//            break;
-//         case AUTO_GRAB_AND_INSPECT:
-//            smGrabAndInspect.start();
-//            break;
-//         case AUTO_HOME:
-//            break;
-//         case AUTO_MAKE_SPACE:
-//            smMakeSpace.start();
-//            break;
-//         case AUTO_TRANSFER:
-//            smTransfer.start();
-//            break;
-//         case SAFE_IN:   // no checks for interference here; would need a state machine
-//            setRotatorServo(rotatorCenter);
-//            setShoulderServo(shoulderSafeIn);
-//            setPinchServo(pinchFullOpen);     // might want to return a sample, though?
-//            setWristServo(wristCenter);
-//            break;
-
+         case AUTO_START_SAMPLING:
+            smStartFishing.start();
+            break;
+         case AUTO_INTAKE:
+            smAutoIntake.start();
+            break;
+         case AUTO_TRANSFER:
+            smTransfer.start();
+            break;
          case AUTO_SAFE_PARK:
             smSafePark.start();
+            break;
+         case AUTO_PREP_DEPOSIT:
+            smPrepareDeposit.start();
+            break;
+         case AUTO_DEPOSIT:
+            smDeposit.start();
             break;
 
          case SPINTAKE_PARK:
@@ -635,48 +620,6 @@ public class SB_Intake implements PartsInterface {
             setLiftPosition(positionLiftMin,1);
             break;
 
-//         case SAFE_OUT:
-//            setRotatorServo(rotatorCenter);
-//            setShoulderServo(shoulderSafeOut);
-//            setWristServo(wristCenter);
-//            break;
-//         case GRAB_HOVER:
-//            setShoulderServo(shoulderHover);
-//            setPinchServo(pinchClearsSamples);
-//            break;
-//         case GRAB_OPEN:
-//            setPinchServo(pinchSlightOpen);
-//            break;
-//         case GRAB_WIDEOPEN:
-//            setPinchServo(pinchFullOpen);
-//            break;
-//         case GRAB_CLOSE:
-//            setShoulderServo(shoulderCapture);  //maybe?
-//            setPinchServo(pinchClosed);
-//            break;
-//         case SHOULDER_CAPTURE:
-//            setShoulderServo(shoulderCapture);
-//            break;
-//         case SHOULDER_DRAG:
-//            setShoulderServo(shoulderDrag);
-//            break;
-//         case SHOULDER_PUSH:
-//            setShoulderServo(shoulderPush);
-//            setPinchServo(pinchFullOpen);
-//            break;
-//         case SHOULDER_ALLBACK:
-//            setShoulderServo(shoulderFullBack);
-//            setRotatorServo(rotatorTransfer);
-//            setWristServo(wristTransfer);
-//            break;
-//         case GRAB_LOOSE:
-//            setPinchServo(pinchLoose);
-//            break;
-//         case DROP_SAMPLE:
-//            setLiftPinchServo(liftPinchSafe);
-//            break;
-//         case CANCEL:
-//            break;
          default:
             break;
       }

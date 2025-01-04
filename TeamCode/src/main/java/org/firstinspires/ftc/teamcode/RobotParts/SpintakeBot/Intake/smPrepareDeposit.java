@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake;
 
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake.IntakeActions;
 
-public class smSafePark {
+public class smPrepareDeposit {
 
     private static int state = 0;
     private static boolean complete = false;
@@ -12,35 +12,29 @@ public class smSafePark {
         if (complete) state = 0;
         if (state < 1) return;  // not running
 
-//        Open Pincher to Max
-//        Shoulder to Park
-//        Lift to 0
-//        Spintake to Park
-//        Spinner off
-//        Slide to 0
+//        Spinner must be off
+//        (if not, stop and wait ___ ms)
+//        Banana to near level
+//        Lift to high position
+//        wait for user confirmation? ...
 
-        if (state == 1) {                 // put it in position for safe retraction
+        if (state == 1) {                 // be sure the spinner is off
                 state++;
-                SB_Intake.action(IntakeActions.PINCH_WIDEOPEN);
-                SB_Intake.action(IntakeActions.SPINTAKE_PARK);
-                SB_Intake.action(IntakeActions.CHUTE_PARK);
                 SB_Intake.action(IntakeActions.SPINNER_OFF);
-                SB_Intake.action(IntakeActions.SLIDE_RETRACT);
-                SB_Intake.action(IntakeActions.LIFT_RETRACT);
         }
-        if (state == 2) {                 // wait until slides are retracted
-            if (SB_Intake.isSlideInTolerance() && SB_Intake.isLiftInTolerance()) {
+        if (state == 2) {                 // wait until spinner is surely stopped
+            if (SB_Intake.isSpintakeDone()) {
+                state++;
+                SB_Intake.action(IntakeActions.CHUTE_READY);
+                SB_Intake.setLiftPosition(SB_Intake.positionLiftMax,1);
+            }
+        }
+        if (state == 3) {                 // wait until lift is done moving
+            if (SB_Intake.isLiftInTolerance()) {
                 state++;
             }
         }
-        if (state == 3) {                 // wait until servos are done moving
-            if (SB_Intake.isSpintakeDone() && SB_Intake.isChuteDone()) {
-                state++;
-            }
-        }
-        if (state == 4) {
-            SB_Intake.action(IntakeActions.SPINTAKE_DISABLE);
-            SB_Intake.action(IntakeActions.CHUTE_DISABLE);
+        if (state == 4) {                 // ready for drop!
             complete = true;
         }
     }
