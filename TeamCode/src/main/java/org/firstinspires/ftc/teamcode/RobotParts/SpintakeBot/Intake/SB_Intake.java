@@ -98,6 +98,8 @@ public class SB_Intake implements PartsInterface {
    public static boolean isBlueLegal = false;
    public static boolean isRedLegal = true;
    public static boolean isYellowLegal = true;
+   public static int lastHue = 0;
+   public static int lastType = -2;
 
    /* Internal use (Needs access by state machines in package) */
 
@@ -150,6 +152,7 @@ public class SB_Intake implements PartsInterface {
       smTransfer.stateMachine();
       smStartFishing.stateMachine();
       smAutoIntake.stateMachine();
+      smSpecimenHang.stateMachine();
 
       TelemetryMgr.message(TelemetryMgr.Category.SB_INTAKE,
               "States: " +
@@ -160,13 +163,15 @@ public class SB_Intake implements PartsInterface {
                       ", PD: " + String.format("%02d", smPrepareDeposit.getState()) +
                       ", DE: " + String.format("%02d", smDeposit.getState()) +
                       "");
+      TelemetryMgr.message(TelemetryMgr.Category.SB_INTAKE, "Last Hue", lastHue);
+      TelemetryMgr.message(TelemetryMgr.Category.SB_INTAKE, "Last Type", lastType);
    }
 
    public void stop() {
    }
 
    public static void eStop() {
-      cancelStateMachines();
+      stopStateMachines();
       stopMotors();
       disableServos();
    }
@@ -177,7 +182,8 @@ public class SB_Intake implements PartsInterface {
       smPrepareDeposit.mildStop();
       smTransfer.mildStop();
       smStartFishing.mildStop();
-      smAutoIntake.mildStop();
+      //smAutoIntake.mildStop();   // want this to run when slide is operated
+      smSpecimenHang.mildStop();
    }
 
    public static void stopStateMachines() {
@@ -187,6 +193,7 @@ public class SB_Intake implements PartsInterface {
       smTransfer.stop();
       smStartFishing.stop();
       smAutoIntake.stop();
+      smSpecimenHang.stop();
    }
 
    public static void updateLimits() {
@@ -385,13 +392,10 @@ public class SB_Intake implements PartsInterface {
    public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
    public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
 
-   public static boolean isSamplingInProcess() {
-//      return motorSlide.getCurrentPosition()>=positionSlidePitMin && shoulderNominalPosition<shoulderSafeIn;
-      return motorSlide.getCurrentPosition()>=positionSlidePitMin && isServoAtPosition(servoSpintake, spintakeFloor, timerSpintake);
-   }
-
-//   // special case for state machine
-//   public static boolean isLiftShoulderAtTransfer() {return isServoAtPosition(servoLiftShoulder, liftShoulderTransfer, timerLiftShoulder);}
+//   public static boolean isSamplingInProcess() {
+////      return motorSlide.getCurrentPosition()>=positionSlidePitMin && shoulderNominalPosition<shoulderSafeIn;
+//      return motorSlide.getCurrentPosition()>=positionSlidePitMin && isServoAtPosition(servoSpintake, spintakeFloor, timerSpintake);
+//   }
 
    public static boolean isServoAtPosition(Servo servo, double comparePosition, long servoTimer) {
       return isServoAtPosition(servo.getPosition(), comparePosition) && System.currentTimeMillis() >= servoTimer;
@@ -466,27 +470,10 @@ public class SB_Intake implements PartsInterface {
       AUTO_INTAKE,
       AUTO_PREP_DEPOSIT,
       AUTO_DEPOSIT,
-
-//      AUTO_RETRACT,
-////      AUTO_GRAB,
-////      AUTO_GRAB_AND_RETRACT,
-////      AUTO_HOME,
-////      AUTO_MAKE_SPACE,
-//
-//      AUTO_GRAB_AND_INSPECT,
-//      SAFE_IN,
-//      SAFE_OUT,
-//      GRAB_HOVER,
-//      GRAB_OPEN,
-//      GRAB_WIDEOPEN,
-//      GRAB_CLOSE,
-////      GRAB_LOOSE,
-//      SHOULDER_CAPTURE,
-//      SHOULDER_DRAG,
-////      SHOULDER_ALLBACK,
-//      SHOULDER_PUSH,
-//      DROP_SAMPLE,
-
+      SPECIMEN_GRAB_READY,
+      SPECIMEN_GRAB,
+      SPECIMEN_HANG_READY,
+      SPECIMEN_HANG,
       SPINTAKE_PARK,
       SPINTAKE_FLOOR,
       SPINTAKE_ALMOSTFLOOR,
@@ -535,6 +522,21 @@ public class SB_Intake implements PartsInterface {
             break;
          case AUTO_DEPOSIT:
             smDeposit.start();
+            break;
+
+         case SPECIMEN_GRAB_READY:
+            setPinchServo(pinchFullOpen);
+            setLiftPosition(positionLiftGetSpecimen,1);
+            break;
+         case SPECIMEN_GRAB:
+            setPinchServo(pinchClosed);   // does this need a state machine with a lift up motion?
+            break;
+         case SPECIMEN_HANG_READY:
+            setPinchServo(pinchLoose);
+            setLiftPosition(positionLiftHangReady,1);
+            break;
+         case SPECIMEN_HANG:
+            smSpecimenHang.start();
             break;
 
          case SPINTAKE_PARK:

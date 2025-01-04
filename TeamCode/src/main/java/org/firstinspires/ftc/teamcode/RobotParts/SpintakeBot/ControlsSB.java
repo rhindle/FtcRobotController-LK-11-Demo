@@ -16,9 +16,9 @@ public class ControlsSB extends Controls {
 
    double slideSpeed = 0;
    double liftSpeed = 0;
-   double rotatorSpeed = 0;
-   double wristAngle = 0;
-   double wristMagnitude = 0;
+//   double rotatorSpeed = 0;
+//   double wristAngle = 0;
+//   double wristMagnitude = 0;
 
    public ControlsSB(Parts parts) {
       super(parts);
@@ -29,8 +29,8 @@ public class ControlsSB extends Controls {
       driveData = new DriveData();
       userInput();
       parts.userDrive.setUserDriveSettings(driveData);
-      parts.sb_Intake.manualSlideControl(slideSpeed*0.5);
-      parts.sb_Intake.manualLiftControl(liftSpeed*0.5);
+      SB_Intake.manualSlideControl(slideSpeed*0.5);
+      SB_Intake.manualLiftControl(liftSpeed*0.5);
 //      parts.sb_Intake.manualRotatorControl(rotatorSpeed);
 //      if (Math.abs(wristMagnitude)>0.5) parts.sb_Intake.manualWristControl(wristAngle);
    }
@@ -55,15 +55,6 @@ public class ControlsSB extends Controls {
       //forza
       //DriveData driveDataForza = new DriveData(gamepad1.left_stick_y, 0, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
-//      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
-//         parts.t24Grabber.grabberSafe();
-//      }
-//      if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
-//         parts.t24Grabber.grabberArmed();
-//      }
-//      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
-//         parts.t24Grabber.grabberStartGrab();
-//      }
       if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
          SB_Intake.action(IntakeActions.AUTO_SAFE_PARK);
       }
@@ -82,64 +73,27 @@ public class ControlsSB extends Controls {
       if (buttonMgr.getState(2, Buttons.dpad_right, State.wasTapped)) {
          SB_Intake.action(IntakeActions.AUTO_DEPOSIT);
       }
-//      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
-//         parts.t24Grabber.grabberVertical();
-//      }
-//      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasTapped)) {
-//         parts.t24Grabber.grabberMaxBack();
-//      }
-//      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasTapped)) {
-//         parts.t24Grabber.grabberRelease();
-//      }
+      if (buttonMgr.getState(2, Buttons.dpad_down, State.wasSingleTapped)) {
+         SB_Intake.action(IntakeActions.SPECIMEN_GRAB_READY);
+      }
+      if (buttonMgr.getState(2, Buttons.dpad_down, State.wasDoubleTapped)) {
+         SB_Intake.action(IntakeActions.SPECIMEN_GRAB);
+      }
+      if (buttonMgr.getState(2, Buttons.dpad_left, State.wasSingleTapped)) {
+         SB_Intake.action(IntakeActions.SPECIMEN_HANG_READY);
+      }
+      if (buttonMgr.getState(2, Buttons.dpad_left, State.wasDoubleTapped)) {
+         SB_Intake.action(IntakeActions.SPECIMEN_HANG);
+      }
+      if (buttonMgr.getState(2, Buttons.back, State.wasPressed)) {
+         SB_Intake.eStop();
+      }
 
       slideSpeed = -gamepad2.left_stick_y;
       liftSpeed = gamepad2.right_trigger - gamepad2.left_trigger;
 //      rotatorSpeed = gamepad2.left_stick_x;
 //      wristAngle = Math.toDegrees(Math.atan2(-gamepad2.right_stick_x, -gamepad2.right_stick_y));
 //      wristMagnitude = Functions.mathHypotenuse(gamepad2.right_stick_x, gamepad2.right_stick_y);
-
-//      if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
-//         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_EXTEND_TO_GRAB);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_right, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_GRAB_AND_INSPECT);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_RETRACT);
-//         }
-////         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasSingleTapped)) {
-////            sb_Intake.action(IntakeActions.AUTO_MAKE_SPACE);
-////         }
-//         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasDoubleTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_TRANSFER);
-//         }
-////         if (buttonMgr.getState(2,Buttons.dpad_down, State.wasTapped)) {
-////            sb_Intake.action(IntakeActions.SHOULDER_ALLBACK);
-////         }
-//      } else {
-//         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SAFE_IN);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SAFE_OUT);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.DROP_SAMPLE);
-//         }
-//      }
-//      if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
-//         SB_Intake.action(IntakeActions.GRAB_HOVER);
-//      }
-//      if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
-//         SB_Intake.action(IntakeActions.GRAB_OPEN);
-//      }
-//      if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
-//         SB_Intake.action(IntakeActions.GRAB_CLOSE);
-//      }
-//      if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
-//         SB_Intake.action(IntakeActions.SHOULDER_PUSH);
-//      }
 
       if (buttonMgr.getState(2, Buttons.start, State.isPressed)) SB_Intake.slideOverride = true;
       else SB_Intake.slideOverride = false;

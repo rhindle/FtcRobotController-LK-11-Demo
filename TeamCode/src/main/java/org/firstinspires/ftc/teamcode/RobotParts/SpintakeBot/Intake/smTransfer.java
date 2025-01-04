@@ -36,7 +36,7 @@ public class smTransfer {
             if (SB_Intake.isSpintakeDone() && SB_Intake.isChuteDone()) {
                 state++;
                 SB_Intake.action(IntakeActions.SPINNER_OUT);
-                waitTimer = System.currentTimeMillis() + 2000;   //todo: find a good time for this
+                waitTimer = System.currentTimeMillis() + 1500;   //todo: find a good time for this
             }
         }
         if (state == 4) {                 // wait for sample to transfer (no way to detect)

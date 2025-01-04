@@ -42,15 +42,24 @@ public class smAutoIntake {
         if (state == 2) {                 // wait until a block is ingested
             if (getDistance() < 1.5) {
                 state++;
-                if (isSampleLegal()) state=10;  // jump ahead
+//                if (getSampleType()) state=10;  // jump ahead
             }
         }
-        if (state == 3) {                 // got good sample, eject possible second sample
+        if (state == 3) {                 // then check the color/type
+            int sample = getSampleType();
+            if (sample > 0) {
+                state++;
+                if (sample==1 && SB_Intake.isRedLegal) state=10;
+                if (sample==2 && SB_Intake.isYellowLegal) state=10;
+                if (sample==3 && SB_Intake.isBlueLegal) state=10;
+            }
+        }
+        if (state == 4) {                 // got bad sample, eject
             SB_Intake.action(IntakeActions.SPINNER_OUT);
             waitTimer = System.currentTimeMillis() + 1500;
             state++;
         }
-        if (state == 4) {
+        if (state == 5) {
             if (System.currentTimeMillis() > waitTimer) {
                 state=1;  // start over
                 SB_Intake.action(IntakeActions.SPINNER_OFF);
@@ -79,19 +88,23 @@ public class smAutoIntake {
         return ((DistanceSensor) SB_Intake.sensorColor).getDistance(DistanceUnit.CM);
     }
 
-    static boolean isSampleLegal() {
+    static int getSampleType() {
         float[] hsvValues = new float[3];
         NormalizedRGBA colors = SB_Intake.sensorColor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsvValues);
         int hue = (int) hsvValues[0];
-        int type = 0;
+        int type = -1;
         if (hue < 60) type = 1;                //red
         if (hue >= 60 && hue <= 160) type = 2; //yellow
         if (hue > 160) type = 3;               //blue
-        if (type==1 && SB_Intake.isRedLegal) return true;
-        if (type==2 && SB_Intake.isYellowLegal) return true;
-        if (type==3 && SB_Intake.isBlueLegal) return true;
-        return false;
+        if (hue == 0) type = 0;
+//        if (type==1 && SB_Intake.isRedLegal) return true;
+//        if (type==2 && SB_Intake.isYellowLegal) return true;
+//        if (type==3 && SB_Intake.isBlueLegal) return true;
+//        return false;
+        SB_Intake.lastHue = hue;  // for debugging
+        SB_Intake.lastType = type;
+        return type;
     }
 
     public static void start() {

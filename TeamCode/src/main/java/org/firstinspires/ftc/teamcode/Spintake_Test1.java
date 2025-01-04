@@ -7,6 +7,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
+import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.PartsSB;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
@@ -59,7 +60,9 @@ public class Spintake_Test1 extends LinearOpMode {
             sleep(20);
         }
 
-//        DSMisc.autoLaunchPos = teamBlue ? DSMisc.autoLaunchPosKnowlton : DSMisc.autoLaunchPosDemo;
+        SB_Intake.isRedLegal = !teamBlue;
+        SB_Intake.isBlueLegal = teamBlue;
+        // Yellow would need to be set depending on if sampling for specimens
 
         parts.preRun();
 

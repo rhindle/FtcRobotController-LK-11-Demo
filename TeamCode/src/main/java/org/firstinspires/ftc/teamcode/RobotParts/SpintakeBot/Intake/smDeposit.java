@@ -43,7 +43,7 @@ public class smDeposit {
         if (state == 4) {                 // wait for chute to turn
             if (SB_Intake.isChuteDone()) {
                 state++;
-                waitTimer = System.currentTimeMillis() + 2000;   //todo: find a good time for this
+                waitTimer = System.currentTimeMillis() + 500;   //todo: find a good time for this
             }
         }
         if (state == 5) {                 // wait for sample to slide
