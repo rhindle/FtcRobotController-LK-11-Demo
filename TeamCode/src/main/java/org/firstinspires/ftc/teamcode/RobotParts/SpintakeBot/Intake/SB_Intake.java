@@ -47,10 +47,10 @@ public class SB_Intake implements PartsInterface {
    static final int toleranceSlide              = 20;
 
    static final int positionLiftMin             = 10;
-   static final int positionLiftMax             = 4200; //4350;
+   static final int positionLiftMax             = 3000;  //4200; //4350;
    static final int positionLiftGetSpecimen     = 10;     //todo: finalize number
-   static final int positionLiftHangReady       = 2500;   //todo: get number
-   static final int positionLiftHangRelease     = 2000;   //todo: get number
+   static final int positionLiftHangReady       = 1700;  //2500;   //todo: get number
+   static final int positionLiftHangRelease     = 1400;  //2000;   //todo: get number
    static final int positionLiftTransfer        = 10;
    static final int toleranceLift               = 20;
 

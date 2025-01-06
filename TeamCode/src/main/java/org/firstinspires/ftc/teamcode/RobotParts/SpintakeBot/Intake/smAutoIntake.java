@@ -67,6 +67,7 @@ public class smAutoIntake {
         }
 
         if (state == 10) {                 // got good sample, eject possible second sample
+            SB_Intake.action(IntakeActions.SPINTAKE_SAFE);  // will raining the spintake help get rid of the 2nd block?
             SB_Intake.action(IntakeActions.SPINNER_SLOWOUT);
             waitTimer = System.currentTimeMillis() + 500;
             state++;
