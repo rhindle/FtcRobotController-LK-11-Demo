@@ -31,4 +31,8 @@ public class Functions {
         return y1 + (x-x1)*(y2-y1)/(x2-x1);
     }
 
+    public static double clamp(double num, double min, double max) {
+        return Math.max(min, Math.min(num, max));
+    }
+
 }
