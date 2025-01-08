@@ -18,79 +18,140 @@ public class ServoWrapper implements Servo {
         this.servo = servo;
     }
 
-    public void setOffset(double offset) {
+    // settings
+
+     /**
+     * Sets an offset value for the servo that will be subtracted with setting a position with setPosition()
+     * @param offset the offset to subtracted
+     * @return this for method chaining
+     */
+    public ServoWrapper setOffset(double offset) {
         this.offset = offset;
+        return this;
     }
 
-    public double getOffset() {
-        return this.offset;
+    /**
+     * Sets the servo sweep time (full time to traverse from minimum to maximum position; e.g., -150° to 150°).
+     * The value supplied should account for how the servo is loaded.
+     * @param sweepTime the time in ms
+     * @return this for method chaining
+     */
+    public ServoWrapper setSweepTime(int sweepTime) {
+        this.sweepTime = sweepTime;
+        return this;
     }
 
-    public void setSweepTime(int sweepTime) { this.sweepTime = sweepTime; }
-
-    public double calcSweepChange(double newPosition) {
-        return Math.abs(getPositionWithOffset()-newPosition);
+    /**
+     * Sets the servo Pwm range to the maximum; i.e., 500-2500 μs
+     * @return this for method chaining
+     */
+    public ServoWrapper setFullPwmRange() {
+        ((ServoImplEx) this.servo).setPwmRange(new PwmControl.PwmRange(500, 2500));
+        return this;
     }
 
-    public long calcSweepTimerValue(double newPosition) {
-//        // this assumes the previous move was completed
-//        return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * (long)sweepTime);
-        // would it be safer to add to the remaining time?
-        if (isTimerDone()) {
-            return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * (long)sweepTime);
-        }
-        else {
-            return (long)sweepTime + (long)(calcSweepChange(newPosition) * (long)sweepTime);
-        }
+    /**
+     * Sets the servo Pwm range
+     * @param low the low end of the Pwm range in μs
+     * @param high the high end of the Pwn range in μs
+     * @return this for method chaining
+     */
+    public ServoWrapper setPwmRange(double low, double high) {
+        // could use some checking
+        ((ServoImplEx) this.servo).setPwmRange(new PwmControl.PwmRange(low, high));
+        return this;
     }
 
-    public double getPositionWithOffset() {
-        return getPosition() + offset;
-    }
+    // enabling and disabling pwm
 
-    public boolean isTimerDone() { return System.currentTimeMillis() >= this.timer; }
-
-    public boolean isAtPositionWithTime(double comparePosition) {
-        return isAtPosition(comparePosition) && isTimerDone();
-    }
-
-    public boolean isAtPosition(double comparePosition) {
-        return(Math.round(getPositionWithOffset()*100.0) == Math.round(comparePosition*100.0));  // deals with rounding error
-    }
-
+    /**
+     * Emergency Stop: Disables the Pwm signal for the servo such that the position is assumed to be lost/unknown.
+     */
     public void eStop() {
         disable();
         eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
     }
 
+    /**
+     * Disables the Pwm signal for the servo. Servo behavior may vary; goBilda servos will power down.
+     * (Will automatically re-enable when another position is set.)
+     */
     public void disable() {
         //((ServoControllerEx) getController()).setServoPwmDisable(getPortNumber());
         ((ServoImplEx) servo).setPwmDisable();
         this.enabled = false;
     }
 
+    /**
+     * Enables the Pwm signal for the servo. (Will automatically re-enable when another position is set.)
+     */
     public void enable() {
         //((ServoControllerEx) getController()).setServoPwmEnable(getPortNumber());
         ((ServoImplEx) servo).setPwmEnable();
         this.enabled = true;
     }
 
+    // status responders
+
+    /**
+     * Gets the stored offset value
+     * @return the offset that is subtracted when setting position
+     */
+    public double getOffset() {
+        return this.offset;
+    }
+
+    /**
+     * Gets the servo position last set, accounting for the offset
+     * @return the servo position + offset
+     */
+    public double getPositionWithOffset() {
+        return getPosition() + offset;
+    }
+
+    /**
+     * Determine if the timer associated with the servo movement is complete (i.e., servo is expected to be finished moving)
+     * @return TRUE if the time is complete
+     */
+    public boolean isTimerDone() {
+        return System.currentTimeMillis() >= this.timer;
+    }
+
+    /**
+     * Determine if the servo is set to a certain position and the associated timer is complete
+     * @param comparePosition the position to check against the actual set position
+     * @return TRUE if both the servo is set to that position and the time is complete
+     */
+    public boolean isAtPositionWithTime(double comparePosition) {
+        return isAtPosition(comparePosition) && isTimerDone();
+    }
+
+    /**
+     * Determine if the servo is set to a certain position (not accounting for the timer)
+     * @param comparePosition the position to check against the actual set position
+     * @return TRUE if the servo is set to that position
+     */
+    public boolean isAtPosition(double comparePosition) {
+        return(Math.round(getPositionWithOffset()*100.0) == Math.round(comparePosition*100.0));  // deals with rounding error
+    }
+
+    /**
+     * Determine if the Pwm signal is enabled for the servo (as tracked internally by the wrapper)
+     * @return TRUE if the servo Pwm is enabled
+     */
     public boolean isEnabled() {
         return this.enabled;
     }
 
+    /**
+     * Determine if the Pwm signal is disabled for the servo (as tracked internally by the wrapper)
+     * @return TRUE if the servo Pwm is disabled
+     */
     public boolean isDisabled() {
         return !this.enabled;
     }
 
-    public void setFullPwmRange() {
-        ((ServoImplEx) this.servo).setPwmRange(new PwmControl.PwmRange(500, 2500));
-    }
-
-    public void setPwmRange(double low, double high) {
-        // could use some checking
-        ((ServoImplEx) this.servo).setPwmRange(new PwmControl.PwmRange(low, high));
-    }
+    // Servo overrides
 
     @Override
     public Manufacturer getManufacturer() {
@@ -163,5 +224,23 @@ public class ServoWrapper implements Servo {
     @Override
     public void scaleRange(double min, double max) {
         this.servo.scaleRange(min, max);
+    }
+
+    // internal methods
+
+    private double calcSweepChange(double newPosition) {
+        return Math.abs(getPositionWithOffset()-newPosition);
+    }
+
+    private long calcSweepTimerValue(double newPosition) {
+//        // this assumes the previous move was completed
+//        return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * (long)sweepTime);
+        // would it be safer to add to the remaining time?
+        if (isTimerDone()) {
+            return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * (long)sweepTime);
+        }
+        else {
+            return (long)sweepTime + (long)(calcSweepChange(newPosition) * (long)sweepTime);
+        }
     }
 }

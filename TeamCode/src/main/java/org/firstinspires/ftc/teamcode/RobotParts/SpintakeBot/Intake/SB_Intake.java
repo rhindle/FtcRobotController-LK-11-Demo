@@ -356,7 +356,7 @@ public class SB_Intake implements PartsInterface {
       servoChute.setDirection(Servo.Direction.FORWARD);
       servoPinch.setDirection(Servo.Direction.FORWARD);
 
-      servoSpinner.setSweepTime(spinnerSweepTime);
+      servoSpinner.setSweepTime(spinnerSweepTime).setFullPwmRange();
       servoSpintake.setSweepTime(spintakeSweepTime);
       servoChute.setSweepTime(chuteSweepTime);
       servoPinch.setSweepTime(pinchSweepTime);
