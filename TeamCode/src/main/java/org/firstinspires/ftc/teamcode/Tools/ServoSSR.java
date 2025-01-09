@@ -44,6 +44,10 @@ public class ServoSSR implements Servo {
         this.sweepTime = sweepTime;
         return this;
     }
+    public ServoSSR setSweepTime(long sweepTime) {
+        this.sweepTime = (int)sweepTime;
+        return this;
+    }
 
     /**
      * Sets the servo "wake" time. If the servo was disabled, this time is allowed for it to return to its previous position.
@@ -55,14 +59,17 @@ public class ServoSSR implements Servo {
         this.wakeTime = wakeTime;
         return this;
     }
+    public ServoSSR setWakeTime(long wakeTime) {
+        this.wakeTime = (int)wakeTime;
+        return this;
+    }
 
     /**
      * Sets the servo Pwm range to the maximum; i.e., 500-2500 μs
      * @return this for method chaining
      */
     public ServoSSR setFullPwmRange() {
-        ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(500, 2500));
-        return this;
+        return setPwmRange(500,2500);
     }
 
     /**
@@ -73,7 +80,7 @@ public class ServoSSR implements Servo {
      */
     public ServoSSR setPwmRange(double low, double high) {
         // could use some checking
-        ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(low, high));
+        ((ServoImplEx)servo).setPwmRange(new PwmControl.PwmRange(low, high));
         return this;
     }
 
@@ -82,6 +89,8 @@ public class ServoSSR implements Servo {
     /**
      * Emergency Stop: Disables the Pwm signal for the servo such that the position is assumed to be lost/unknown.
      * Servo behavior may vary; goBilda servos will power down. Will automatically re-enable when another position is set.
+     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
+     * to ignore certain initial positions.
      */
     public void stop() {
         disable();
@@ -92,21 +101,27 @@ public class ServoSSR implements Servo {
      * Disables the Pwm signal for the servo. Servo behavior may vary; goBilda servos will power down.
      * This is different than stop() in that it's assumed the servos won't move much (e.g., parked or resting).
      * Will automatically re-enable when another position is set.
+     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
+     * to ignore certain initial positions.
      */
     public void disable() {
         //((ServoControllerEx) getController()).setServoPwmDisable(getPortNumber());
-        ((ServoImplEx) servo).setPwmDisable();
+        if (enabled && !isDone()) eStopped = true; // if not already disabled and in motion, assume worst and convert to estop
+        ((ServoImplEx)servo).setPwmDisable();
         enabled = false;
         timer = 0;
     }
 
     /**
      * Enables the Pwm signal for the servo. (Will automatically re-enable when another position is set.)
+     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
+     * to ignore certain initial positions.
      */
     public void enable() {
         //((ServoControllerEx) getController()).setServoPwmEnable(getPortNumber());
-        ((ServoImplEx) servo).setPwmEnable();
+        ((ServoImplEx)servo).setPwmEnable();
         enabled = true;
+        //eStopped = false;
     }
 
     // status responders & getters
@@ -254,20 +269,6 @@ public class ServoSSR implements Servo {
     }
 
     @Override
-    public void setPosition(double position) {
-        if (eStopped) {
-            timer = System.currentTimeMillis() + sweepTime;  //allow full sweep time because position is unknown
-            eStopped = false;
-        }
-        else {
-            if (enabled && isSetPosition(position)) return;        // has already been set (but not necessarily done moving), no need to update timer or position
-            timer = calcSweepTimerValue(position) + (enabled ? 0 : wakeTime);   // add waketime if disabled
-        }
-        servo.setPosition(position - offset);
-        enabled = true;                                           // setting a position re-enables, so update the tracker
-    }
-
-    @Override
     public double getPosition() {
         return servo.getPosition();
     }
@@ -277,21 +278,70 @@ public class ServoSSR implements Servo {
         servo.scaleRange(min, max);
     }
 
+    @Override
+    public void setPosition(double position) {
+        if (enabled && isSetPosition(position)) return;    // has already been set (but not necessarily done moving), no need to update timer or position
+        timer = calcSweepTimerValue(position);
+        servo.setPosition(position - offset);
+        enabled = true;                                    // setting a position re-enables, so update the trackers
+        eStopped = false;
+    }
+
     // internal methods
+
+    private long calcSweepTimerValue(double newPosition) {
+        if (eStopped) {  // allow full sweep time because position is unknown
+            return System.currentTimeMillis() + sweepTime;
+        }
+        if (isDone()) {  // enabled, timer not reset, timer complete = should be at last requested position
+            return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * sweepTime);
+        }
+        // if the previous move was not complete, assume the worst case scenario for the next move
+        // (i.e., the rest of the time remaining from the previous move plus the new move time)
+        // possible future to do: calculate the predicted position based on time and last position
+        return Math.max(timer, System.currentTimeMillis())          // remaining time, not less than current time (accounts for timer reset to 0)
+                + (long)(calcSweepChange(newPosition) * sweepTime)  // normally calculated time for movement
+                + (enabled ? 0 : wakeTime);                         // add waketime if disabled (and expected to be near last position)
+    }
 
     private double calcSweepChange(double newPosition) {
         return Math.abs(getPositionWithOffset()-newPosition);
     }
-
-    private long calcSweepTimerValue(double newPosition) {
-        if (isDone()) {
-            return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * (long)sweepTime);
-        }
-        else {
-            // if the previous move was not complete, assume the worst case scenario for the next move
-            // (i.e., the rest of the time remaining from the previous move plus the new move time)
-            // possible future to do: calculate the predicted position based on time and last position
-            return Math.max(timer, System.currentTimeMillis()) + (long)(calcSweepChange(newPosition) * (long)sweepTime);
-        }
-    }
 }
+
+/*
+Usage
+=====
+
+Instantiate with a Servo interface instance:
+	ServoSSR servoWhatever;
+	servoWhatever = new ServoSSR(parts.robot.servo0);   -or similar-
+	servoWhatever = new ServoSSR(hardwareMap.get(Servo.class,"servo0");
+
+For convenience, the new settings can be chained:
+    servoWhatever.setSweepTime(1000).setWakeTime(250).setOffset(-0.05).setFullPwmRange()
+
+All of the ordinary Servo methods and properties are available with the following changes and additions:
+
+setPosition() - sets the position with offset and calculates the expected movement time
+setOffset(offset) - set an offset that will be subtracted from positions (for tuning a replacement servo or one of a pair acting together)
+setSweepTime(sweepTime) - set the time expected for the servo to move its entire range
+setWakeTime(wakeTime) - set the time expected for the servo to move back to its position after being disabled
+setFullPwmRange() - sets the controller to use pwm range of 500-2500 μs vs. the default of 600-2400 μs
+setPwmRange(low, high) - sets the controller to use an arbitrary pwm range
+stop() - disables the servo pwm signal and its position will be unknown/unpredictable (e.g., emergency stop)
+disable() - disables the servo pwm signal and assumes it will stay near its last position (e.g., docked or parked)
+enable() - enables the servo pwm signal (not usually necessary to do manually)
+getOffset() - returns the offset value
+getPositionWithOffset() - returns the position set (adding the offset, so back to the original position vs. the offset position)
+isDone() - is the servo done moving? (servo is enabled, timer is complete)
+isTimerDone() - is the servo timer done? (does not account for the possibility that the servo has been disabled)
+timeRemaining() - returns the time remaining before the servo is expected to have finished moving
+isAtPosition(comparePosition) - is the servo done moving, and is the position this position?
+isSetPosition(comparePosition) - is the servo set to this position? (may still be moving)
+isEnabled() - is the servo enabled?
+isDisabled() - is the servo disabled?
+isStopped() - is the servo stopped?
+getServo() - get the servo object for whatever reason
+
+ */
