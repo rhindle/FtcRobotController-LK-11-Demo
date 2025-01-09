@@ -3,13 +3,14 @@ package org.firstinspires.ftc.teamcode.Tools;
 import com.qualcomm.robotcore.hardware.PwmControl;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoController;
+import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 public class ServoSSR implements Servo {
 
     private final Servo servo;
     private double offset = 0.0;            // offset is useful for syncing a pair of servos or "calibrating" a replacement servo
-    private boolean enabled = false;        // tracks whether or not the servo is (or should be) enabled
+    private boolean enabled = true;        // tracks whether or not the servo is (or should be) enabled
     private boolean eStopped = false;       // tracks whether the servo is stopped in such a way that the position is unpredictable
     private int sweepTime = 1500;           // the time in ms it takes the servo to move its entire range
     private int wakeTime = 200;             // a short interval for the servo to move from disabled/parked to last position
@@ -94,7 +95,7 @@ public class ServoSSR implements Servo {
      */
     public void stop() {
         disable();
-        eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
+//        eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
     }
 
     /**
@@ -106,10 +107,15 @@ public class ServoSSR implements Servo {
      */
     public void disable() {
         //((ServoControllerEx) getController()).setServoPwmDisable(getPortNumber());
-        if (enabled && !isDone()) eStopped = true; // if not already disabled and in motion, assume worst and convert to estop
-        ((ServoImplEx)servo).setPwmDisable();
+//        if (enabled && !isDone()) eStopped = true; // if not already disabled and in motion, assume worst and convert to estop
+        //((ServoImplEx)servo).setPwmDisable();
+
+        ServoControllerEx controller = (ServoControllerEx) servo.getController();
+        int servoPort = servo.getPortNumber();
+        controller.setServoPwmDisable(servoPort);
+
         enabled = false;
-        timer = 0;
+//        timer = 0;
     }
 
     /**
@@ -119,7 +125,12 @@ public class ServoSSR implements Servo {
      */
     public void enable() {
         //((ServoControllerEx) getController()).setServoPwmEnable(getPortNumber());
-        ((ServoImplEx)servo).setPwmEnable();
+//        ((ServoImplEx)servo).setPwmEnable();
+
+        ServoControllerEx controller = (ServoControllerEx) servo.getController();
+        int servoPort = servo.getPortNumber();
+        controller.setServoPwmEnable(servoPort);
+
         enabled = true;
         //eStopped = false;
     }
@@ -280,7 +291,8 @@ public class ServoSSR implements Servo {
 
     @Override
     public void setPosition(double position) {
-        if (enabled && isSetPosition(position)) return;    // has already been set (but not necessarily done moving), no need to update timer or position
+//        if (enabled && isSetPosition(position)) return;    // has already been set (but not necessarily done moving), no need to update timer or position
+        if (!enabled) enable();
         timer = calcSweepTimerValue(position);
         servo.setPosition(position - offset);
         enabled = true;                                    // setting a position re-enables, so update the trackers

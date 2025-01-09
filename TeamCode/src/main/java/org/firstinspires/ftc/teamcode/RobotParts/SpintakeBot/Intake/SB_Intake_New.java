@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
-public class SB_Intake implements PartsInterface {
+public class SB_Intake_New implements PartsInterface {
 
    /* Settings */
 
@@ -100,7 +100,7 @@ public class SB_Intake implements PartsInterface {
    public static Parts parts;
 
    /* Constructor */
-   public SB_Intake(Parts parts){
+   public SB_Intake_New(Parts parts){
       construct(parts);
    }
 
@@ -109,14 +109,10 @@ public class SB_Intake implements PartsInterface {
    }
 
    public void initialize(){
-//      servoSpinner = new ServoSSR(parts.robot.servo0);
-//      servoSpintake = new ServoSSR(parts.robot.servo2);
-//      servoChute = new ServoSSR(parts.robot.servo4);
-//      servoPinch = new ServoSSR(parts.robot.servo1);
-      servoSpinner = new ServoSSR(parts.opMode.hardwareMap.get(Servo.class,"servo0"));
-      servoSpintake = new ServoSSR(parts.opMode.hardwareMap.get(Servo.class,"servo2"));
-      servoChute = new ServoSSR(parts.opMode.hardwareMap.get(Servo.class,"servo4"));
-      servoPinch = new ServoSSR(parts.opMode.hardwareMap.get(Servo.class,"servo1"));
+      servoSpinner = new ServoSSR(parts.robot.servo0);
+      servoSpintake = new ServoSSR(parts.robot.servo2);
+      servoChute = new ServoSSR(parts.robot.servo4);
+      servoPinch = new ServoSSR(parts.robot.servo1);
       motorSlide = parts.robot.motor0B;
       motorLift = parts.robot.motor1B;
       motorHang = parts.robot.motor2B;

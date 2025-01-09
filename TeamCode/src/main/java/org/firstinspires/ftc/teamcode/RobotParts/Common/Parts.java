@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSSpeedControl;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
+import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake_Backup;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.SB_Auto;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.SB_Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
@@ -73,6 +74,7 @@ public class Parts implements PartsInterface {
    //---SpintakeBot Unique
    public SB_Misc sb_Misc;
    public SB_Intake sb_Intake;
+//   public SB_Intake_Backup sb_Intake;
    public SB_Auto sb_Auto;
    //---
 
