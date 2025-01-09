@@ -13,13 +13,13 @@ public class ServoSSR implements Servo {
     private boolean eStopped = false;       // tracks whether the servo is stopped in such a way that the position is unpredictable
     private int sweepTime = 1500;           // the time in ms it takes the servo to move its entire range
     private int wakeTime = 200;             // a short interval for the servo to move from disabled/parked to last position
-    private long timer = System.currentTimeMillis();  // a timer to track whether a move should be complete
+    private long timer = 0;                 // a clock time to track whether a move should be complete
 
     public ServoSSR(Servo servo) {
         this.servo = servo;
     }
 
-    // settings
+    // setters
 
      /**
      * Sets an offset value for the servo that will be subtracted with setting a position with setPosition()
@@ -105,7 +105,7 @@ public class ServoSSR implements Servo {
         this.enabled = true;
     }
 
-    // status responders
+    // status responders & getters
 
     /**
      * Gets the stored offset value
@@ -129,6 +129,14 @@ public class ServoSSR implements Servo {
      */
     public boolean isDone() {
         return System.currentTimeMillis() >= this.timer;
+    }
+
+    /**
+     * Gets the amount of time remaining before the servo move is expected to be complete
+     * @return the time remaining in ms
+     */
+    public long timeRemaining() {
+        return Math.max(this.timer - System.currentTimeMillis(), 0);
     }
 
     /**
