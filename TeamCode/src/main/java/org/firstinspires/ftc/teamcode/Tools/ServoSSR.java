@@ -19,6 +19,9 @@ public class ServoSSR implements Servo {
         this.servo = servo;
     }
 
+    // Future improvement possibility: For servos with feedback (e.g., Axon Max+),
+    // add the ability to associate and configure an analog channel to read actual position and verify movement.
+
     // setters
 
      /**
@@ -83,7 +86,6 @@ public class ServoSSR implements Servo {
     public void stop() {
         disable();
         eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
-        timer = 0;
     }
 
     /**
@@ -126,16 +128,18 @@ public class ServoSSR implements Servo {
     }
 
     /**
-     * Determine if the servo is expected to be finished moving (i.e., the timer associated with the servo movement is complete)
-     * @return TRUE if the time is complete
+     * Determine if the servo is expected to be finished moving
+     * (i.e., the timer associated with the servo movement is complete and the servo is enabled)
+     * @return TRUE if the movement should be complete
      */
     public boolean isDone() {
-        return System.currentTimeMillis() >= timer;
+        return enabled && timer != 0 && System.currentTimeMillis() >= timer;
     }
 
     /**
-     * Determine if the servo is expected to be finished moving (i.e., the timer associated with the servo movement is complete)
-     * @return TRUE if the time is complete
+     * Determine if the servo timer is complete and therefore it is expected to be finished moving
+     * (does not account for the possibility that it was disabled)
+     * @return TRUE if the timer is complete
      */
     public boolean isTimerDone() {
         return System.currentTimeMillis() >= timer;
