@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
-import org.firstinspires.ftc.teamcode.Tools.ServoWrapper;
+import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
 public class SB_Intake implements PartsInterface {
 
@@ -64,10 +64,10 @@ public class SB_Intake implements PartsInterface {
    public static boolean slideOverride          = false;
 
    /* Internal use */
-   private static ServoWrapper servoSpinner;
-   private static ServoWrapper servoSpintake;
-   private static ServoWrapper servoChute;
-   private static ServoWrapper servoPinch;
+   private static ServoSSR servoSpinner;
+   private static ServoSSR servoSpintake;
+   private static ServoSSR servoChute;
+   private static ServoSSR servoPinch;
    private static DcMotorEx motorSlide;
    private static DcMotorEx motorLift;
    private static DcMotorEx motorHang;
@@ -118,11 +118,15 @@ public class SB_Intake implements PartsInterface {
    }
 
    public void initialize(){
-      servoSpinner = (ServoWrapper)parts.robot.servo0;
-      servoSpintake = (ServoWrapper)parts.robot.servo2;
-      servoChute = (ServoWrapper)parts.robot.servo4;
-      servoPinch = (ServoWrapper)parts.robot.servo1;
-      motorSlide = parts.robot.motor0B;
+//      servoSpinner = (ServoWrapper)parts.robot.servo0;
+//      servoSpintake = (ServoWrapper)parts.robot.servo2;
+//      servoChute = (ServoWrapper)parts.robot.servo4;
+//      servoPinch = (ServoWrapper)parts.robot.servo1;
+      servoSpinner = new ServoSSR(parts.robot.servo0);
+      servoSpintake = new ServoSSR(parts.robot.servo2);
+      servoChute = new ServoSSR(parts.robot.servo4);
+      servoPinch = new ServoSSR(parts.robot.servo1);
+         motorSlide = parts.robot.motor0B;
       motorLift = parts.robot.motor1B;
       motorHang = parts.robot.motor2B;
       slideLimitSwitchNO = parts.robot.digital1;
@@ -282,10 +286,10 @@ public class SB_Intake implements PartsInterface {
 //   }
 
    public static void disableServos() {
-      servoSpinner.eStop();
-      servoSpintake.eStop();
-      servoChute.eStop();
-      servoPinch.eStop();
+      servoSpinner.stop();
+      servoSpintake.stop();
+      servoChute.stop();
+      servoPinch.stop();
 //      parts.robot.disableServo(servoSpinner);
 //      parts.robot.disableServo(servoSpintake);
 //      parts.robot.disableServo(servoChute);
@@ -399,10 +403,10 @@ public class SB_Intake implements PartsInterface {
 //   public static boolean isSpintakeDone() {return System.currentTimeMillis() >= timerSpintake;}
 //   public static boolean isChuteDone() {return System.currentTimeMillis() >= timerChute;}
 //   public static boolean isPinchDone() {return System.currentTimeMillis() >= timerPinch;}
-   public static boolean isSpinnerDone() {return servoSpinner.isTimerDone();}
-   public static boolean isSpintakeDone() {return servoSpintake.isTimerDone();}
-   public static boolean isChuteDone() {return servoChute.isTimerDone();}
-   public static boolean isPinchDone() {return servoPinch.isTimerDone();}
+   public static boolean isSpinnerDone() {return servoSpinner.isDone();}
+   public static boolean isSpintakeDone() {return servoSpintake.isDone();}
+   public static boolean isChuteDone() {return servoChute.isDone();}
+   public static boolean isPinchDone() {return servoPinch.isDone();}
 
    public static boolean isSlideInTolerance(int pos) {return Math.abs(motorSlide.getCurrentPosition() - pos) < toleranceSlide;}
    public static boolean isSlideInTolerance() {return isSlideInTolerance(slideTargetPosition);}

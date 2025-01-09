@@ -4,7 +4,6 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -45,6 +44,18 @@ public class Robot implements PartsInterface {
     public Servo    servo3B   = null;
     public Servo    servo4B   = null;
     public Servo    servo5B   = null;
+//    public ServoWrapper servo0   = null;
+//    public ServoWrapper    servo1   = null;
+//    public ServoWrapper    servo2   = null;
+//    public ServoWrapper    servo3   = null;
+//    public ServoWrapper    servo4   = null;
+//    public ServoWrapper    servo5   = null;
+//    public ServoWrapper    servo0B   = null;
+//    public ServoWrapper    servo1B   = null;
+//    public ServoWrapper    servo2B   = null;
+//    public ServoWrapper    servo3B   = null;
+//    public ServoWrapper    servo4B   = null;
+//    public ServoWrapper    servo5B   = null;
 
     // todo: May want to divvy up robot-unique variables like done in Parts class?
     public NormalizedColorSensor sensorColor    = null;
@@ -226,6 +237,18 @@ public class Robot implements PartsInterface {
         servo3B = hardwareMap.get(Servo.class,"servo3B");
         servo4B = hardwareMap.get(Servo.class,"servo4B");
         servo5B = hardwareMap.get(Servo.class,"servo5B");
+//        servo0 = new ServoWrapper(hardwareMap.get(Servo.class,"servo0"));
+//        servo1 = new ServoWrapper(hardwareMap.get(Servo.class,"servo1"));
+//        servo2 = new ServoWrapper(hardwareMap.get(Servo.class,"servo2"));
+//        servo3 = new ServoWrapper(hardwareMap.get(Servo.class,"servo3"));
+//        servo4 = new ServoWrapper(hardwareMap.get(Servo.class,"servo4"));
+//        servo5 = new ServoWrapper(hardwareMap.get(Servo.class,"servo5"));
+//        servo0B = new ServoWrapper(hardwareMap.get(Servo.class,"servo0B"));
+//        servo1B = new ServoWrapper(hardwareMap.get(Servo.class,"servo1B"));
+//        servo2B = new ServoWrapper(hardwareMap.get(Servo.class,"servo2B"));
+//        servo3B = new ServoWrapper(hardwareMap.get(Servo.class,"servo3B"));
+//        servo4B = new ServoWrapper(hardwareMap.get(Servo.class,"servo4B"));
+//        servo5B = new ServoWrapper(hardwareMap.get(Servo.class,"servo5B"));
     }
 
     public void initDigital() {
