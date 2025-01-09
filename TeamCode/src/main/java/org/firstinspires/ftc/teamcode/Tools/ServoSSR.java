@@ -226,6 +226,7 @@ public class ServoSSR implements Servo {
     public void setPosition(double position) {
         if (this.eStopped) {
             this.timer = System.currentTimeMillis() + this.sweepTime;  //allow full sweep time because position is unknown
+            this.eStopped = false;
         }
         else {
             if (this.enabled && isSetPosition(position)) return;        // has already been set (but not necessarily done moving), no need to update timer or position
