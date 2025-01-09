@@ -58,7 +58,7 @@ public class ServoSSR implements Servo {
      * @return this for method chaining
      */
     public ServoSSR setFullPwmRange() {
-        ((ServoImplEx) this.servo).setPwmRange(new PwmControl.PwmRange(500, 2500));
+        ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(500, 2500));
         return this;
     }
 
@@ -70,7 +70,7 @@ public class ServoSSR implements Servo {
      */
     public ServoSSR setPwmRange(double low, double high) {
         // could use some checking
-        ((ServoImplEx) this.servo).setPwmRange(new PwmControl.PwmRange(low, high));
+        ((ServoImplEx) servo).setPwmRange(new PwmControl.PwmRange(low, high));
         return this;
     }
 
@@ -82,7 +82,8 @@ public class ServoSSR implements Servo {
      */
     public void stop() {
         disable();
-        this.eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
+        eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
+        timer = 0;
     }
 
     /**
@@ -92,8 +93,9 @@ public class ServoSSR implements Servo {
      */
     public void disable() {
         //((ServoControllerEx) getController()).setServoPwmDisable(getPortNumber());
-        ((ServoImplEx) this.servo).setPwmDisable();
-        this.enabled = false;
+        ((ServoImplEx) servo).setPwmDisable();
+        enabled = false;
+        timer = 0;
     }
 
     /**
@@ -101,8 +103,8 @@ public class ServoSSR implements Servo {
      */
     public void enable() {
         //((ServoControllerEx) getController()).setServoPwmEnable(getPortNumber());
-        ((ServoImplEx) this.servo).setPwmEnable();
-        this.enabled = true;
+        ((ServoImplEx) servo).setPwmEnable();
+        enabled = true;
     }
 
     // status responders & getters
@@ -112,7 +114,7 @@ public class ServoSSR implements Servo {
      * @return the offset that is subtracted when setting position
      */
     public double getOffset() {
-        return this.offset;
+        return offset;
     }
 
     /**
@@ -120,7 +122,7 @@ public class ServoSSR implements Servo {
      * @return the servo position + offset
      */
     public double getPositionWithOffset() {
-        return getPosition() + this.offset;
+        return getPosition() + offset;
     }
 
     /**
@@ -128,7 +130,15 @@ public class ServoSSR implements Servo {
      * @return TRUE if the time is complete
      */
     public boolean isDone() {
-        return System.currentTimeMillis() >= this.timer;
+        return System.currentTimeMillis() >= timer;
+    }
+
+    /**
+     * Determine if the servo is expected to be finished moving (i.e., the timer associated with the servo movement is complete)
+     * @return TRUE if the time is complete
+     */
+    public boolean isTimerDone() {
+        return System.currentTimeMillis() >= timer;
     }
 
     /**
@@ -136,7 +146,7 @@ public class ServoSSR implements Servo {
      * @return the time remaining in ms
      */
     public long timeRemaining() {
-        return Math.max(this.timer - System.currentTimeMillis(), 0);
+        return Math.max(timer - System.currentTimeMillis(), 0);
     }
 
     /**
@@ -162,7 +172,7 @@ public class ServoSSR implements Servo {
      * @return TRUE if the servo Pwm is enabled
      */
     public boolean isEnabled() {
-        return this.enabled;
+        return enabled;
     }
 
     /**
@@ -170,14 +180,23 @@ public class ServoSSR implements Servo {
      * @return TRUE if the servo Pwm is disabled
      */
     public boolean isDisabled() {
-        return !this.enabled;
+        return !enabled;
+    }
+
+    /**
+     * Determine if the servo is in an emergency stopped state
+     * (Pwm signal disabled for the servo, as tracked internally by the wrapper, and position unknown)
+     * @return TRUE if the servo is stopped
+     */
+    public boolean isStopped() {
+        return eStopped;
     }
 
     /**
      * @return the servo object, for whatever reason it's needed
      */
     public Servo getServo() {
-        return this.servo;
+        return servo;
     }
 
     // Servo class overrides
@@ -222,36 +241,36 @@ public class ServoSSR implements Servo {
 
     @Override
     public void setDirection(Direction direction) {
-        this.servo.setDirection(direction);
+        servo.setDirection(direction);
     }
 
     @Override
     public Direction getDirection() {
-        return this.servo.getDirection();
+        return servo.getDirection();
     }
 
     @Override
     public void setPosition(double position) {
-        if (this.eStopped) {
-            this.timer = System.currentTimeMillis() + this.sweepTime;  //allow full sweep time because position is unknown
-            this.eStopped = false;
+        if (eStopped) {
+            timer = System.currentTimeMillis() + sweepTime;  //allow full sweep time because position is unknown
+            eStopped = false;
         }
         else {
-            if (this.enabled && isSetPosition(position)) return;        // has already been set (but not necessarily done moving), no need to update timer or position
-            this.timer = calcSweepTimerValue(position) + (this.enabled ? 0 : this.wakeTime);   // add waketime if disabled
+            if (enabled && isSetPosition(position)) return;        // has already been set (but not necessarily done moving), no need to update timer or position
+            timer = calcSweepTimerValue(position) + (enabled ? 0 : wakeTime);   // add waketime if disabled
         }
-        this.servo.setPosition(position - this.offset);
-        this.enabled = true;                                           // setting a position re-enables, so update the tracker
+        servo.setPosition(position - offset);
+        enabled = true;                                           // setting a position re-enables, so update the tracker
     }
 
     @Override
     public double getPosition() {
-        return this.servo.getPosition();
+        return servo.getPosition();
     }
 
     @Override
     public void scaleRange(double min, double max) {
-        this.servo.scaleRange(min, max);
+        servo.scaleRange(min, max);
     }
 
     // internal methods
@@ -262,12 +281,13 @@ public class ServoSSR implements Servo {
 
     private long calcSweepTimerValue(double newPosition) {
         if (isDone()) {
-            return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * (long)this.sweepTime);
+            return System.currentTimeMillis() + (long)(calcSweepChange(newPosition) * (long)sweepTime);
         }
         else {
             // if the previous move was not complete, assume the worst case scenario for the next move
+            // (i.e., the rest of the time remaining from the previous move plus the new move time)
             // possible future to do: calculate the predicted position based on time and last position
-            return (long)this.sweepTime + (long)(calcSweepChange(newPosition) * (long)this.sweepTime);
+            return Math.max(timer, System.currentTimeMillis()) + (long)(calcSweepChange(newPosition) * (long)sweepTime);
         }
     }
 }
