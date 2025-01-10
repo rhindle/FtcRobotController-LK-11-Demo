@@ -23,7 +23,7 @@ public class smPrepareDeposit {
                 SB_Intake.action(IntakeActions.SPINNER_OFF);
         }
         if (state == 2) {                 // wait until spinner is surely stopped
-            if (SB_Intake.isSpintakeDone()) {
+            if (SB_Intake.isSpinnerDone()) {
                 state++;
                 SB_Intake.action(IntakeActions.CHUTE_READY);
                 SB_Intake.setLiftPosition(SB_Intake.positionLiftMax,1);
