@@ -30,7 +30,7 @@ public class ServoW2 implements Servo {
 //     * @param offset the offset to subtracted
 //     * @return this for method chaining
 //     */
-//    public ServoW2 setOffset(double offset) {
+//    public ServoW2 setOffset_(double offset) {
 //        this.offset = offset;
 //        return this;
 //    }
@@ -85,55 +85,55 @@ public class ServoW2 implements Servo {
 //        return this;
 //    }
 //
-//    // enabling and disabling pwm
-//
-//    /**
-//     * Emergency Stop: Disables the Pwm signal for the servo such that the position is assumed to be lost/unknown.
-//     * Servo behavior may vary; goBilda servos will power down. Will automatically re-enable when another position is set.
-//     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
-//     * to ignore certain initial positions.
-//     */
-//    public void stop() {
-//        disable();
-////        eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
-//    }
-//
-//    /**
-//     * Disables the Pwm signal for the servo. Servo behavior may vary; goBilda servos will power down.
-//     * This is different than stop() in that it's assumed the servos won't move much (e.g., parked or resting).
-//     * Will automatically re-enable when another position is set.
-//     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
-//     * to ignore certain initial positions.
-//     */
-//    public void disable() {
-//        //((ServoControllerEx) getController()).setServoPwmDisable(getPortNumber());
-////        if (enabled && !isDone()) eStopped = true; // if not already disabled and in motion, assume worst and convert to estop
-//        //((ServoImplEx)servo).setPwmDisable();
-//
-//        ServoControllerEx controller = (ServoControllerEx) servo.getController();
-//        int servoPort = servo.getPortNumber();
-//        controller.setServoPwmDisable(servoPort);
-//
-//        enabled = false;
-////        timer = 0;
-//    }
-//
-//    /**
-//     * Enables the Pwm signal for the servo. (Will automatically re-enable when another position is set.)
-//     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
-//     * to ignore certain initial positions.
-//     */
-//    public void enable() {
-//        //((ServoControllerEx) getController()).setServoPwmEnable(getPortNumber());
-////        ((ServoImplEx)servo).setPwmEnable();
-//
-//        ServoControllerEx controller = (ServoControllerEx) servo.getController();
-//        int servoPort = servo.getPortNumber();
-//        controller.setServoPwmEnable(servoPort);
-//
-//        enabled = true;
-//        //eStopped = false;
-//    }
+    // enabling and disabling pwm
+
+    /**
+     * Emergency Stop: Disables the Pwm signal for the servo such that the position is assumed to be lost/unknown.
+     * Servo behavior may vary; goBilda servos will power down. Will automatically re-enable when another position is set.
+     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
+     * to ignore certain initial positions.
+     */
+    public void stop_() {
+        disable_();
+        eStopped = true;  // we no longer know where the servo is, so need to time accordingly next move
+    }
+
+    /**
+     * Disables the Pwm signal for the servo. Servo behavior may vary; goBilda servos will power down.
+     * This is different than stop() in that it's assumed the servos won't move much (e.g., parked or resting).
+     * Will automatically re-enable when another position is set.
+     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
+     * to ignore certain initial positions.
+     */
+    public void disable_() {
+        //((ServoControllerEx) getController()).setServoPwmDisable(getPortNumber());
+//        if (enabled && !isDone()) eStopped = true; // if not already disabled and in motion, assume worst and convert to estop
+        //((ServoImplEx)servo).setPwmDisable();
+
+        ServoControllerEx controller = (ServoControllerEx) servo.getController();
+        int servoPort = servo.getPortNumber();
+        controller.setServoPwmDisable(servoPort);
+
+        enabled = false;
+//        timer = 0;
+    }
+
+    /**
+     * Enables the Pwm signal for the servo. (Will automatically re-enable when another position is set.)
+     * Note: Axon/AGFRC servos may need workarounds when the signal is re-enabled because they were observed
+     * to ignore certain initial positions.
+     */
+    public void enable() {
+        //((ServoControllerEx) getController()).setServoPwmEnable(getPortNumber());
+//        ((ServoImplEx)servo).setPwmEnable();
+
+        ServoControllerEx controller = (ServoControllerEx) servo.getController();
+        int servoPort = servo.getPortNumber();
+        controller.setServoPwmEnable(servoPort);
+
+        enabled = true;
+        //eStopped = false;
+    }
 //
 //    // status responders & getters
 //

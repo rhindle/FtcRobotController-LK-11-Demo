@@ -244,7 +244,8 @@ public class SB_Intake implements PartsInterface {
    public static void setSpinnerServo(double newPosition) {
       if (servoSpinnerDisabled) {
          servoSpinnerDisabled = false;
-         parts.robot.enableServo(servoSpinner);
+//         parts.robot.enableServo(servoSpinner);
+         servoSpinner.enable();
       }
       if (isServoAtPosition(servoSpinner, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerSpinner = getServoSweepTimerValue(servoSpinner,newPosition,spinnerSweepTime);  // get timer before setting position!
@@ -253,7 +254,8 @@ public class SB_Intake implements PartsInterface {
    public static void setSpintakeServo(double newPosition) {
       if (servoSpintakeDisabled) {
          servoSpintakeDisabled = false;
-         parts.robot.enableServo(servoSpintake);
+//         parts.robot.enableServo(servoSpintake);
+         servoSpintake.enable();
       }
       if (isServoAtPosition(servoSpintake, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerSpintake = getServoSweepTimerValue(servoSpintake,newPosition,spintakeSweepTime);  // get timer before setting position!
@@ -262,7 +264,8 @@ public class SB_Intake implements PartsInterface {
    public static void setChuteServo(double newPosition) {
       if (servoChuteDisabled) {
          servoChuteDisabled = false;
-         parts.robot.enableServo(servoChute);
+//         parts.robot.enableServo(servoChute);
+         servoChute.enable();
       }
       if (isServoAtPosition(servoChute, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerChute = getServoSweepTimerValue(servoChute,newPosition,chuteSweepTime);  // get timer before setting position!
@@ -271,7 +274,8 @@ public class SB_Intake implements PartsInterface {
    public static void setPinchServo(double newPosition) {
       if (servoPinchDisabled) {
          servoPinchDisabled = false;
-         parts.robot.enableServo(servoPinch);
+//         parts.robot.enableServo(servoPinch);
+         servoPinch.enable();
       }
       if (isServoAtPosition(servoPinch, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerPinch = getServoSweepTimerValue(servoPinch,newPosition,pinchSweepTime);  // get timer before setting position!
@@ -286,10 +290,14 @@ public class SB_Intake implements PartsInterface {
    }
 
    public static void disableServos() {
-      parts.robot.disableServo(servoSpinner);
-      parts.robot.disableServo(servoSpintake);
-      parts.robot.disableServo(servoChute);
-      parts.robot.disableServo(servoPinch);
+//      parts.robot.disableServo(servoSpinner);
+//      parts.robot.disableServo(servoSpintake);
+//      parts.robot.disableServo(servoChute);
+//      parts.robot.disableServo(servoPinch);
+      servoSpinner.disable_();
+      servoSpintake.disable_();
+      servoChute.disable_();
+      servoPinch.disable_();
       servoSpinnerDisabled = true;
       servoSpintakeDisabled = true;
       servoChuteDisabled = true;
@@ -600,21 +608,26 @@ public class SB_Intake implements PartsInterface {
             break;
 
          case SPINTAKE_DISABLE:
-            parts.robot.disableServo(servoSpintake);
+//            parts.robot.disableServo(servoSpintake);
+            servoSpintake.disable_();
             servoSpintakeDisabled = true;
             break;
          case SPINNER_DISABLE:
-            parts.robot.disableServo(servoSpinner);
+//            parts.robot.disableServo(servoSpinner);
+            servoSpinner.disable_();
             servoSpinnerDisabled = true;
             break;
          case CHUTE_DISABLE:
-            parts.robot.disableServo(servoChute);
+//            parts.robot.disableServo(servoChute);
+            servoChute.disable_();
             servoChuteDisabled = true;
             break;
          case PINCH_DISABLE:
-            parts.robot.disableServo(servoPinch);
+//            parts.robot.disableServo(servoPinch);
+            servoPinch.disable_();
             servoPinchDisabled = true;
             break;
+
          case SLIDE_ZERO:
             setSlidePosition(-5000,.25);
             break;
