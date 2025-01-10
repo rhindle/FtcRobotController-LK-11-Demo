@@ -294,10 +294,14 @@ public class SB_Intake implements PartsInterface {
 //      parts.robot.disableServo(servoSpintake);
 //      parts.robot.disableServo(servoChute);
 //      parts.robot.disableServo(servoPinch);
-      servoSpinner.disable_();
-      servoSpintake.disable_();
-      servoChute.disable_();
-      servoPinch.disable_();
+//      servoSpinner.disable_();
+//      servoSpintake.disable_();
+//      servoChute.disable_();
+//      servoPinch.disable_();
+      servoSpinner.stop_();
+      servoSpintake.stop_();
+      servoChute.stop_();
+      servoPinch.stop_();
       servoSpinnerDisabled = true;
       servoSpintakeDisabled = true;
       servoChuteDisabled = true;
@@ -363,6 +367,11 @@ public class SB_Intake implements PartsInterface {
       servoSpintake.setDirection(Servo.Direction.FORWARD);
       servoChute.setDirection(Servo.Direction.FORWARD);
       servoPinch.setDirection(Servo.Direction.FORWARD);
+
+      servoSpinner.setSweepTime(spinnerSweepTime); //.setFullPwmRange();
+      servoSpintake.setSweepTime(spintakeSweepTime);
+      servoChute.setSweepTime(chuteSweepTime);
+      servoPinch.setSweepTime(pinchSweepTime);
 
       servoSpinner.setPosition(spinnerOff);
       servoSpintake.setPosition(spintakeParked);

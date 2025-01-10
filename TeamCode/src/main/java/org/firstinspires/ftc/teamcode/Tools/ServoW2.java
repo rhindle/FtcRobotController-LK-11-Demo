@@ -20,71 +20,71 @@ public class ServoW2 implements Servo {
         this.servo = servo;
     }
 
-//    // Future improvement possibility: For servos with feedback (e.g., Axon Max+),
-//    // add the ability to associate and configure an analog channel to read actual position and verify movement.
-//
-//    // setters
-//
-//     /**
-//     * Sets an offset value for the servo that will be subtracted with setting a position with setPosition()
-//     * @param offset the offset to subtracted
-//     * @return this for method chaining
-//     */
-//    public ServoW2 setOffset_(double offset) {
-//        this.offset = offset;
-//        return this;
-//    }
-//
-//    /**
-//     * Sets the servo sweep time (full time to traverse from minimum to maximum position; e.g., -150° to 150°).
-//     * The value supplied should account for how the servo is loaded.
-//     * @param sweepTime the time in ms
-//     * @return this for method chaining
-//     */
-//    public ServoW2 setSweepTime(int sweepTime) {
-//        this.sweepTime = sweepTime;
-//        return this;
-//    }
-//    public ServoW2 setSweepTime(long sweepTime) {
-//        this.sweepTime = (int)sweepTime;
-//        return this;
-//    }
-//
-//    /**
-//     * Sets the servo "wake" time. If the servo was disabled, this time is allowed for it to return to its previous position.
-//     * Assumes a small amount of movement has happened while it is disabled.
-//     * @param wakeTime the time in ms
-//     * @return this for method chaining
-//     */
-//    public ServoW2 setWakeTime(int wakeTime) {
-//        this.wakeTime = wakeTime;
-//        return this;
-//    }
-//    public ServoW2 setWakeTime(long wakeTime) {
-//        this.wakeTime = (int)wakeTime;
-//        return this;
-//    }
-//
-//    /**
-//     * Sets the servo Pwm range to the maximum; i.e., 500-2500 μs
-//     * @return this for method chaining
-//     */
-//    public ServoW2 setFullPwmRange() {
-//        return setPwmRange(500,2500);
-//    }
-//
-//    /**
-//     * Sets the servo Pwm range
-//     * @param low the low end of the Pwm range in μs
-//     * @param high the high end of the Pwn range in μs
-//     * @return this for method chaining
-//     */
-//    public ServoW2 setPwmRange(double low, double high) {
-//        // could use some checking
-//        ((ServoImplEx)servo).setPwmRange(new PwmControl.PwmRange(low, high));
-//        return this;
-//    }
-//
+    // Future improvement possibility: For servos with feedback (e.g., Axon Max+),
+    // add the ability to associate and configure an analog channel to read actual position and verify movement.
+
+    // setters
+
+     /**
+     * Sets an offset value for the servo that will be subtracted with setting a position with setPosition()
+     * @param offset the offset to subtracted
+     * @return this for method chaining
+     */
+    public ServoW2 setOffset_(double offset) {
+        this.offset = offset;
+        return this;
+    }
+
+    /**
+     * Sets the servo sweep time (full time to traverse from minimum to maximum position; e.g., -150° to 150°).
+     * The value supplied should account for how the servo is loaded.
+     * @param sweepTime the time in ms
+     * @return this for method chaining
+     */
+    public ServoW2 setSweepTime(int sweepTime) {
+        this.sweepTime = sweepTime;
+        return this;
+    }
+    public ServoW2 setSweepTime(long sweepTime) {
+        this.sweepTime = (int)sweepTime;
+        return this;
+    }
+
+    /**
+     * Sets the servo "wake" time. If the servo was disabled, this time is allowed for it to return to its previous position.
+     * Assumes a small amount of movement has happened while it is disabled.
+     * @param wakeTime the time in ms
+     * @return this for method chaining
+     */
+    public ServoW2 setWakeTime(int wakeTime) {
+        this.wakeTime = wakeTime;
+        return this;
+    }
+    public ServoW2 setWakeTime(long wakeTime) {
+        this.wakeTime = (int)wakeTime;
+        return this;
+    }
+
+    /**
+     * Sets the servo Pwm range to the maximum; i.e., 500-2500 μs
+     * @return this for method chaining
+     */
+    public ServoW2 setFullPwmRange() {
+        return setPwmRange(500,2500);
+    }
+
+    /**
+     * Sets the servo Pwm range
+     * @param low the low end of the Pwm range in μs
+     * @param high the high end of the Pwn range in μs
+     * @return this for method chaining
+     */
+    public ServoW2 setPwmRange(double low, double high) {
+        // could use some checking
+        ((ServoImplEx)servo).setPwmRange(new PwmControl.PwmRange(low, high));
+        return this;
+    }
+
     // enabling and disabling pwm
 
     /**
