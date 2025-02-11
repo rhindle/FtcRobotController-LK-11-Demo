@@ -293,6 +293,16 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
                             " | 5B : " + (robot.digital5b.getState() ? "T" : "F") +
                             " | 6B : " + (robot.digital6b.getState() ? "T" : "F") +
                             " | 7B : " + (robot.digital7b.getState() ? "T" : "F"));
+            telemetry.addLine()
+                    .addData("A 0", "%.3f",(robot.analog0.getVoltage()))
+                    .addData(" | 1 : ", "%.3f", (robot.analog1.getVoltage()))
+                    .addData(" | 2 : ", "%.3f", (robot.analog2.getVoltage()))
+                    .addData(" | 3 : ", "%.3f", (robot.analog3.getVoltage()));
+            telemetry.addLine()
+                    .addData("A 0 Swyft Ranger 20DEG 0-0 Mode", "%.3f",(robot.analog0.getVoltage()*48.78136376)-4.985354503);
+            //telemetry.addData("Inch 20DEG 0-0 Mode: ", (analog.getVoltage()*48.78136376)-4.985354503);
+            //telemetry.addData("Inch 15DEG 0-1 Mode: ", (analog.getVoltage()*32.50930976)-2.695384202);
+            //telemetry.addData("Inch 27DEG 1-0 Mode: ", (analog.getVoltage()*76.85612461)-9.925949725);
             telemetry.addData("Heading", "%.1f", angles.firstAngle);
             //telemetry.addData("Counter", counter);
             //telemetry.addData("LoopSpeed","%.1f",calcLoopSpeed());
