@@ -29,11 +29,12 @@
 
 package org.firstinspires.ftc.teamcode.ZZ;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -63,14 +64,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 public class ZZ_Hardware_TestBot_B
 {
    /* Public OpMode members. */
-   public DcMotor        motor0   = null;
-   public DcMotor        motor1   = null;
-   public DcMotor        motor2   = null;
-   public DcMotor        motor3   = null;
-   public DcMotor        motor0b   = null;
-   public DcMotor        motor1b   = null;
-   public DcMotor        motor2b   = null;
-   public DcMotor        motor3b   = null;
+   public DcMotorEx motor0   = null;
+   public DcMotorEx        motor1   = null;
+   public DcMotorEx        motor2   = null;
+   public DcMotorEx        motor3   = null;
+   public DcMotorEx        motor0b   = null;
+   public DcMotorEx        motor1b   = null;
+   public DcMotorEx        motor2b   = null;
+   public DcMotorEx        motor3b   = null;
 
    public Servo          servo0   = null;
    public Servo          servo1   = null;
@@ -85,8 +86,8 @@ public class ZZ_Hardware_TestBot_B
    public Servo          servo4b   = null;
    public Servo          servo5b   = null;
 
-//    public ColorSensor    sensorColor    = null;
-//    public DistanceSensor sensorDistance = null;
+   public ColorSensor sensorColor    = null;
+   public DistanceSensor sensorDistance = null;
 
    public DigitalChannel digital0 = null;
    public DigitalChannel digital1 = null;
@@ -114,14 +115,9 @@ public class ZZ_Hardware_TestBot_B
    public AnalogInput analog2b = null;
    public AnalogInput analog3b = null;
 
-   //public BNO055IMU      sensorIMU      = null;
-   public IMU sensorIMU        = null;
-   public RevHubOrientationOnRobot hubOrientation = new RevHubOrientationOnRobot(
-           RevHubOrientationOnRobot.LogoFacingDirection.UP,
-           RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
-   );
+   public IMU      sensorIMU      = null;
 
-//    public Orientation    angles;
+   //    public Orientation    angles;
 
    /* local OpMode members. */
    HardwareMap hwMap           =  null;
@@ -138,23 +134,23 @@ public class ZZ_Hardware_TestBot_B
       hwMap = ahwMap;
 
       // Define and Initialize Motors
-      motor0 = hwMap.get(DcMotor.class, "motor0");
-      motor1 = hwMap.get(DcMotor.class, "motor1");
-      motor2 = hwMap.get(DcMotor.class, "motor2");
-      motor3 = hwMap.get(DcMotor.class, "motor3");
-      motor0b = hwMap.get(DcMotor.class, "motor0B");
-      motor1b = hwMap.get(DcMotor.class, "motor1B");
-      motor2b = hwMap.get(DcMotor.class, "motor2B");
-      motor3b = hwMap.get(DcMotor.class, "motor3B");
+      motor0 = hwMap.get(DcMotorEx.class, "motor0");
+      motor1 = hwMap.get(DcMotorEx.class, "motor1");
+      motor2 = hwMap.get(DcMotorEx.class, "motor2");
+      motor3 = hwMap.get(DcMotorEx.class, "motor3");
+      motor0b = hwMap.get(DcMotorEx.class, "motor0B");
+      motor1b = hwMap.get(DcMotorEx.class, "motor1B");
+      motor2b = hwMap.get(DcMotorEx.class, "motor2B");
+      motor3b = hwMap.get(DcMotorEx.class, "motor3B");
 
-      motor0.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-      motor1.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-      motor2.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-      motor3.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-      motor0b.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-      motor1b.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-      motor2b.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
-      motor3b.setDirection(DcMotor.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor0.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor1.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor2.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor3.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor0b.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor1b.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor2b.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
+      motor3b.setDirection(DcMotorEx.Direction.FORWARD); // Set to REVERSE if using AndyMark motors
 
       motor0.setPower(0);
       motor1.setPower(0);
@@ -167,14 +163,14 @@ public class ZZ_Hardware_TestBot_B
 
       // Set all motors to run without encoders.
       // May want to use RUN_USING_ENCODERS if encoders are installed.
-      motor0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      motor3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      motor0b.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      motor1b.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      motor2b.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-      motor3b.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+      motor0.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      motor1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      motor2.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      motor3.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      motor0b.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      motor1b.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      motor2b.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+      motor3b.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
       // Define and initialize ALL installed servos.
       servo0 = hwMap.get(Servo.class,"servo0");
@@ -236,17 +232,20 @@ public class ZZ_Hardware_TestBot_B
       // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
       // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
       // and named "sensorIMU".
-//      sensorIMU = hwMap.get(BNO055IMU.class, "imu");
-//      BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-//      parameters.angleUnit            = BNO055IMU.AngleUnit.DEGREES;
-//      sensorIMU.initialize(parameters);
+      //sensorIMU = hwMap.get(IMU.class, "imu");
+      // BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+      // parameters.angleUnit            = BNO055IMU.AngleUnit.DEGREES;
+      //sensorIMU.initialize(parameters);
+
       sensorIMU = hwMap.get(IMU.class, "imu");
       sensorIMU.initialize(
-         new IMU.Parameters(
-            hubOrientation
-         )
+              new IMU.Parameters(
+                      new RevHubOrientationOnRobot(
+                              RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                              RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                      )
+              )
       );
-
 
       //    sensorColor = hwMap.get(ColorSensor.class, "topSensor");
       //    sensorDistance = hwMap.get(DistanceSensor.class, "topSensor");

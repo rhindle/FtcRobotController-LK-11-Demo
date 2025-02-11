@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode.ZZ;
 
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -11,13 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-import android.graphics.Color;
-
-
-// import com.qualcomm.robotcore.util.Range;
-// import java.util.Locale;
+import java.util.List;
 
 @TeleOp (name="ZZ_TestBot_02B(J)", group="Test")
 //@Disabled
@@ -25,56 +20,60 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
 
     ZZ_Hardware_TestBot_B robot   = new ZZ_Hardware_TestBot_B();
     Orientation angles;
+    List<LynxModule> allHubs = null;
 
     @Override
     public void runOpMode() {
         robot.init(hardwareMap);
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule module : allHubs) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
 
         // Ensure the robot it stationary, then reset the encoders and calibrate the gyro.
-        robot.motor0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.motor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.motor3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.motor0b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.motor1b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.motor2b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.motor3b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor0.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor3.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor0b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor1b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor2b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motor3b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
         // Send telemetry message to alert driver that we are calibrating;
         telemetry.addData(">", "Calibrating Gyro");    //
         telemetry.update();
-        robot.sensorIMU.resetYaw();
 
         // make sure the gyro is calibrated before continuing
-//        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
-//            sleep(50);
-//            idle();
-//        }
+        robot.sensorIMU.resetYaw();
+        // while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
+        //     sleep(50);
+        //     idle();
+        // }
 
         telemetry.addData(">", "Robot Ready.");    //
         telemetry.update();
 
-        robot.motor0.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.motor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.motor3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.motor0b.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.motor1b.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.motor2b.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        robot.motor3b.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.motor0.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        robot.motor1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        robot.motor2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        robot.motor3.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        robot.motor0b.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        robot.motor1b.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        robot.motor2b.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        robot.motor3b.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
-        robot.motor0.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor1.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor3.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor0b.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor1b.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor2b.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        robot.motor3b.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        robot.motor0.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robot.motor1.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robot.motor2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robot.motor3.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robot.motor0b.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robot.motor1b.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robot.motor2b.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        robot.motor3b.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
         // Wait for the game to start (Display Gyro value), and reset gyro before we move..
         while (!isStarted()) {
-//            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             angles = robot.sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             telemetry.addData(">", "Robot Heading = %.1f", angles.firstAngle);
             telemetry.update();
@@ -107,6 +106,10 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
+            for (LynxModule module : allHubs) {
+                module.clearBulkCache();
+            }
+
             //counter++;
 
             /* Color Sensor Section */
@@ -116,7 +119,6 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
             //     hsvValues);
 
             /* IMU */
-//            angles = robot.sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             angles = robot.sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
             /* Check for button presses to switch test motor & servo */
@@ -153,14 +155,14 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
             // Y button resets the encoder for the current target motor
             if (gamepad1.y) {
                 switch (tgtMotor) {
-                    case 0: robot.motor0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
-                    case 1: robot.motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
-                    case 2: robot.motor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
-                    case 3: robot.motor3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
-                    case 4: robot.motor0b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
-                    case 5: robot.motor1b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
-                    case 6: robot.motor2b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
-                    case 7: robot.motor3b.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); robot.motor3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 0: robot.motor0.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor0.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 1: robot.motor1.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 2: robot.motor2.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor2.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 3: robot.motor3.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor3.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 4: robot.motor0b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor0.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 5: robot.motor1b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor1.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 6: robot.motor2b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor2.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
+                    case 7: robot.motor3b.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER); robot.motor3.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER); break;
                     default: break;
                 }
             }
@@ -295,9 +297,9 @@ public class ZZ_TestBot_02_B extends LinearOpMode {
                             " | 7B : " + (robot.digital7b.getState() ? "T" : "F"));
             telemetry.addLine()
                     .addData("A 0", "%.3f",(robot.analog0.getVoltage()))
-                    .addData(" | 1 : ", "%.3f", (robot.analog1.getVoltage()))
-                    .addData(" | 2 : ", "%.3f", (robot.analog2.getVoltage()))
-                    .addData(" | 3 : ", "%.3f", (robot.analog3.getVoltage()));
+                    .addData("1", "%.3f", (robot.analog1.getVoltage()))
+                    .addData("2", "%.3f", (robot.analog2.getVoltage()))
+                    .addData("3", "%.3f", (robot.analog3.getVoltage()));
             telemetry.addLine()
                     .addData("A 0 Swyft Ranger 20DEG 0-0 Mode", "%.3f",(robot.analog0.getVoltage()*48.78136376)-4.985354503);
             //telemetry.addData("Inch 20DEG 0-0 Mode: ", (analog.getVoltage()*48.78136376)-4.985354503);
