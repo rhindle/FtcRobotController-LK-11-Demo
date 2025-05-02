@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.PartsDS;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "DiscShooter_with_Position", group = "")
-@Disabled
+//@Disabled
 public class DiscShooter_with_Position extends LinearOpMode {
 
    public Parts parts;
