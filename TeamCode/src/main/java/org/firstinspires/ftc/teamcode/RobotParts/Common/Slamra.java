@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.RobotParts.Common;
 // 20241108 - Comments are to disable the slamra code without entirely removing it... hopefully
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-//import com.spartronics4915.lib.T265Camera;
-//import com.spartronics4915.lib.T265Helper;
+import com.spartronics4915.lib.T265Camera;
+import com.spartronics4915.lib.T265Helper;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
 public class Slamra implements PartsInterface {
 
-//	volatile T265Camera slamra;
+	volatile T265Camera slamra;
 	Parts parts;
 
 	public Position slamraFieldStart = null;								// set when start pushed (? final ?)
@@ -36,13 +36,13 @@ public class Slamra implements PartsInterface {
 	}
 
 	public void initialize() {
-//		// Use raw slamra values only (functions in the library are broken)
-//		if (slamra == null) {
-//			slamra = T265Helper.getCamera(
-//					new T265Camera.OdometryInfo(new Pose2d(0,0,0),0.1),
-//					parts.opMode.hardwareMap.appContext);
-//		}
-//		if (!slamra.isStarted()) slamra.start();
+		// Use raw slamra values only (functions in the library are broken)
+		if (slamra == null) {
+			slamra = T265Helper.getCamera(
+					new T265Camera.OdometryInfo(new Pose2d(0,0,0),0.1),
+					parts.opMode.hardwareMap.appContext);
+		}
+		if (!slamra.isStarted()) slamra.start();
 	}
 
 	public void preInit() {
@@ -66,7 +66,7 @@ public class Slamra implements PartsInterface {
 	}
 
 	public void stop() {
-//		slamra.stop();
+		slamra.stop();
 	}
 
 	public boolean isSlamraDead(){return timesStuck > 4;}
@@ -104,8 +104,8 @@ public class Slamra implements PartsInterface {
 	}
 
 	public void updateSlamraPosition() {
-//		T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
-//		slamraRawPose = new Position(up.pose.getX(), up.pose.getY(), Math.toDegrees(up.pose.getHeading()));
+		T265Camera.CameraUpdate up = slamra.getLastReceivedCameraUpdate();
+		slamraRawPose = new Position(up.pose.getX(), up.pose.getY(), Math.toDegrees(up.pose.getHeading()));
 		slamraRobotPose = slamraRawPose.transformPosition(slamraRobotOffset);
 		slamraFinalPose = slamraFieldOffset.transformPosition(slamraRobotPose);
 		slamraRobotPosition = slamraFinalPose;
