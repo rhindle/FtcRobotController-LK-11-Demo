@@ -3,19 +3,15 @@ package org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot;
 import android.annotation.SuppressLint;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.AutoDrive;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.ImuMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.ImuMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.NeoMatrix;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Odometry;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Odometry;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Pinpoint;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.PositionMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Slamra;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.PositionMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Slamra;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;

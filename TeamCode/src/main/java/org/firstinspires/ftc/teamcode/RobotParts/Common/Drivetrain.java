@@ -178,4 +178,13 @@ public class Drivetrain {
             motor.setMotorType(motorConfigurationType);
         }
     }
+
+    public int[] getDriveEncoderValues() {
+        return new int[]{
+            motorLF.getCurrentPosition(),
+            motorRF.getCurrentPosition(),
+            motorLR.getCurrentPosition(),
+            motorRR.getCurrentPosition()
+        };
+    }
 }

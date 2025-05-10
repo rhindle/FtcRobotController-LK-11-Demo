@@ -2,6 +2,12 @@ package org.firstinspires.ftc.teamcode.RobotParts.Common;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.EncoderTracker;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.ImuMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Odometry;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Pinpoint;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.PositionMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Slamra;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSAprilTag;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSAuto;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed;
@@ -9,7 +15,6 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSSpeedControl;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake_Backup;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.SB_Auto;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.SB_Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
@@ -30,6 +35,7 @@ public class Parts implements PartsInterface {
    public Odometry odometry;
    public Pinpoint pinpoint;
    public Slamra slamra;
+   public EncoderTracker encoderTracker;
    public PositionMgr positionMgr;
    public AutoDrive autoDrive;
    public UserDrive userDrive;
@@ -43,6 +49,7 @@ public class Parts implements PartsInterface {
    public boolean useDistanceSensors = true;
    public boolean useDrivetrainEncoders = true;
    public boolean useSlamra = false;
+   public boolean useEncoderTracker = false;
    public boolean useAprilTag = false;
    public boolean useNeoMatrix = false;
    public boolean useIMU = true;   // todo: make everything work when this is disabled; odometry requires heading for example.

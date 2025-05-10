@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Pinpoint;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Pinpoint;
 import org.firstinspires.ftc.teamcode.Tools.i2c.GoBildaPinpointDriver;
 
 public class PinpointSB extends Pinpoint {

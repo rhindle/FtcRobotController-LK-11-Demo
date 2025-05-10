@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Test2024.PartsT24;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "Test24_v1", group = "")
-@Disabled
+//@Disabled
 public class Test24_v1 extends LinearOpMode {
 
     public Parts parts;
@@ -27,10 +27,12 @@ public class Test24_v1 extends LinearOpMode {
 
         parts = new PartsT24(this);
 
-        parts.useODO = false;
+        parts.useODO = true; //false;
         parts.useIMU = true;
-        parts.useSlamra = false;
+        parts.useSlamra = true; //false;
         parts.useNeoMatrix = false;
+        parts.useEncoderTracker = true;
+        parts.fieldStartPosition = new Position(0,0,0);
         parts.useAprilTag = false;
         parts.useDrivetrainEncoders = true;
         parts.reverseDrive = false;

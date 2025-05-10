@@ -6,11 +6,11 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.ImuMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.ImuMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.NeoMatrix;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.PositionMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Slamra;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.PositionMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Slamra;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;

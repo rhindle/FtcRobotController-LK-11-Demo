@@ -1,7 +1,7 @@
-package org.firstinspires.ftc.teamcode.RobotParts.Common;
+package org.firstinspires.ftc.teamcode.RobotParts.Common.Position;
 
-import com.qualcomm.robotcore.hardware.IMU;
-
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
@@ -15,13 +15,15 @@ public class PositionMgr implements PartsInterface {
    public Position slamraPosition;
    public Position tagPosition;
    public Position pinpointPosition;
+   public Position encoderPosition;
+   public Position encoderAbsPosition;
    public Position imuHeading;
    public Position headingOnly;
    public Position imusHeadingOnly;
    public Position slamraHeading;
    public Position pinpointHeading;
 
-   public PosSource[] priorityList = {PosSource.PINPOINT, PosSource.ODO, PosSource.SLAMRA, PosSource.TAG};
+   public PosSource[] priorityList = {PosSource.PINPOINT, PosSource.ODO, PosSource.SLAMRA, PosSource.ENCODER, PosSource.TAG};
    public PosSource[] headingOnlyPriority = {PosSource.PINPOINT_R, PosSource.IMU, PosSource.SLAMRA_R, PosSource.ODO, PosSource.TAG};
    public PosSource[] imusOnlyPriority = {PosSource.PINPOINT_R, PosSource.IMU, PosSource.SLAMRA_R};
    public Boolean prioritizeSlamraRforODO = false;      // use Slamra R instead of IMU for ODO
@@ -68,6 +70,10 @@ public class PositionMgr implements PartsInterface {
       if (parts.useAprilTag) {
          tagPosition = parts.dsApriltag.tagRobotPosition;
       }
+      if (parts.useEncoderTracker) {
+         encoderPosition = parts.encoderTracker.encoderRobotPosition;
+         encoderAbsPosition = parts.encoderTracker.encoderRobotPositionAbsolute;
+      }
       if (parts.useIMU) {
          imuHeading = parts.imuMgr.returnImuRobotHeadingAsPosition();
       }
@@ -78,6 +84,8 @@ public class PositionMgr implements PartsInterface {
       TelemetryMgr.message(Category.POSITION, "odo__", (odoPosition==null) ? "(null)" : odoPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "pinpt", (pinpointPosition==null) ? "(null)" : pinpointPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "slmra", (slamraPosition==null) ? "(null)" : slamraPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION, "encdr", (encoderPosition==null) ? "(null)" : encoderPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION, "enc_a", (encoderAbsPosition==null) ? "(null)" : encoderAbsPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "tag__", (tagPosition==null) ? "(null)" : tagPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "imu__", (imuHeading==null) ? "(null)" : imuHeading.toString(2));
       TelemetryMgr.message(Category.POSITION, "final", (robotPosition==null) ? "(null)" : robotPosition.toString(2));
@@ -117,6 +125,8 @@ public class PositionMgr implements PartsInterface {
                return slamraPosition.withR(imuHeading.R);
             }
             return slamraPosition;
+         case ENCODER:
+            return encoderPosition;
          case TAG:
             return tagPosition;
          case NONE:
@@ -157,6 +167,9 @@ public class PositionMgr implements PartsInterface {
                break;
             case SLAMRA:
                if (slamraPosition!=null) return PosSource.SLAMRA;
+               break;
+            case ENCODER:
+               if (encoderPosition!=null) return PosSource.ENCODER;
                break;
             case TAG:
                if (tagPosition!=null) return PosSource.TAG;

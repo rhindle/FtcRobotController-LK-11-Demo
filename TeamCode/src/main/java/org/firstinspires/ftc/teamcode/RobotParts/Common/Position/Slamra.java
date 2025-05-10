@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.RobotParts.Common;
+package org.firstinspires.ftc.teamcode.RobotParts.Common.Position;
 
 // 20241108 - Comments are to disable the slamra code without entirely removing it... hopefully
 
@@ -6,6 +6,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.spartronics4915.lib.T265Camera;
 import com.spartronics4915.lib.T265Helper;
 
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;

@@ -40,6 +40,12 @@ public class Position
         R = Functions.normalizeAngle(R);
     }
 
+    public void update(Position pos2) {
+        X = pos2.X;
+        Y = pos2.Y;
+        R = pos2.R;
+    }
+
     public void add(Position pos2){
         X += pos2.X;
         Y += pos2.Y;

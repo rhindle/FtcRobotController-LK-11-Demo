@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Odometry;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Odometry;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 
 public class OdometryDS extends Odometry {

@@ -7,11 +7,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.AutoDrive;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.ImuMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.EncoderTracker;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.ImuMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.NeoMatrix;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.PositionMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Slamra;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.PositionMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Slamra;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
@@ -56,6 +57,11 @@ public class PartsT24 extends Parts {
             slamra.slamraFieldStart = fieldStartPosition;
             slamra.slamraRobotOffset = slamraRobotOffset;
         }
+        if (useEncoderTracker) {
+            encoderTracker = new EncoderTracker(this);
+            encoderTracker.encoderRobotPosition = fieldStartPosition.clone();  // this is going to be updated so must be a clone, not a direct reference
+            encoderTracker.encoderRobotPositionAbsolute = fieldStartPosition.clone();  // as above
+        }
 
         if (useNeoMatrix) neo = new NeoMatrix(opMode, "neo", 8, 8, AdafruitNeoDriver.ColorOrder.GRB);  //RGB for fairy string
 
@@ -94,6 +100,7 @@ public class PartsT24 extends Parts {
         if (useODO) odometry.runLoop();  // get some things squared away before the regular runLoops start
 //        autoDrive.runLoop();
         if (useSlamra) slamra.preRun();
+        if (useEncoderTracker) encoderTracker.preRun();
     }
 
     @Override
@@ -103,6 +110,7 @@ public class PartsT24 extends Parts {
         robot.runLoop();
         buttonMgr.runLoop();
         if (useIMU) imuMgr.runLoop();
+        if (useEncoderTracker) encoderTracker.runLoop();
         if (useSlamra) slamra.runLoop();
         if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
         positionMgr.runLoop();
@@ -125,6 +133,7 @@ public class PartsT24 extends Parts {
         robot.runLoop();
         buttonMgr.runLoop();
         if (useIMU) imuMgr.runLoop();
+        if (useEncoderTracker) encoderTracker.runLoop();
         if (useSlamra) slamra.runLoop();
         if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
         positionMgr.runLoop();
@@ -157,5 +166,10 @@ public class PartsT24 extends Parts {
         TelemetryMgr.message(TelemetryMgr.Category.USERDRIVE, "storedHeading", JavaUtil.formatNumber(userDrive.storedHeading, 2));
         TelemetryMgr.message(TelemetryMgr.Category.USERDRIVE, "deltaHeading", JavaUtil.formatNumber(userDrive.deltaHeading, 2));
         TelemetryMgr.message(TelemetryMgr.Category.IMU, "IMU-Modified", useIMU ? JavaUtil.formatNumber(imuMgr.returnImuRobotHeading(),2) : "(not used)");
+        opMode.telemetry.addLine()
+                .addData("Encoder 0", robot.motor0.getCurrentPosition())
+                .addData("1", robot.motor1.getCurrentPosition())
+                .addData("2", robot.motor2.getCurrentPosition())
+                .addData("3", robot.motor3.getCurrentPosition());
     }
 }

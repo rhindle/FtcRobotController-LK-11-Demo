@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.Test2024;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Odometry;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Odometry;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 
 public class OdometryT24 extends Odometry {

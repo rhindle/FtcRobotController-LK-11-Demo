@@ -130,6 +130,8 @@ public class TelemetryMgr {
         SLAMRA_EXT("SLX"),
         ODOMETRY("ODO"),
         ODOMETRY_EXT("ODX"),
+        ENCODER("ENC"),
+        ENCODER_EXT("ENX"),
         AUTODRIVE("ADR"),
         AUTODRIVE_EXT("ADX"),
         USERDRIVE("UDR"),
