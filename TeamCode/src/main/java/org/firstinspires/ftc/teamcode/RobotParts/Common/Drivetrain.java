@@ -14,7 +14,7 @@ public class Drivetrain {
     private DcMotorEx motorLF, motorRF, motorLR, motorRR;
     DrivePowers drivePowers, drivePowersLast;
     public boolean minimizeCycleTime = true;   // skip small power changes to improve cycle time (each motor power transaction degrades cycle time)
-    public double ignoreDiff = .05;            // absolute power difference to ignore
+    public double ignoreDiff = .025;            // absolute power difference to ignore
     public boolean accelControl = true;
     public double accelControlRamp = 200;      // time allowed for transition from 0 to 1 power
     public long lastLoopTime = System.currentTimeMillis();
