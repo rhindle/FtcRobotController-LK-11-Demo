@@ -5,9 +5,12 @@ import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 public class ArcPathV2 {
 
     /*
-    Prompt:
+    This class was generated mostly by Gemini
+
+    My prompt:
       I have another change. Remember, I am looking for a function that creates points along a circular arc.
-      I already have a class Position for robot poses with X coordinate, Y coordinate, R angle in degrees. Given two positions (pos1, pos2), the function will calculate positions along the arc from pos1 to pos2.
+      I already have a class Position for robot poses with X coordinate, Y coordinate, R angle in degrees.
+      Given two positions (pos1, pos2), the function will calculate positions along the arc from pos1 to pos2.
       Parameters to the function will be:
           pos1 – the initial position
           pos2 – the final position
@@ -17,13 +20,13 @@ public class ArcPathV2 {
       The arc will be circular. The centerpoint of the arc will be calculated using pos1, pos2, and depth.
       The function will return an array of Positions. Each position will include an R angle that is tangent to the arc.
       Please return the answer in multiple parts so that it will not be truncated.
-     */
+   */
 
-    /*
-    Calculates points along a circular arc from pos1 to pos2,
-    with the arc's depth and direction determining the arc.
-    The R value of each returned Position is the tangent angle in degrees at that point.
-     */
+   /*
+   Calculates points along a circular arc from pos1 to pos2,
+   with the arc's depth and direction determining the arc.
+   The R value of each returned Position is the tangent angle in degrees at that point.
+   */
 
    /**
     * Calculates points along a circular arc from pos1 to pos2,
@@ -170,13 +173,23 @@ public class ArcPathV2 {
          double tangentAngleRadians = currentAngleRadians + (direction * Math.PI / 2);
 
          // Normalize tangent angle to [0, 360)
+//         double tangentAngleDegrees = Math.toDegrees(tangentAngleRadians);
+//         while (tangentAngleDegrees < 0) {
+//            tangentAngleDegrees += 360;
+//         }
+//         while (tangentAngleDegrees >= 360) {
+//            tangentAngleDegrees -= 360;
+//         }
          double tangentAngleDegrees = Math.toDegrees(tangentAngleRadians);
-         while (tangentAngleDegrees < 0) {
+         while (tangentAngleDegrees <= -180) {
             tangentAngleDegrees += 360;
          }
-         while (tangentAngleDegrees >= 360) {
+         while (tangentAngleDegrees > 180) {
             tangentAngleDegrees -= 360;
          }
+//         while (A > 180) A -= 360;
+//         while (A <= -180) A += 360;
+//         return A;
 
          arcPoints[i] = new Position(pointX, pointY, tangentAngleDegrees);
       }
@@ -210,7 +223,7 @@ public class ArcPathV2 {
       Position pos2_ex1 = new Position(10, 0, 0);
       double depth_ex1 = 0.5;
       int direction_ex1 = 1; // Counterclockwise
-      int numPositions_ex1 = 10;
+      int numPositions_ex1 = 11;
 
       System.out.println("CCW Arc Points from (0,0) to (10,0) with depth 0.5:");
       Position[] arcPath_ex1 = calculateArcPath(pos1_ex1, pos2_ex1, depth_ex1, direction_ex1, numPositions_ex1);
@@ -225,7 +238,7 @@ public class ArcPathV2 {
       Position pos2_ex2 = new Position(10, 0, 0);
       double depth_ex2 = 0.5;
       int direction_ex2 = -1; // Clockwise
-      int numPositions_ex2 = 10;
+      int numPositions_ex2 = 11;
 
       System.out.println("CW Arc Points from (0,0) to (10,0) with depth 0.5:");
       Position[] arcPath_ex2 = calculateArcPath(pos1_ex2, pos2_ex2, depth_ex2, direction_ex2, numPositions_ex2);
@@ -240,7 +253,7 @@ public class ArcPathV2 {
       Position pos2_ex3 = new Position(0, 10, 0);
       double depth_ex3 = 1.0; // Semicircle
       int direction_ex3 = 1; // Counterclockwise
-      int numPositions_ex3 = 10;
+      int numPositions_ex3 = 11;
 
       System.out.println("CCW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
       Position[] arcPath_ex3 = calculateArcPath(pos1_ex3, pos2_ex3, depth_ex3, direction_ex3, numPositions_ex3);
@@ -255,12 +268,30 @@ public class ArcPathV2 {
       Position pos2_ex4 = new Position(0, 10, 0);
       double depth_ex4 = 1.0; // Semicircle
       int direction_ex4 = -1; // Clockwise
-      int numPositions_ex4 = 10;
+      int numPositions_ex4 = 11;
 
       System.out.println("CW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
       Position[] arcPath_ex4 = calculateArcPath(pos1_ex4, pos2_ex4, depth_ex4, direction_ex4, numPositions_ex4);
       for (Position point : arcPath_ex4) {
          System.out.println(point);
       }
+
+      System.out.println("\n--------------------\n");
+
+      // Example 5: Counterclockwise Semicircle from (0, 0) to (10, 0) with depth 1.0
+      Position pos1_ex5 = new Position(0, 0, 0);
+      Position pos2_ex5 = new Position(10, 0, 0);
+      double depth_ex5 = 1.0; // Semicircle
+      int direction_ex5 = 1; // Counterclockwise
+      int numPositions_ex5 = 11;
+
+      System.out.println("CCW Semicircle Points from (0,0) to (10,0) with depth 1.0:");
+      Position[] arcPath_ex5 = calculateArcPath(pos1_ex5, pos2_ex5, depth_ex5, direction_ex5, numPositions_ex5);
+      for (Position point : arcPath_ex5) {
+         System.out.println(point);
+      }
+
+      System.out.println("\n--------------------\n");
+
    }
 }
