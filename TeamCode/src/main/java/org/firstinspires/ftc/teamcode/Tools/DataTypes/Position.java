@@ -34,6 +34,11 @@ public class Position
         return "X: " + pos.X + ", Y: " + pos.Y + ", R: " + pos.R;
     }
 
+    public String toString(){
+        //return toString(2);
+        return String.format("%.2f", X) + ", " + String.format("%.2f", Y) + ", " + String.format("%.2f", R) ;
+    }
+
     public Position clone(){ return new Position(X, Y, R);}
 
     public void normalize() {

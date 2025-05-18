@@ -28,6 +28,8 @@ public class ArcPathV2 {
    The R value of each returned Position is the tangent angle in degrees at that point.
    */
 
+   // LK note:  For a right angle arc, the sagitta will be sqrt(2)-1 or 0.4142
+
    /**
     * Calculates points along a circular arc from pos1 to pos2,
     * with the arc's depth and direction determined by the parameters.
@@ -94,10 +96,14 @@ public class ArcPathV2 {
       // For a counterclockwise arc from pos1 to pos2, the center is 90 degrees clockwise from the chord direction.
       // For a clockwise arc from pos1 to pos2, the center is 90 degrees counterclockwise from the chord direction.
       // This direction is opposite to the arc sweep direction.
-      double centerOffsetAngleRadians = chordAngleRadians - (direction * Math.PI / 2); // 90 degrees from chord direction based on 'direction'
+      //double centerOffsetAngleRadians = chordAngleRadians - (direction * Math.PI / 2); // 90 degrees from chord direction based on 'direction'
+
+      // LK: The generated code was exactly wrong/backward! For CCW arc, the center is 90 degrees CCW from the chord direction (and vice versa).
+      double centerOffsetAngleRadians = chordAngleRadians + (direction * Math.PI / 2); // 90 degrees from chord direction based on 'direction'
 
       double centerX = chordMidpointX + distanceCenterToChordMidpoint * Math.cos(centerOffsetAngleRadians);
       double centerY = chordMidpointY + distanceCenterToChordMidpoint * Math.sin(centerOffsetAngleRadians);
+      // LK debugging:  System.out.println("center x: " + centerX + " center y: " + centerY  );
 
       // 5. Calculate the Start and End Angles relative to the center
       double startAngleRadians = Math.atan2(pos1.Y - centerY, pos1.X - centerX);
@@ -154,7 +160,6 @@ public class ArcPathV2 {
          }
       }
 
-
       // 7. Calculate the Angle Increment
       double angleIncrementRadians = sweepAngleRadians / (numPositions - 1);
 
@@ -172,7 +177,7 @@ public class ArcPathV2 {
          // For clockwise, tangent is radius angle - PI/2.
          double tangentAngleRadians = currentAngleRadians + (direction * Math.PI / 2);
 
-         // Normalize tangent angle to [0, 360)
+//         // Normalize tangent angle to [0, 360)
 //         double tangentAngleDegrees = Math.toDegrees(tangentAngleRadians);
 //         while (tangentAngleDegrees < 0) {
 //            tangentAngleDegrees += 360;
@@ -180,16 +185,16 @@ public class ArcPathV2 {
 //         while (tangentAngleDegrees >= 360) {
 //            tangentAngleDegrees -= 360;
 //         }
-         double tangentAngleDegrees = Math.toDegrees(tangentAngleRadians);
-         while (tangentAngleDegrees <= -180) {
-            tangentAngleDegrees += 360;
-         }
-         while (tangentAngleDegrees > 180) {
-            tangentAngleDegrees -= 360;
-         }
-//         while (A > 180) A -= 360;
-//         while (A <= -180) A += 360;
-//         return A;
+
+         // Normalize tangent angle to [-179, 180)
+//         double tangentAngleDegrees = Math.toDegrees(tangentAngleRadians);
+//         while (tangentAngleDegrees <= -180) {
+//            tangentAngleDegrees += 360;
+//         }
+//         while (tangentAngleDegrees > 180) {
+//            tangentAngleDegrees -= 360;
+//         }
+         double tangentAngleDegrees = Functions.normalizeAngle(Math.toDegrees(tangentAngleRadians));
 
          arcPoints[i] = new Position(pointX, pointY, tangentAngleDegrees);
       }
@@ -197,101 +202,159 @@ public class ArcPathV2 {
       return arcPoints;
    }
 
-   // Example usage
-   // Assuming the Position class is defined elsewhere or within this file
-   // Example Position class definition (if not already present):
-   public static class Position {
-      public double X;
-      public double Y;
-      public double R; // Angle in degrees
-
-      public Position(double X, double Y, double R) {
-         this.X = X;
-         this.Y = Y;
-         this.R = R;
-      }
-
-      @Override
-      public String toString() {
-         return "Position(X=" + String.format("%.2f", X) + ", Y=" + String.format("%.2f", Y) + ", R=" + String.format("%.2f", R) + "°)";
-      }
-   }
+//   // Example usage
+//   // Assuming the Position class is defined elsewhere or within this file
+//   // Example Position class definition (if not already present):
+//   public static class Position {
+//      public double X;
+//      public double Y;
+//      public double R; // Angle in degrees
+//
+//      public Position(double X, double Y, double R) {
+//         this.X = X;
+//         this.Y = Y;
+//         this.R = R;
+//      }
+//
+//      @Override
+//      public String toString() {
+//         //return "Position(X=" + String.format("%.2f", X) + ", Y=" + String.format("%.2f", Y) + ", R=" + String.format("%.2f", R) + "°)";
+//         return String.format("%.2f", X) + ", " + String.format("%.2f", Y) + ", " + String.format("%.2f", R) ;
+//      }
+//   }
 
    public static void main(String[] args) {
-      // Example 1: Counterclockwise Arc from (0, 0) to (10, 0) with depth 0.5
-      Position pos1_ex1 = new Position(0, 0, 0);
-      Position pos2_ex1 = new Position(10, 0, 0);
-      double depth_ex1 = 0.5;
-      int direction_ex1 = 1; // Counterclockwise
-      int numPositions_ex1 = 11;
 
-      System.out.println("CCW Arc Points from (0,0) to (10,0) with depth 0.5:");
-      Position[] arcPath_ex1 = calculateArcPath(pos1_ex1, pos2_ex1, depth_ex1, direction_ex1, numPositions_ex1);
-      for (Position point : arcPath_ex1) {
+      Position pos1_ex;
+      Position pos2_ex;
+      double depth_ex;
+      int direction_ex;
+      int numPositions_ex;
+      Position[] arcPath_ex;
+
+      // Example 1: Counterclockwise Arc from (0, 0) to (10, 0) with depth 0.5
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(10, 0, 0);
+      depth_ex = 0.5;
+      direction_ex = 1; // Counterclockwise
+      numPositions_ex = 11;
+
+      System.out.println("1. CCW Arc Points from (0,0) to (10,0) with depth 0.5:");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+
+      System.out.println("\n--------------------\n");
+
+      // Example 1B: Counterclockwise Arc from (0, 0) to (0, 10) with depth 0.5
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(0, 10, 0);
+      depth_ex = 0.5;
+      direction_ex = 1; // Counterclockwise
+      numPositions_ex = 11;
+
+      System.out.println("1B. CCW Arc Points from (0,0) to (0,10) with depth 0.5:");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
          System.out.println(point);
       }
 
       System.out.println("\n--------------------\n");
 
       // Example 2: Clockwise Arc from (0, 0) to (10, 0) with depth 0.5
-      Position pos1_ex2 = new Position(0, 0, 0);
-      Position pos2_ex2 = new Position(10, 0, 0);
-      double depth_ex2 = 0.5;
-      int direction_ex2 = -1; // Clockwise
-      int numPositions_ex2 = 11;
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(10, 0, 0);
+      depth_ex = 0.5;
+      direction_ex = -1; // Clockwise
+      numPositions_ex = 11;
 
-      System.out.println("CW Arc Points from (0,0) to (10,0) with depth 0.5:");
-      Position[] arcPath_ex2 = calculateArcPath(pos1_ex2, pos2_ex2, depth_ex2, direction_ex2, numPositions_ex2);
-      for (Position point : arcPath_ex2) {
+      System.out.println("2. CW Arc Points from (0,0) to (10,0) with depth 0.5:");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
          System.out.println(point);
       }
 
       System.out.println("\n--------------------\n");
 
       // Example 3: Counterclockwise Semicircle from (0, 0) to (0, 10) with depth 1.0
-      Position pos1_ex3 = new Position(0, 0, 0);
-      Position pos2_ex3 = new Position(0, 10, 0);
-      double depth_ex3 = 1.0; // Semicircle
-      int direction_ex3 = 1; // Counterclockwise
-      int numPositions_ex3 = 11;
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(0, 10, 0);
+      depth_ex = 1.0; // Semicircle
+      direction_ex = 1; // Counterclockwise
+      numPositions_ex = 11;
 
-      System.out.println("CCW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
-      Position[] arcPath_ex3 = calculateArcPath(pos1_ex3, pos2_ex3, depth_ex3, direction_ex3, numPositions_ex3);
-      for (Position point : arcPath_ex3) {
+      System.out.println("3. CCW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
          System.out.println(point);
       }
 
       System.out.println("\n--------------------\n");
 
       // Example 4: Clockwise Semicircle from (0, 0) to (0, 10) with depth 1.0
-      Position pos1_ex4 = new Position(0, 0, 0);
-      Position pos2_ex4 = new Position(0, 10, 0);
-      double depth_ex4 = 1.0; // Semicircle
-      int direction_ex4 = -1; // Clockwise
-      int numPositions_ex4 = 11;
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(0, 10, 0);
+      depth_ex = 1.0; // Semicircle
+      direction_ex = -1; // Clockwise
+      numPositions_ex = 11;
 
-      System.out.println("CW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
-      Position[] arcPath_ex4 = calculateArcPath(pos1_ex4, pos2_ex4, depth_ex4, direction_ex4, numPositions_ex4);
-      for (Position point : arcPath_ex4) {
+      System.out.println("4. CW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
          System.out.println(point);
       }
 
       System.out.println("\n--------------------\n");
 
       // Example 5: Counterclockwise Semicircle from (0, 0) to (10, 0) with depth 1.0
-      Position pos1_ex5 = new Position(0, 0, 0);
-      Position pos2_ex5 = new Position(10, 0, 0);
-      double depth_ex5 = 1.0; // Semicircle
-      int direction_ex5 = 1; // Counterclockwise
-      int numPositions_ex5 = 11;
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(10, 0, 0);
+      depth_ex = 1.0; // Semicircle
+      direction_ex = 1; // Counterclockwise
+      numPositions_ex = 11;
 
-      System.out.println("CCW Semicircle Points from (0,0) to (10,0) with depth 1.0:");
-      Position[] arcPath_ex5 = calculateArcPath(pos1_ex5, pos2_ex5, depth_ex5, direction_ex5, numPositions_ex5);
-      for (Position point : arcPath_ex5) {
+      System.out.println("5. CCW Semicircle Points from (0,0) to (10,0) with depth 1.0:");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
          System.out.println(point);
       }
 
       System.out.println("\n--------------------\n");
 
+      // Example 6: Counterclockwise Semicircle from (0, 0) to (7, 7) with depth 1.0
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(7, 7, 0);
+      depth_ex = 1.0; // Semicircle
+      direction_ex = 1; // Counterclockwise
+      numPositions_ex = 11;
+
+//      System.out.println("6. CCW Semicircle Points from (0,0) to (7,7) with depth 1.0:");
+      System.out.println("6. " + ((direction_ex==1) ? "CCW" : "CW") + " arc points from (" + pos1_ex.toString() +") to (" +
+              pos2_ex.toString() +") with depth " + depth_ex +":");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+
+      System.out.println("\n--------------------\n");
+
+      // Example 7: Clockwise Semicircle from (0, 0) to (7, -7) with depth 0.5
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(7, -7, 0);
+      depth_ex = 0.5; // Semicircle
+      depth_ex = Math.sqrt(2) - 1; // for a right angle curve.
+      direction_ex = -1; // clockwise
+      numPositions_ex = 11;
+
+      System.out.println("7. " + ((direction_ex==1) ? "CCW" : "CW") + " arc points from (" + pos1_ex.toString() +") to (" +
+              pos2_ex.toString() +") with depth " + depth_ex +":");
+      //System.out.println("7. CW Semicircle Points from (0,0) to (7,-7) with depth 0.5:");
+      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+
+      System.out.println("\n--------------------\n");
    }
 }
