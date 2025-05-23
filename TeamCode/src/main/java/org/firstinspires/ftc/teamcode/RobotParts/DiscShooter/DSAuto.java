@@ -147,4 +147,34 @@ public class DSAuto implements PartsInterface {
               new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, speed, timeLimit,false) });
       waitForDriveComplete();
    }
+
+   public void testAutoMethod2() {
+      isAuto = true;
+      boolean result;
+      int timeLimit = 5000;
+      double speed = 1.0;
+//      driveToTarget( new NavigationTarget(new Position(-72,-24,0), parts.dsMisc.toleranceMedium, speed, timeLimit));
+//      driveToTarget( new NavigationTarget(new Position(-24,-24,90), parts.dsMisc.toleranceMedium, speed, timeLimit));
+//      driveToTarget( new NavigationTarget(new Position(-24,24,180), parts.dsMisc.toleranceMedium, speed, timeLimit));
+//      driveToTarget( new NavigationTarget(new Position(-72,24,-90), parts.dsMisc.toleranceMedium, speed, timeLimit));
+
+//      driveToTarget( new NavigationTarget(new Position(-72,-24,0), parts.dsMisc.toleranceMedium, speed, timeLimit));
+//      driveToTarget( new NavigationTarget(new Position(-24,-24,90), parts.dsMisc.toleranceMedium, speed, timeLimit));
+//      driveToTarget( new NavigationTarget(new Position(-24,24,180), parts.dsMisc.toleranceMedium, speed, timeLimit));
+//      driveToTarget( new NavigationTarget(new Position(-72,24,-90), parts.dsMisc.toleranceMedium, speed, timeLimit));
+
+      driveToTarget( new NavigationTarget(new Position(-72,0,-90), parts.dsMisc.toleranceMedium, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-69,-12,-60), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-60,-21,-30), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-48,-24,0), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-36,-21,30), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-27,-12,60), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-24,0,90), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-27,12,120), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-36,21,150), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-48,24,180), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-60,21,-150), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-69,12,-120), parts.dsMisc.toleranceTransition, speed, timeLimit));
+      driveToTarget( new NavigationTarget(new Position(-72,0,-90), parts.dsMisc.toleranceMedium, speed, timeLimit));
+   }
 }
