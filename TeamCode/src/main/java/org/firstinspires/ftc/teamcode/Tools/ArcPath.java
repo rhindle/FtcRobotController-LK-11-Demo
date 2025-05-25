@@ -386,14 +386,14 @@ public class ArcPath {
 
    public static Position[] calculateRightAngleArcPath(Position pos1, Position pos2, double depth, int direction, int numPositions) {
       //For a right angle arc (versus semicircle type_, the sagitta will be sqrt(2)-1 or 0.4142
-      return calculateArcPathWithDepth(pos1, pos2, depth*0.4142, direction, numPositions);
+      return calculateArcPathWithDepth(pos1, pos2, depth * (Math.sqrt(2) - 1), direction, numPositions);
    }
 
    public static Position getCirclePoint(Position center, double radius, double angle) {
       return new Position(
          center.X + radius * Math.cos(Math.toRadians(angle)),
          center.Y + radius * Math.sin(Math.toRadians(angle)),
-         Functions.normalizeAngle(angle + Math.signum(angle)*90)
+         Functions.normalizeAngle(angle + Math.signum(angle) * 90)
       );
    }
 }
