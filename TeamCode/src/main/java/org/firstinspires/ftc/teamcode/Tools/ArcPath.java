@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.Tools;
 
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
-public class ArcPathV2 {
+public class ArcPath {
 
    // todo: Change the rotation handling.
    // Currently, it provides a path with a rotation tangent to the curve.
