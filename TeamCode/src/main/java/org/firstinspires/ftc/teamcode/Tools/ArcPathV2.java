@@ -4,8 +4,20 @@ import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 public class ArcPathV2 {
 
+   // todo: Change the rotation handling.
+   // Currently, it provides a path with a rotation tangent to the curve.
+   // Things that might be wanted instead:
+   // - A relative adjustment, e.g., +180 for the robot going backwards, +90 fot the robot facing the center
+   // - Hold a constant angle (absolute)
+   // - Hold a constant reference angle to some point (like the scoring target)
+   // - Turn from pos1.R to pos2.R divided by the number of points (need to figure out or specify direction)
+   // - Turn from pos1.R to pos2.R automatically like a linear navigation point
+
+   // todo: Add some kind of spline approximation method.
+   // Provide a point along the path?  Calculate the midpoint?  Tangency at the midpoint?
+
     /*
-    This class was generated mostly by Gemini
+    This class was initially generated mostly by Gemini
 
     My prompt:
       I have another change. Remember, I am looking for a function that creates points along a circular arc.
@@ -44,7 +56,7 @@ public class ArcPathV2 {
     * @param numPositions   The number of positions to calculate along the arc.
     * @return An array of Position objects, or an empty array if calculation is not possible or invalid input.
     */
-   public static Position[] calculateArcPath(Position pos1, Position pos2, double depth, int direction, int numPositions) {
+   public static Position[] calculateArcPathWithDepth(Position pos1, Position pos2, double depth, int direction, int numPositions) {
       // Input validation
       if (numPositions <= 1 || depth < 0.1 || depth > 1.0 || (direction != 1 && direction != -1)) {
          if (numPositions == 1) {
@@ -101,13 +113,27 @@ public class ArcPathV2 {
       // LK: The generated code was exactly wrong/backward! For CCW arc, the center is 90 degrees CCW from the chord direction (and vice versa).
       double centerOffsetAngleRadians = chordAngleRadians + (direction * Math.PI / 2); // 90 degrees from chord direction based on 'direction'
 
-      double centerX = chordMidpointX + distanceCenterToChordMidpoint * Math.cos(centerOffsetAngleRadians);
-      double centerY = chordMidpointY + distanceCenterToChordMidpoint * Math.sin(centerOffsetAngleRadians);
+//      double centerX = chordMidpointX + distanceCenterToChordMidpoint * Math.cos(centerOffsetAngleRadians);
+//      double centerY = chordMidpointY + distanceCenterToChordMidpoint * Math.sin(centerOffsetAngleRadians);
       // LK debugging:  System.out.println("center x: " + centerX + " center y: " + centerY  );
+      // LK: Converted to use Position for Center
+      Position center = new Position();
+      center.X = chordMidpointX + distanceCenterToChordMidpoint * Math.cos(centerOffsetAngleRadians);
+      center.Y = chordMidpointY + distanceCenterToChordMidpoint * Math.sin(centerOffsetAngleRadians);
+
+      return calculateArcPoints(pos1, pos2, center, direction, numPositions);
+   }
+
+   public static Position[] calculateArcPoints(Position pos1, Position pos2, Position center, int direction, int numPositions) {
+      // LK: Broke the original into two functions so we can generate an arc from three points and other variations
+
+      double epsilon = 1e-9;
+      double depth = 0.5;  // todo: Fix this temporary hack
+      double radius = Math.sqrt(Math.pow(pos1.X - center.X, 2) + Math.pow(pos1.Y - center.Y, 2));
 
       // 5. Calculate the Start and End Angles relative to the center
-      double startAngleRadians = Math.atan2(pos1.Y - centerY, pos1.X - centerX);
-      double endAngleRadians = Math.atan2(pos2.Y - centerY, pos2.X - centerX);
+      double startAngleRadians = Math.atan2(pos1.Y - center.Y, pos1.X - center.X);
+      double endAngleRadians = Math.atan2(pos2.Y - center.Y, pos2.X - center.X);
 
       // Normalize angles to [0, 2pi)
       if (startAngleRadians < 0) {
@@ -144,7 +170,7 @@ public class ArcPathV2 {
       // to always get the shorter arc based on this center.
       // A simpler check: If the magnitude of the sweep angle is > PI and depth < 1,
       // we've likely calculated the longer arc. Take the shorter one (2*PI - |sweep|).
-      if (Math.abs(sweepAngleRadians) > Math.PI + epsilon && depth < 1.0 - epsilon) {
+      if (Math.abs(sweepAngleRadians) > Math.PI + epsilon && depth < 1.0 - epsilon) {  //todo: clean this up
          // If the calculated sweep is the longer arc segment, flip it.
          if (sweepAngleRadians > 0) { // Was calculated as large positive (CCW)
             sweepAngleRadians = -(2 * Math.PI - sweepAngleRadians); // Flip to shorter CW
@@ -169,31 +195,13 @@ public class ArcPathV2 {
          double currentAngleRadians = startAngleRadians + i * angleIncrementRadians;
 
          // Point Coordinates
-         double pointX = centerX + radius * Math.cos(currentAngleRadians);
-         double pointY = centerY + radius * Math.sin(currentAngleRadians);
+         double pointX = center.X + radius * Math.cos(currentAngleRadians);
+         double pointY = center.Y + radius * Math.sin(currentAngleRadians);
 
          // Tangent Angle (90 degrees from the radius angle, direction depends on arc direction)
          // For counterclockwise, tangent is radius angle + PI/2.
          // For clockwise, tangent is radius angle - PI/2.
          double tangentAngleRadians = currentAngleRadians + (direction * Math.PI / 2);
-
-//         // Normalize tangent angle to [0, 360)
-//         double tangentAngleDegrees = Math.toDegrees(tangentAngleRadians);
-//         while (tangentAngleDegrees < 0) {
-//            tangentAngleDegrees += 360;
-//         }
-//         while (tangentAngleDegrees >= 360) {
-//            tangentAngleDegrees -= 360;
-//         }
-
-         // Normalize tangent angle to [-179, 180)
-//         double tangentAngleDegrees = Math.toDegrees(tangentAngleRadians);
-//         while (tangentAngleDegrees <= -180) {
-//            tangentAngleDegrees += 360;
-//         }
-//         while (tangentAngleDegrees > 180) {
-//            tangentAngleDegrees -= 360;
-//         }
          double tangentAngleDegrees = Functions.normalizeAngle(Math.toDegrees(tangentAngleRadians));
 
          arcPoints[i] = new Position(pointX, pointY, tangentAngleDegrees);
@@ -201,27 +209,6 @@ public class ArcPathV2 {
 
       return arcPoints;
    }
-
-//   // Example usage
-//   // Assuming the Position class is defined elsewhere or within this file
-//   // Example Position class definition (if not already present):
-//   public static class Position {
-//      public double X;
-//      public double Y;
-//      public double R; // Angle in degrees
-//
-//      public Position(double X, double Y, double R) {
-//         this.X = X;
-//         this.Y = Y;
-//         this.R = R;
-//      }
-//
-//      @Override
-//      public String toString() {
-//         //return "Position(X=" + String.format("%.2f", X) + ", Y=" + String.format("%.2f", Y) + ", R=" + String.format("%.2f", R) + "°)";
-//         return String.format("%.2f", X) + ", " + String.format("%.2f", Y) + ", " + String.format("%.2f", R) ;
-//      }
-//   }
 
    public static void main(String[] args) {
 
@@ -240,7 +227,7 @@ public class ArcPathV2 {
       numPositions_ex = 11;
 
       System.out.println("1. CCW Arc Points from (0,0) to (10,0) with depth 0.5:");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
@@ -255,7 +242,7 @@ public class ArcPathV2 {
       numPositions_ex = 11;
 
       System.out.println("1B. CCW Arc Points from (0,0) to (0,10) with depth 0.5:");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
@@ -270,7 +257,7 @@ public class ArcPathV2 {
       numPositions_ex = 11;
 
       System.out.println("2. CW Arc Points from (0,0) to (10,0) with depth 0.5:");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
@@ -285,7 +272,7 @@ public class ArcPathV2 {
       numPositions_ex = 11;
 
       System.out.println("3. CCW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
@@ -300,7 +287,7 @@ public class ArcPathV2 {
       numPositions_ex = 11;
 
       System.out.println("4. CW Semicircle Points from (0,0) to (0,10) with depth 1.0:");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
@@ -315,7 +302,7 @@ public class ArcPathV2 {
       numPositions_ex = 11;
 
       System.out.println("5. CCW Semicircle Points from (0,0) to (10,0) with depth 1.0:");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
@@ -332,7 +319,7 @@ public class ArcPathV2 {
 //      System.out.println("6. CCW Semicircle Points from (0,0) to (7,7) with depth 1.0:");
       System.out.println("6. " + ((direction_ex==1) ? "CCW" : "CW") + " arc points from (" + pos1_ex.toString() +") to (" +
               pos2_ex.toString() +") with depth " + depth_ex +":");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
@@ -350,11 +337,63 @@ public class ArcPathV2 {
       System.out.println("7. " + ((direction_ex==1) ? "CCW" : "CW") + " arc points from (" + pos1_ex.toString() +") to (" +
               pos2_ex.toString() +") with depth " + depth_ex +":");
       //System.out.println("7. CW Semicircle Points from (0,0) to (7,-7) with depth 0.5:");
-      arcPath_ex = calculateArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
 
       System.out.println("\n--------------------\n");
+   }
+
+   // Stuff below here is not AI but LK
+
+   // Adapted from https://stackoverflow.com/questions/4103405/what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
+   public static Position getCircleCenterFrom3Points(Position startPos, Position midPos, Position endPos) {
+      if (startPos.isEqualXY(midPos) || startPos.isEqualXY(endPos) || endPos.isEqualXY(midPos)) {
+         return null; // This won't work right if the three points aren't different
+      }
+      double ax = (startPos.X + midPos.X) / 2;
+      double ay = (startPos.Y + midPos.Y) / 2;
+      double ux = (startPos.Y - midPos.Y);
+      double uy = (midPos.X - startPos.X);
+      double bx = (midPos.X + endPos.X) / 2;
+      double by = (midPos.Y + endPos.Y) / 2;
+      double vx = (midPos.Y - endPos.Y);
+      double vy = (endPos.X - midPos.X);
+      double dx = ax - bx;
+      double dy = ay - by;
+      double vu = vx * uy - vy * ux;
+      if (vu == 0)
+         return null; // Points are collinear, so no unique solution
+      double g = (dx * uy - dy * ux) / vu;
+      Position center = new Position(bx + g * vx, by + g * vy);
+
+      //figure out if this is CW or CCW
+      double startAngle = Math.toDegrees(Math.atan2(startPos.Y - center.Y, startPos.X - center.X));
+      double midAngle = Math.toDegrees(Math.atan2(midPos.Y - center.Y, midPos.X - center.X));
+      double sweep = Functions.normalizeAngle(midAngle - startAngle);
+      center.R = Math.signum(sweep);
+      //the center.R has no meaning otherwise, so use it to return the direction
+
+      return center;
+   }
+
+   public static Position[] calculateArcPathFrom3Points (Position startPos, Position midPos, Position endPos, int numPositions) {
+      Position center = getCircleCenterFrom3Points(startPos, midPos, endPos);
+      if (center == null) return null;
+      return calculateArcPoints(startPos, endPos, center, (int)center.R, numPositions);
+   }
+
+   public static Position[] calculateRightAngleArcPath(Position pos1, Position pos2, double depth, int direction, int numPositions) {
+      //For a right angle arc (versus semicircle type_, the sagitta will be sqrt(2)-1 or 0.4142
+      return calculateArcPathWithDepth(pos1, pos2, depth*0.4142, direction, numPositions);
+   }
+
+   public static Position getCirclePoint(Position center, double radius, double angle) {
+      return new Position(
+         center.X + radius * Math.cos(Math.toRadians(angle)),
+         center.Y + radius * Math.sin(Math.toRadians(angle)),
+         Functions.normalizeAngle(angle + Math.signum(angle)*90)
+      );
    }
 }
