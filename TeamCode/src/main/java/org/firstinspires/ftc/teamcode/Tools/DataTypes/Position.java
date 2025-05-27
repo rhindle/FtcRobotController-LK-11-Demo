@@ -25,6 +25,13 @@ public class Position
         R = 0;
     }
 
+    // copy constructor for deep copy; see also clone method below
+    public Position(Position pos){
+        this.X = pos.X;
+        this.Y = pos.Y;
+        this.R = pos.R;
+    }
+
     public Position switchXY(){
         return new Position(Y, X, R);
     }

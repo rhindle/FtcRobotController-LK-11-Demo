@@ -1,10 +1,14 @@
 package org.firstinspires.ftc.teamcode.Tools;
 
+import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
+import org.firstinspires.ftc.teamcode.Tools.DataTypes.PositionTolerance;
+
+import java.util.Arrays;
 
 public class ArcPath {
 
-   // todo: Change the rotation handling.
+   // todo: Change the rotation handling.  WRITTEN, NEED TO TEST
    // Currently, it provides a path with a rotation tangent to the curve.
    // Things that might be wanted instead:
    // - A relative adjustment, e.g., +180 for the robot going backwards, +90 fot the robot facing the center
@@ -13,11 +17,12 @@ public class ArcPath {
    // - Turn from pos1.R to pos2.R divided by the number of points (need to figure out or specify direction)
    // - Turn from pos1.R to pos2.R automatically like a linear navigation point
 
-   // todo: Add some kind of spline approximation method.
+   // todo: Add some kind of spline approximation method.  WRITTEN, NEED TO TEST
    // Provide a point along the path?  Calculate the midpoint?  Tangency at the midpoint?
 
     /*
     This class was initially generated mostly by Gemini
+    (Specifically the "calculateArcPath" method, which has since been broken up, and the original tests.)
 
     My prompt:
       I have another change. Remember, I am looking for a function that creates points along a circular arc.
@@ -395,5 +400,110 @@ public class ArcPath {
          center.Y + radius * Math.sin(Math.toRadians(angle)),
          Functions.normalizeAngle(angle + Math.signum(angle) * 90)
       );
+   }
+
+   // Things previously wanted and now added:
+   // - A relative adjustment, e.g., +180 for the robot going backwards, +90 fot the robot facing the center
+   // - Hold a constant angle (absolute)
+   // - Hold a constant reference angle to some point (like the scoring target)
+   // - Turn from pos1.R to pos2.R divided by the number of points (need to figure out or specify direction)
+   // - Turn from pos1.R to pos2.R automatically like a linear navigation point
+   // - A spline approximation method
+
+   public static Position[] adjustArcPathHeadingRelative(Position[] path, double adjAngle) {
+      if (path==null) return null;
+      Position[] newPath = clonePath(path);
+      for (Position p : newPath) {
+         p.R = Functions.normalizeAngle(p.R + adjAngle);
+      }
+      return newPath;
+   }
+
+   public static Position[] adjustArcPathHeadingConstant(Position[] path, double constAngle) {
+      if (path==null) return null;
+      Position[] newPath = clonePath(path);
+      double angle = Functions.normalizeAngle(constAngle);
+      for (Position p : newPath) {
+         p.R = angle;
+      }
+      return newPath;
+   }
+
+   public static Position[] adjustArcPathHeadingTarget(Position[] path, Position targetPos) {
+      if (path==null) return null;
+      Position[] newPath = clonePath(path);
+      for (Position p : newPath) {
+         double x = targetPos.X - p.X;
+         double y = targetPos.Y - p.Y;
+         p.R = Math.toDegrees(Math.atan2(y,x));
+      }
+      return newPath;
+   }
+
+   public static Position[] adjustArcPathHeadingStartEnd(Position[] path, double startHeading, double endHeading) {
+      if (path==null) return null;
+      Position[] newPath = clonePath(path);
+      int numPos = newPath.length;
+      //// determine direction consistent with autodrive; move to shorter error
+      //int direction = (int)Math.signum(Functions.normalizeAngle(endHeading-startHeading));
+      double interval = Functions.normalizeAngle(endHeading-startHeading) / (numPos - 1);
+      for (int i = 0; i < newPath.length; i++) {
+         newPath[i].R = Functions.normalizeAngle(interval * i + startHeading);
+      }
+      return newPath;
+   }
+
+   public static Position[] adjustArcPathHeadingEnd(Position[] path, double startHeading, double endHeading) {
+      // this will only be useful with a positionTolerance that effectively ignores the heading
+      if (path==null) return null;
+      Position[] newPath = clonePath(path);
+      for (Position p : newPath) {
+         p.R = endHeading;
+      }
+      newPath[0].R = startHeading;
+      return newPath;
+   }
+
+   public static Position[] calculateSplineApprox (Position pos1, Position pos2, Position center,
+                                                   double depth, int direction, int numPositions) {
+      // todo: replace this with something that can calculate a true spline?
+      // calculates a pair of arc to simulate a spline; one weakness is that the midpoint won't be tangent
+      // for simplicity, numPositions will be used for both arc segments, so the array will have length numPositions * 2
+      // supply null for center if you want the midpoint calculated
+      Position posCenter;
+      if (center != null) {
+         posCenter = center.clone();
+      }
+      else {
+         posCenter = new Position ((pos1.X + pos2.X) / 2.0, (pos1.Y + pos2.Y) / 2.0);
+      }
+      Position[] firstArc  = calculateRightAngleArcPath(pos1, posCenter, depth,  direction, numPositions);
+      Position[] secondArc = calculateRightAngleArcPath(posCenter, pos2, depth, -direction, numPositions);
+      Position[] spline = Arrays.copyOf(firstArc, firstArc.length + secondArc.length);
+      System.arraycopy(secondArc, 0, spline, firstArc.length, secondArc.length);
+      return spline;
+   }
+
+   public static Position[] clonePath (Position[] path) {
+      if (path==null) return null;
+      Position[] newPath = new Position[path.length];
+      for (int i = 0; i < path.length; i++) {
+         newPath[i] = path[i].clone();       // Using clone method
+         //newPath[i] = new Position(path[i]); // Using copy constructor
+      }
+      return newPath;
+   }
+
+   public static NavigationTarget[] buildNavTargetArray (Position[] path, PositionTolerance startTolerance, PositionTolerance endTolerance,
+                                                         PositionTolerance midTolerance, double maxSpeed, long timeLimit,
+                                                         boolean noSlowAtEnd ) {
+      NavigationTarget[] navTargetArray = new NavigationTarget[path.length];
+      for (int i = 0; i < path.length; i++) {
+         navTargetArray[i] = new NavigationTarget(new Position(path[i]), midTolerance, maxSpeed, timeLimit, true);
+      }
+      navTargetArray[0].tolerance = startTolerance;
+      navTargetArray[path.length - 1].tolerance = endTolerance;
+      navTargetArray[path.length - 1].noSlow = noSlowAtEnd;
+      return navTargetArray;
    }
 }
