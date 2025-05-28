@@ -8,18 +8,6 @@ import java.util.Arrays;
 
 public class ArcPath {
 
-   // todo: Change the rotation handling.  WRITTEN, NEED TO TEST
-   // Currently, it provides a path with a rotation tangent to the curve.
-   // Things that might be wanted instead:
-   // - A relative adjustment, e.g., +180 for the robot going backwards, +90 fot the robot facing the center
-   // - Hold a constant angle (absolute)
-   // - Hold a constant reference angle to some point (like the scoring target)
-   // - Turn from pos1.R to pos2.R divided by the number of points (need to figure out or specify direction)
-   // - Turn from pos1.R to pos2.R automatically like a linear navigation point
-
-   // todo: Add some kind of spline approximation method.  WRITTEN, NEED TO TEST
-   // Provide a point along the path?  Calculate the midpoint?  Tangency at the midpoint?
-
     /*
     This class was initially generated mostly by Gemini
     (Specifically the "calculateArcPath" method, which has since been broken up, and the original tests.)
@@ -166,30 +154,31 @@ public class ArcPath {
          sweepAngleRadians *= -1;
       }
 
-      // Ensure the magnitude of the sweep angle corresponds to the shorter arc segment
-      // if the initial calculation yielded the longer one, unless it's a semicircle.
-      // The distanceCenterToChordMidpoint calculation implies the center is on the side of the chord
-      // that produces the arc defined by 'h', which corresponds to the shorter segment unless h is max (semicircle).
-      // If the calculated sweep angle magnitude is greater than PI and the depth is not 1,
-      // it means the center was calculated on the wrong side, or the angle calculation needs adjustment
-      // to always get the shorter arc based on this center.
-      // A simpler check: If the magnitude of the sweep angle is > PI and depth < 1,
-      // we've likely calculated the longer arc. Take the shorter one (2*PI - |sweep|).
-      if (Math.abs(sweepAngleRadians) > Math.PI + epsilon && depth < 1.0 - epsilon) {  //todo: clean this up
-         // If the calculated sweep is the longer arc segment, flip it.
-         if (sweepAngleRadians > 0) { // Was calculated as large positive (CCW)
-            sweepAngleRadians = -(2 * Math.PI - sweepAngleRadians); // Flip to shorter CW
-         } else { // Was calculated as large negative (CW)
-            sweepAngleRadians = (2 * Math.PI + sweepAngleRadians); // Flip to shorter CCW (sweepAngleRadians is negative)
-         }
-
-         // Now, adjust the sign based on the requested direction.
-         if (direction == 1 && sweepAngleRadians < 0) { // Want CCW but got CW
-            sweepAngleRadians = Math.abs(sweepAngleRadians);
-         } else if (direction == -1 && sweepAngleRadians > 0) { // Want CW but got CCW
-            sweepAngleRadians = -Math.abs(sweepAngleRadians);
-         }
-      }
+      // LK: I think this whole section is not necessary???  Leaving it commented out in case debugging shows that it's needed.
+//      // Ensure the magnitude of the sweep angle corresponds to the shorter arc segment
+//      // if the initial calculation yielded the longer one, unless it's a semicircle.
+//      // The distanceCenterToChordMidpoint calculation implies the center is on the side of the chord
+//      // that produces the arc defined by 'h', which corresponds to the shorter segment unless h is max (semicircle).
+//      // If the calculated sweep angle magnitude is greater than PI and the depth is not 1,
+//      // it means the center was calculated on the wrong side, or the angle calculation needs adjustment
+//      // to always get the shorter arc based on this center.
+//      // A simpler check: If the magnitude of the sweep angle is > PI and depth < 1,
+//      // we've likely calculated the longer arc. Take the shorter one (2*PI - |sweep|).
+//      if (Math.abs(sweepAngleRadians) > Math.PI + epsilon && depth < 1.0 - epsilon) {  //todo: clean this up
+//         // If the calculated sweep is the longer arc segment, flip it.
+//         if (sweepAngleRadians > 0) { // Was calculated as large positive (CCW)
+//            sweepAngleRadians = -(2 * Math.PI - sweepAngleRadians); // Flip to shorter CW
+//         } else { // Was calculated as large negative (CW)
+//            sweepAngleRadians = (2 * Math.PI + sweepAngleRadians); // Flip to shorter CCW (sweepAngleRadians is negative)
+//         }
+//
+//         // Now, adjust the sign based on the requested direction.
+//         if (direction == 1 && sweepAngleRadians < 0) { // Want CCW but got CW
+//            sweepAngleRadians = Math.abs(sweepAngleRadians);
+//         } else if (direction == -1 && sweepAngleRadians > 0) { // Want CW but got CCW
+//            sweepAngleRadians = -Math.abs(sweepAngleRadians);
+//         }
+//      }
 
       // 7. Calculate the Angle Increment
       double angleIncrementRadians = sweepAngleRadians / (numPositions - 1);
@@ -284,6 +273,47 @@ public class ArcPath {
 
       System.out.println("\n--------------------\n");
 
+      // Example 3B:
+      Position[] arcPath_ex2;
+      System.out.println("3B. Adjusted relative by angle 180");
+      arcPath_ex2 = adjustArcPathHeadingRelative(arcPath_ex, 180);
+      for (Position point : arcPath_ex2) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
+      // Example 3C:
+      System.out.println("3C. Adjusted to angle 45");
+      arcPath_ex2 = adjustArcPathHeadingConstant(arcPath_ex, 45);
+      for (Position point : arcPath_ex2) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
+      // Example 3D:
+      System.out.println("3D. Adjusted to aim constantly at (0,2)");
+      arcPath_ex2 = adjustArcPathHeadingTarget(arcPath_ex, new Position(0,2));
+      for (Position point : arcPath_ex2) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
+      // Example 3E:
+      System.out.println("3E. Heading smoothly from -90 to -180 degrees");
+      arcPath_ex2 = adjustArcPathHeadingStartEnd(arcPath_ex, -90, -180);
+      for (Position point : arcPath_ex2) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
+      // Example 3F:
+      System.out.println("3F. Heading immediately from -90 to -180 degrees");
+      arcPath_ex2 = adjustArcPathHeadingEnd(arcPath_ex, -90, -180);
+      for (Position point : arcPath_ex2) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
       // Example 4: Clockwise Semicircle from (0, 0) to (0, 10) with depth 1.0
       pos1_ex = new Position(0, 0, 0);
       pos2_ex = new Position(0, 10, 0);
@@ -331,29 +361,92 @@ public class ArcPath {
 
       System.out.println("\n--------------------\n");
 
-      // Example 7: Clockwise Semicircle from (0, 0) to (7, -7) with depth 0.5
+      // Example 7: Clockwise Quarter-circle from (0, 0) to (7, -7) with depth "1" = 0.4142
       pos1_ex = new Position(0, 0, 0);
       pos2_ex = new Position(7, -7, 0);
-      depth_ex = 0.5; // Semicircle
-      depth_ex = Math.sqrt(2) - 1; // for a right angle curve.
+      depth_ex = 1; // For a quarter-circle
+      //depth_ex = Math.sqrt(2) - 1; // for a right angle curve.
       direction_ex = -1; // clockwise
       numPositions_ex = 11;
 
-      System.out.println("7. " + ((direction_ex==1) ? "CCW" : "CW") + " arc points from (" + pos1_ex.toString() +") to (" +
+      System.out.println("7. " + ((direction_ex==1) ? "CCW" : "CW") + " 90° arc points from (" + pos1_ex.toString() +") to (" +
               pos2_ex.toString() +") with depth " + depth_ex +":");
-      //System.out.println("7. CW Semicircle Points from (0,0) to (7,-7) with depth 0.5:");
-      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = calculateRightAngleArcPath(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
       for (Position point : arcPath_ex) {
          System.out.println(point);
       }
 
       System.out.println("\n--------------------\n");
+
+      // Example 8: 3 point
+      pos1_ex = new Position(-4, 0, 0);
+      pos2_ex = new Position(0, -6, 0);
+      Position posM = new Position (0, -2, 0);
+      //depth_ex = 0.5; // Semicircle
+      //depth_ex = Math.sqrt(2) - 1; // for a right angle curve.
+      //direction_ex = -1; // clockwise
+      numPositions_ex = 11;
+
+      System.out.println("8. 3 arc points");
+      arcPath_ex = calculateArcPathFrom3Points(pos1_ex, posM, pos2_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+
+      System.out.println("\n--------------------\n");
+
+      // Example 9: Spline!
+      pos1_ex = new Position(-8, 6, 0);
+      pos2_ex = new Position(8, -6, 0);
+      posM = null;
+      depth_ex = 1;
+      direction_ex = -1; // clockwise
+      numPositions_ex = 6;
+
+      System.out.println("9. Spline");
+      arcPath_ex = calculateSplineApprox(pos1_ex, pos2_ex, posM, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
+      System.out.println("9B. Spline Reverse");
+      arcPath_ex = calculateSplineApprox(pos1_ex, pos2_ex, posM, depth_ex, -direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
+      System.out.println("9C. Spline with Center");
+      posM = new Position(0, 2, 0);
+      arcPath_ex = calculateSplineApprox(pos1_ex, pos2_ex, posM, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
+      // Example 10: Shallower spline
+      pos2_ex = new Position(-8, 4, 0);
+      pos1_ex = new Position(8, -4, 0);
+      posM = null;
+      depth_ex = 0.5;
+      direction_ex = -1; // clockwise
+      numPositions_ex = 6;
+
+      System.out.println("10. Shallow Spline");
+      arcPath_ex = calculateSplineApprox(pos1_ex, pos2_ex, posM, depth_ex, direction_ex, numPositions_ex);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+      System.out.println("\n--------------------\n");
+
    }
 
    // Stuff below here is not AI but LK
 
    // Adapted from https://stackoverflow.com/questions/4103405/what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
    public static Position getCircleCenterFrom3Points(Position startPos, Position midPos, Position endPos) {
+      // tested nominally OK 20250527
       if (startPos.isEqualXY(midPos) || startPos.isEqualXY(endPos) || endPos.isEqualXY(midPos)) {
          return null; // This won't work right if the three points aren't different
       }
@@ -384,12 +477,14 @@ public class ArcPath {
    }
 
    public static Position[] calculateArcPathFrom3Points (Position startPos, Position midPos, Position endPos, int numPositions) {
+      // tested nominally OK 20250527
       Position center = getCircleCenterFrom3Points(startPos, midPos, endPos);
       if (center == null) return null;
       return calculateArcPoints(startPos, endPos, center, (int)center.R, numPositions);
    }
 
    public static Position[] calculateRightAngleArcPath(Position pos1, Position pos2, double depth, int direction, int numPositions) {
+      // tested nominally OK 20250527
       //For a right angle arc (versus semicircle type_, the sagitta will be sqrt(2)-1 or 0.4142
       return calculateArcPathWithDepth(pos1, pos2, depth * (Math.sqrt(2) - 1), direction, numPositions);
    }
@@ -411,6 +506,7 @@ public class ArcPath {
    // - A spline approximation method
 
    public static Position[] adjustArcPathHeadingRelative(Position[] path, double adjAngle) {
+      // tested nominally OK 20250527
       if (path==null) return null;
       Position[] newPath = clonePath(path);
       for (Position p : newPath) {
@@ -420,6 +516,7 @@ public class ArcPath {
    }
 
    public static Position[] adjustArcPathHeadingConstant(Position[] path, double constAngle) {
+      // tested nominally OK 20250527
       if (path==null) return null;
       Position[] newPath = clonePath(path);
       double angle = Functions.normalizeAngle(constAngle);
@@ -430,6 +527,7 @@ public class ArcPath {
    }
 
    public static Position[] adjustArcPathHeadingTarget(Position[] path, Position targetPos) {
+      // tested nominally OK 20250527
       if (path==null) return null;
       Position[] newPath = clonePath(path);
       for (Position p : newPath) {
@@ -441,6 +539,7 @@ public class ArcPath {
    }
 
    public static Position[] adjustArcPathHeadingStartEnd(Position[] path, double startHeading, double endHeading) {
+      // tested nominally OK 20250527
       if (path==null) return null;
       Position[] newPath = clonePath(path);
       int numPos = newPath.length;
@@ -454,6 +553,7 @@ public class ArcPath {
    }
 
    public static Position[] adjustArcPathHeadingEnd(Position[] path, double startHeading, double endHeading) {
+      // tested nominally OK 20250527
       // this will only be useful with a positionTolerance that effectively ignores the heading
       if (path==null) return null;
       Position[] newPath = clonePath(path);
@@ -466,9 +566,10 @@ public class ArcPath {
 
    public static Position[] calculateSplineApprox (Position pos1, Position pos2, Position center,
                                                    double depth, int direction, int numPositions) {
+      // tested nominally OK 20250527
       // todo: replace this with something that can calculate a true spline?
       // calculates a pair of arc to simulate a spline; one weakness is that the midpoint won't be tangent
-      // for simplicity, numPositions will be used for both arc segments, so the array will have length numPositions * 2
+      // for simplicity, numPositions will be used for both arc segments, so the array will have length (numPositions * 2) - 1 (center is de-duplicated_
       // supply null for center if you want the midpoint calculated
       Position posCenter;
       if (center != null) {
@@ -479,12 +580,16 @@ public class ArcPath {
       }
       Position[] firstArc  = calculateRightAngleArcPath(pos1, posCenter, depth,  direction, numPositions);
       Position[] secondArc = calculateRightAngleArcPath(posCenter, pos2, depth, -direction, numPositions);
-      Position[] spline = Arrays.copyOf(firstArc, firstArc.length + secondArc.length);
-      System.arraycopy(secondArc, 0, spline, firstArc.length, secondArc.length);
+      // Let's average out the middle position's angle, for which there are two equal positions with different headings...
+      secondArc[0].R = Functions.normalizeAngle((firstArc[firstArc.length - 1].R + secondArc[0].R)/2.0);
+      // And then drop the last position from the first arc (note the " - 1" for firstArc.length when building the new array
+      Position[] spline = Arrays.copyOf(firstArc, firstArc.length - 1 + secondArc.length);
+      System.arraycopy(secondArc, 0, spline, firstArc.length - 1, secondArc.length);
       return spline;
    }
 
    public static Position[] clonePath (Position[] path) {
+      // tested nominally OK 20250527
       if (path==null) return null;
       Position[] newPath = new Position[path.length];
       for (int i = 0; i < path.length; i++) {
@@ -494,8 +599,8 @@ public class ArcPath {
       return newPath;
    }
 
-   public static NavigationTarget[] buildNavTargetArray (Position[] path, PositionTolerance startTolerance, PositionTolerance endTolerance,
-                                                         PositionTolerance midTolerance, double maxSpeed, long timeLimit,
+   public static NavigationTarget[] buildNavTargetArray (Position[] path, PositionTolerance startTolerance, PositionTolerance midTolerance,
+                                                         PositionTolerance endTolerance, double maxSpeed, long timeLimit,
                                                          boolean noSlowAtEnd ) {
       NavigationTarget[] navTargetArray = new NavigationTarget[path.length];
       for (int i = 0; i < path.length; i++) {

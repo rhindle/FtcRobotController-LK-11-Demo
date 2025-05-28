@@ -202,7 +202,7 @@ public class ControlsDS extends Controls {
       if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
               buttonMgr.getState(1,Buttons.right_trigger, State.isHeld) &&
               buttonMgr.getState(1,Buttons.left_trigger, State.wasDoubleTapped)) {
-         parts.dsAuto.testAutoMethod2();
+         parts.dsAuto.testAutoMethod3();
 //         parts.autoDrive.addNavTargets(new NavigationTarget[]{
 //                 new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
 //                 new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.Tools.ArcPath;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
@@ -176,5 +177,127 @@ public class DSAuto implements PartsInterface {
       driveToTarget( new NavigationTarget(new Position(-60,21,-150), parts.dsMisc.toleranceTransition, speed, timeLimit));
       driveToTarget( new NavigationTarget(new Position(-69,12,-120), parts.dsMisc.toleranceTransition, speed, timeLimit));
       driveToTarget( new NavigationTarget(new Position(-72,0,-90), parts.dsMisc.toleranceMedium, speed, timeLimit));
+   }
+
+   public void testAutoMethod3() {
+      isAuto = true;
+      boolean result;
+      int timeLimit = 5000;
+      double speed = 1.0;
+      Position posStart = new Position(-72,0,-90);
+      Position posOpp   = new Position(-24,0,90);
+      Position posCenter = new Position(-48,0,0);
+
+      // Make a circle driving forward
+      driveToTarget( new NavigationTarget(posStart, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(2000);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.calculateArcPathWithDepth(posStart, posOpp, 1, 1, 11),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              speed, timeLimit, true ));
+      waitForDriveComplete();
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.calculateArcPathWithDepth(posOpp, posStart, 1, 1, 11),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false ));
+      waitForDriveComplete();
+
+      // Make a circle driving backward
+      driveToTarget( new NavigationTarget(posStart.withR(90), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingRelative(ArcPath.calculateArcPathWithDepth(posStart, posOpp, 1, 1, 11), 180),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              speed, timeLimit, true ));
+      waitForDriveComplete();
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingRelative(ArcPath.calculateArcPathWithDepth(posOpp, posStart, 1, 1, 11), 180),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false ));
+      waitForDriveComplete();
+
+      // Make a circle aiming inward
+      driveToTarget( new NavigationTarget(posStart.withR(0), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingRelative(ArcPath.calculateArcPathWithDepth(posStart, posOpp, 1, 1, 11), 90),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              speed, timeLimit, true ));
+      waitForDriveComplete();
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingRelative(ArcPath.calculateArcPathWithDepth(posOpp, posStart, 1, 1, 11), 90),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false ));
+      waitForDriveComplete();
+
+      // Make a circle aiming right (-90)
+      driveToTarget( new NavigationTarget(posStart.withR(-90), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingConstant(ArcPath.calculateArcPathWithDepth(posStart, posOpp, 1, 1, 11), -90),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              speed, timeLimit, true ));
+      waitForDriveComplete();
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingConstant(ArcPath.calculateArcPathWithDepth(posOpp, posStart, 1, 1, 11), -90),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false ));
+      waitForDriveComplete();
+
+      // Make a circle aiming at the target (DSMisc.aimPosition)
+      driveToTarget( new NavigationTarget(posStart.withR(0), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingTarget(ArcPath.calculateArcPathWithDepth(posStart, posOpp, 1, 1, 11), DSMisc.aimPosition),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              speed, timeLimit, true ));
+      waitForDriveComplete();
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingTarget(ArcPath.calculateArcPathWithDepth(posOpp, posStart, 1, 1, 11), DSMisc.aimPosition),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false ));
+      waitForDriveComplete();
+
+      // Make a circle while smoothly changing heading
+      driveToTarget( new NavigationTarget(posStart.withR(90), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingStartEnd(ArcPath.calculateArcPathWithDepth(posStart, posOpp, 1, 1, 11), 90, -45),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              speed, timeLimit, true ));
+      waitForDriveComplete();
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.adjustArcPathHeadingStartEnd(ArcPath.calculateArcPathWithDepth(posOpp, posStart, 1, 1, 11), -45, 90),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false ));
+      waitForDriveComplete();
+
+      // Drive back to "center"
+      driveToTarget( new NavigationTarget(posCenter, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
    }
 }
