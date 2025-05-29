@@ -407,7 +407,6 @@ public class DSAuto implements PartsInterface {
       return ArcPath.buildNavTargetArray(
               circle,
               parts.dsMisc.toleranceTransition,
-              parts.dsMisc.toleranceTransition,
               parts.dsMisc.toleranceMedium,
               speed,
               timeLimit,

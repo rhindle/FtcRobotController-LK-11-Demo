@@ -36,9 +36,9 @@ public class ArcPath {
    // LK note:  For a right angle arc, the sagitta will be sqrt(2)-1 or 0.4142
 
    /**
-    * Calculates points along a circular arc from pos1 to pos2,
-    * with the arc's depth and direction determined by the parameters.
-    * The R value of each returned Position is the tangent angle in degrees at that point.
+    * Calculates positions ("breadcrumb trail") along a circular arc
+    * using a start position, end position, depth (sagitta), and direction.
+    * <p>The R value of each returned position is the tangent angle in degrees at that point.
     *
     * @param pos1           The initial Position of the arc. The R value is ignored.
     * @param pos2           The final Position of the arc. The R value is ignored.
@@ -117,8 +117,21 @@ public class ArcPath {
       return calculateArcPoints(pos1, pos2, center, direction, numPositions);
    }
 
+   /**
+    * Calculates positions ("breadcrumb trail") along a circular arc
+    * using a start position, end position, center position, and direction.
+    * <p>The R value of each returned position is the tangent angle in degrees at that point.
+    *
+    * @param pos1           The initial Position of the arc. The R value is ignored.
+    * @param pos2           The final Position of the arc. The R value is ignored.
+    * @param center         The center Position of the circular arc. The R value is ignored.
+    * @param direction      The direction of the arc. 1 for counterclockwise, -1 for clockwise.
+    * @param numPositions   The number of positions to calculate along the arc.
+    * @return An array of Position objects.
+    */
    public static Position[] calculateArcPoints(Position pos1, Position pos2, Position center, int direction, int numPositions) {
       // LK: Broke the original into two functions so we can generate an arc from three points and other variations
+      // LK: todo: if this will remain public, need to check/sanitize parameters
 
       double epsilon = 1e-9;
       double depth = 0.5;  // todo: Fix this temporary hack
@@ -461,6 +474,17 @@ public class ArcPath {
 
    // Stuff below here is not AI but LK
 
+   /**
+    * Calculates the center position of a circle from three positions defining an arc along the perimeter.
+    * <p>The R value of the returned center position (which would otherwise have no meaning)
+    * is used to return the direction, based on the middle position relative to the start and end,
+    * where 1 is counterclockwise and -1 is clockwise.
+    *
+    * @param startPos       The start Position of the arc. The R value is ignored.
+    * @param midPos         A Position along the arc between the start and end. The R value is ignored.
+    * @param endPos         The end Position of the arc. The R value is ignored.
+    * @return A Position for the center of the circle, with R value being the CCW/CW direction.
+    */
    // Adapted from https://stackoverflow.com/questions/4103405/what-is-the-algorithm-for-finding-the-center-of-a-circle-from-three-points
    public static Position getCircleCenterFrom3Points(Position startPos, Position midPos, Position endPos) {
       // tested nominally OK 20250527
@@ -493,6 +517,18 @@ public class ArcPath {
       return center;
    }
 
+   /**
+    * Calculates positions ("breadcrumb trail") along a circular arc
+    * using three positions (startPos, midPos, endPos) to define the arc
+    * (with center and direction being calculated from that).
+    * <p>The R value of each returned position is the tangent angle in degrees at that point.
+    *
+    * @param startPos       The initial Position of the arc. The R value is ignored.
+    * @param midPos         A Position along the arc between the start and end. The R value is ignored.
+    * @param endPos         The final Position of the arc. The R value is ignored.
+    * @param numPositions   The number of positions to calculate along the arc.
+    * @return An array of Position objects.
+    */
    public static Position[] calculateArcPathFrom3Points (Position startPos, Position midPos, Position endPos, int numPositions) {
       // tested nominally OK 20250527
       Position center = getCircleCenterFrom3Points(startPos, midPos, endPos);
@@ -500,6 +536,22 @@ public class ArcPath {
       return calculateArcPoints(startPos, endPos, center, (int)center.R, numPositions);
    }
 
+   /**
+    * Calculates positions ("breadcrumb trail") along a circular arc
+    * using a start position, end position, depth (sagitta), and direction.
+    * The depth is scaled (by sqrt(2)-1) so that a value of 1 is suitable for
+    * a right angle (quarter circle) path.
+    * <p>The R value of each returned position is the tangent angle in degrees at that point.
+    *
+    * @param pos1           The initial Position of the arc. The R value is ignored.
+    * @param pos2           The final Position of the arc. The R value is ignored.
+    * @param depth          The distance of the arc's midpoint to the chord, as a fraction [0.1, 1].
+    *                       A smaller depth means a shallower arc.
+    *                       A depth of 1 is scaled for a 90 degree path (quarter circle).
+    * @param direction      The direction of the arc. 1 for counterclockwise, -1 for clockwise.
+    * @param numPositions   The number of positions to calculate along the arc.
+    * @return An array of Position objects.
+    */
    public static Position[] calculateRightAngleArcPath(Position pos1, Position pos2, double depth, int direction, int numPositions) {
       // tested nominally OK 20250527
       //For a right angle arc (versus semicircle type_, the sagitta will be sqrt(2)-1 or 0.4142
@@ -636,5 +688,17 @@ public class ArcPath {
       navTargetArray[path.length - 1].tolerance = endTolerance;
       navTargetArray[path.length - 1].noSlow = noSlowAtEnd;
       return navTargetArray;
+   }
+   public static NavigationTarget[] buildNavTargetArray (Position[] path, PositionTolerance midTolerance,
+                                                         PositionTolerance endTolerance, double maxSpeed, long timeLimit,
+                                                         boolean noSlowAtEnd ) {
+      return buildNavTargetArray(path, midTolerance, midTolerance, endTolerance, maxSpeed, timeLimit, noSlowAtEnd)
+   }
+   public static NavigationTarget[] buildNavTargetArray (Position[] path,
+                                                         PositionTolerance endTolerance, double maxSpeed, long timeLimit,
+                                                         boolean noSlowAtEnd ) {
+      //todo: make a way to set the default transition tolerance
+      PositionTolerance transitionTolerance = new PositionTolerance(4.0,90.0,0);
+      return buildNavTargetArray(path, transitionTolerance, transitionTolerance, endTolerance, maxSpeed, timeLimit, noSlowAtEnd)
    }
 }
