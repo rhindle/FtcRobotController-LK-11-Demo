@@ -300,4 +300,126 @@ public class DSAuto implements PartsInterface {
       driveToTarget( new NavigationTarget(posCenter, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
       delay(500);
    }
+
+   public void testAutoMethod4() {
+      isAuto = true;
+      boolean result;
+      int timeLimit = 5000;
+      double speed = 1.0;
+      Position posStart = new Position(-72,0,-90);
+      Position posOpp   = new Position(-24,0,90);
+      Position posCenter = new Position(-48,0,0);
+
+      // Make a circle driving forward
+      driveToTarget( new NavigationTarget(posStart, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(2000);
+      driveToTargetsBackground(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.FORWARD));
+      waitForDriveComplete();
+
+      // Make a circle driving backward
+      driveToTarget( new NavigationTarget(posStart.withR(90), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.BACKWARD));
+      waitForDriveComplete();
+
+      // Make a circle aiming inward
+      driveToTarget( new NavigationTarget(posStart.withR(0), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.INWARD));
+      waitForDriveComplete();
+
+      // Make a circle aiming right (-90)
+      driveToTarget( new NavigationTarget(posStart.withR(-90), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.RIGHT));
+      waitForDriveComplete();
+
+      // Make a circle aiming at the target (DSMisc.aimPosition)
+      driveToTarget( new NavigationTarget(posStart.withR(0), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.TARGET));
+      waitForDriveComplete();
+
+      // Make a circle while smoothly changing heading
+      driveToTarget( new NavigationTarget(posStart.withR(90), parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+      driveToTargetsBackground(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.SMOOTHCHANGE));
+      waitForDriveComplete();
+
+      // Make splines
+      Position posRR = new Position(posStart.X, -24,0);
+      Position posFL = new Position(posOpp.X,24,-90);
+      // spline 1
+      driveToTarget( new NavigationTarget(posRR, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(2000);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.calculateSplineApprox(posRR, posFL, null, 1,1, 11),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false));
+      waitForDriveComplete();
+      delay(1000);
+      // spline 2
+      driveToTarget( new NavigationTarget(posFL, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(2000);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.calculateSplineApprox(posFL, posRR, null, 1,-1, 11),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false));
+      waitForDriveComplete();
+      delay(1000);
+
+      // Drive back to "center"
+      driveToTarget( new NavigationTarget(posCenter, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+   }
+
+   public NavigationTarget[] generateNavCircle (Position posStart, Position posMid, double speed, int timeLimit, circleVar var){
+      Position[] arc1 = ArcPath.calculateArcPathWithDepth(posStart, posMid, 1, 1, 11);
+      Position[] arc2 = ArcPath.calculateArcPathWithDepth(posMid, posStart, 1, 1, 11);
+      Position[] circle = ArcPath.combinePaths(arc1, arc2, true);
+      switch (var) {
+         case FORWARD:
+            break;
+         case BACKWARD:
+            circle = ArcPath.adjustArcPathHeadingRelative(circle, 180);
+            break;
+         case INWARD:
+            circle = ArcPath.adjustArcPathHeadingRelative(circle, 90);
+            break;
+         case RIGHT:
+            circle = ArcPath.adjustArcPathHeadingConstant(circle, -90);
+            break;
+         case TARGET:
+            circle = ArcPath.adjustArcPathHeadingTarget(circle, DSMisc.aimPosition);
+            break;
+         case SMOOTHCHANGE:
+            circle = ArcPath.combinePaths(
+                    ArcPath.adjustArcPathHeadingStartEnd(arc1, 90, -45),
+                    ArcPath.adjustArcPathHeadingStartEnd(arc2, -45, 90),
+                    true);
+            break;
+         default: break;
+      }
+      return ArcPath.buildNavTargetArray(
+              circle,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed,
+              timeLimit,
+              false);
+   }
+
+   public enum circleVar {
+      FORWARD,
+      BACKWARD,
+      INWARD,
+      RIGHT,
+      TARGET,
+      SMOOTHCHANGE;
+   }
 }

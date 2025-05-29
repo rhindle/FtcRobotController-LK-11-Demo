@@ -440,6 +440,23 @@ public class ArcPath {
       }
       System.out.println("\n--------------------\n");
 
+      // Example 11: Combined arcs
+      pos1_ex = new Position(0, 0, 0);
+      pos2_ex = new Position(10, 0, 0);
+      depth_ex = 0.5;
+      direction_ex = 1; // Counterclockwise
+      numPositions_ex = 6;
+
+      System.out.println("11. Combined arcs");
+      arcPath_ex = calculateArcPathWithDepth(pos1_ex, pos2_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex2 = calculateArcPathWithDepth(pos2_ex, pos1_ex, depth_ex, direction_ex, numPositions_ex);
+      arcPath_ex = combinePaths(arcPath_ex, arcPath_ex2, true);
+      for (Position point : arcPath_ex) {
+         System.out.println(point);
+      }
+
+      System.out.println("\n--------------------\n");
+
    }
 
    // Stuff below here is not AI but LK
@@ -595,6 +612,15 @@ public class ArcPath {
       for (int i = 0; i < path.length; i++) {
          newPath[i] = path[i].clone();       // Using clone method
          //newPath[i] = new Position(path[i]); // Using copy constructor
+      }
+      return newPath;
+   }
+
+   public static Position[] combinePaths (Position[] path1, Position[] path2, boolean deleteMidpoint) {
+      Position[] newPath = Arrays.copyOf(path1, path1.length + path2.length - (deleteMidpoint ? 1 : 0));
+      System.arraycopy(path2, 0, newPath, path1.length - (deleteMidpoint ? 1 : 0), path2.length);
+      if (deleteMidpoint) {
+         newPath[path1.length -1].R = Functions.normalizeAngle((path1[path1.length - 1].R + path2[0].R)/2.0);
       }
       return newPath;
    }
