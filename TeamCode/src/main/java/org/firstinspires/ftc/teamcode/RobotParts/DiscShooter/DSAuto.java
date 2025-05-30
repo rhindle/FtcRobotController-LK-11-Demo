@@ -310,6 +310,36 @@ public class DSAuto implements PartsInterface {
       Position posOpp   = new Position(-24,0,90);
       Position posCenter = new Position(-48,0,0);
 
+      // Make splines
+      Position posRR = new Position(posStart.X, -24,0);
+      Position posFL = new Position(posOpp.X,24,-90);
+      // spline 1
+      driveToTarget( new NavigationTarget(posRR, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(2000);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.calculateSplineApprox(posRR, posFL, null, 1,1, 11),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false));
+      waitForDriveComplete();
+      delay(1000);
+      // spline 2
+      driveToTarget( new NavigationTarget(posFL, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(2000);
+      driveToTargetsBackground(ArcPath.buildNavTargetArray(
+              ArcPath.calculateSplineApprox(posFL, posRR, null, 1,-1, 11),
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceTransition,
+              parts.dsMisc.toleranceMedium,
+              speed, timeLimit, false));
+      waitForDriveComplete();
+      delay(1000);
+
+      // Drive back to "center"
+      driveToTarget( new NavigationTarget(posCenter, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
+      delay(500);
+
       // Make a circle driving forward
       driveToTarget( new NavigationTarget(posStart, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
       delay(2000);
@@ -346,35 +376,6 @@ public class DSAuto implements PartsInterface {
       driveToTargetsBackground(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.SMOOTHCHANGE));
       waitForDriveComplete();
 
-      // Make splines
-      Position posRR = new Position(posStart.X, -24,0);
-      Position posFL = new Position(posOpp.X,24,-90);
-      // spline 1
-      driveToTarget( new NavigationTarget(posRR, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
-      delay(2000);
-      driveToTargetsBackground(ArcPath.buildNavTargetArray(
-              ArcPath.calculateSplineApprox(posRR, posFL, null, 1,1, 11),
-              parts.dsMisc.toleranceTransition,
-              parts.dsMisc.toleranceTransition,
-              parts.dsMisc.toleranceMedium,
-              speed, timeLimit, false));
-      waitForDriveComplete();
-      delay(1000);
-      // spline 2
-      driveToTarget( new NavigationTarget(posFL, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
-      delay(2000);
-      driveToTargetsBackground(ArcPath.buildNavTargetArray(
-              ArcPath.calculateSplineApprox(posFL, posRR, null, 1,-1, 11),
-              parts.dsMisc.toleranceTransition,
-              parts.dsMisc.toleranceTransition,
-              parts.dsMisc.toleranceMedium,
-              speed, timeLimit, false));
-      waitForDriveComplete();
-      delay(1000);
-
-      // Drive back to "center"
-      driveToTarget( new NavigationTarget(posCenter, parts.dsMisc.toleranceMedium, speed, timeLimit, false));
-      delay(500);
    }
 
    public NavigationTarget[] generateNavCircle (Position posStart, Position posMid, double speed, int timeLimit, circleVar var){

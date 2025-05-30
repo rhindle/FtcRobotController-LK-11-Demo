@@ -692,13 +692,13 @@ public class ArcPath {
    public static NavigationTarget[] buildNavTargetArray (Position[] path, PositionTolerance midTolerance,
                                                          PositionTolerance endTolerance, double maxSpeed, long timeLimit,
                                                          boolean noSlowAtEnd ) {
-      return buildNavTargetArray(path, midTolerance, midTolerance, endTolerance, maxSpeed, timeLimit, noSlowAtEnd)
+      return buildNavTargetArray(path, midTolerance, midTolerance, endTolerance, maxSpeed, timeLimit, noSlowAtEnd);
    }
    public static NavigationTarget[] buildNavTargetArray (Position[] path,
                                                          PositionTolerance endTolerance, double maxSpeed, long timeLimit,
                                                          boolean noSlowAtEnd ) {
       //todo: make a way to set the default transition tolerance
       PositionTolerance transitionTolerance = new PositionTolerance(4.0,90.0,0);
-      return buildNavTargetArray(path, transitionTolerance, transitionTolerance, endTolerance, maxSpeed, timeLimit, noSlowAtEnd)
+      return buildNavTargetArray(path, transitionTolerance, transitionTolerance, endTolerance, maxSpeed, timeLimit, noSlowAtEnd);
    }
 }
