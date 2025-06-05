@@ -16,8 +16,11 @@ public class StateMachine {
     String name;
     runState state = runState.STOPPED;
     boolean running = false;
+    boolean paused = false;
     boolean done = false;
+    boolean success = true;
     boolean autoReset = false;
+    boolean abortOnTimeout = false;
 
     ArrayList<String> killGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
@@ -38,6 +41,10 @@ public class StateMachine {
     ArrayList<Long> times = new ArrayList<>();
 
     Runnable stopRunnable;
+    Runnable abortRunnable;
+    Runnable timeoutRunnable;
+    Runnable endCriteriaRunnable;
+    // do we need pauseRunnable? unPauseRunnable?
 
     // future internal use?
     boolean bool1, bool2, bool3;
@@ -56,24 +63,44 @@ public class StateMachine {
             if (timeout(machine.overallStartTime, machine.overallTimeLimit)) {    // whole machine timed out
                 machine.state = runState.TIMEOUT;
                 machine.running = false;
-                machine.done = false; //???
+                machine.done = true; //???
+                machine.success = false;
                 machine.currentStep = -1;
-                machine.stopRunnable.run();  // maybe?
+                if (machine.timeoutRunnable != null) machine.timeoutRunnable.run();
+                continue;
+            }
+            if (machine.endCriteria.get()) {              // hit the end criteria which suppose is a success?
+                machine.state = runState.COMPLETED;
+                machine.running = false;
+                machine.done = true;
+                machine.success = true;
+                machine.currentStep = -1;
+                if (machine.endCriteriaRunnable != null) machine.endCriteriaRunnable.run();
                 continue;
             }
             if (machine.currentStep == -1) machine.nextStep();
             boolean doLoop;
             do {
                 doLoop = false;
-                machine.stepRunnable.run();   // run the runnable
+                if (machine.stepRunnable != null) machine.stepRunnable.run();   // run the runnable
                 if (machine.stepEnd.get() || timeout(machine.stepStartTime, machine.stepTimeLimit)) {   // meets end criteria or exceeds time
-                    if (machine.nextStep()) {
+                    if (machine.abortOnTimeout && timeout(machine.stepStartTime, machine.stepTimeLimit)) {  // if abortOnTimeout, any timeout is a failure
+                        machine.state = runState.FAILED;  // or TIMEOUT?
+                        machine.running = false;
+                        machine.done = true;
+                        machine.success = false;
+                        machine.currentStep = -1;
+                        if (machine.abortRunnable != null) machine.abortRunnable.run();
+                        continue;
+                    }
+                    if (machine.nextStep()) {            // if there's another step, do it
                         doLoop = true;
                     }
-                    else {  // no more steps = success   // todo: separate criteria and timeout so we're not calling a timeout a success?
+                    else {                               // no more steps = success
                         machine.state = runState.COMPLETED;
                         machine.running = false;
                         machine.done = true;
+                        machine.success = true;
                         machine.currentStep = -1;
                     }
                 }
@@ -129,17 +156,23 @@ public class StateMachine {
     }
 
     public void stop() {
-        if (running && stopRunnable != null) stopRunnable.run();  // do we have to check for null?
+        if (running || paused) {
+            success = false;
+            if (stopRunnable != null) stopRunnable.run();  // do we have to check for null?
+        }
         state = runState.STOPPED;
         running = false;
-        done = false; //???
+        paused = false;
+        done = true; //???
         currentStep = -1;
     }
 
     public void start() {
         state = runState.RUNNING;
         running = true;
+        paused = false;
         done = false;
+        success = false;
         currentStep = -1;  //what about unpausing?
         overallStartTime = System.currentTimeMillis();
         stepStartTime = overallStartTime;
@@ -147,18 +180,24 @@ public class StateMachine {
     }
 
     public boolean pause() {
-        if (running) {
+        if (!paused && running) {
             state = runState.PAUSED;
             running = false;
+            paused = true;
             return true;
         }
         return false;
     }
 
     public boolean unPause() {
-        if (!running) {
+        if (paused) {
             state = runState.RUNNING;
             running = true;
+            paused = false;
+            // todo: reconsider what to do about the timers. Should the timer statuses be saved upon pausing?
+            // Here, we just reset them all the way
+            overallStartTime = System.currentTimeMillis();
+            stepStartTime = overallStartTime;
             return true;
         }
         return false;
@@ -166,6 +205,11 @@ public class StateMachine {
 
     public boolean isDone() {
         return done;
+        //return state == runState.COMPLETED;
+    }
+
+    public boolean isSuccess() {
+        return success;
         //return state == runState.COMPLETED;
     }
 
@@ -180,6 +224,11 @@ public class StateMachine {
 
     public StateMachine setAutoReset(boolean state) {
         autoReset = state;
+        return this;
+    }
+
+    public StateMachine setAbortOnTimeout(boolean state) {
+        abortOnTimeout = state;
         return this;
     }
 
@@ -257,6 +306,22 @@ public class StateMachine {
 
     public void addKillGroup (String name) {
         killGroup.add(name);
+    }
+
+    public void setStopRunnable (Runnable run) {
+        stopRunnable = run;
+    }
+
+    public void setAbortRunnable (Runnable run) {
+        abortRunnable = run;
+    }
+
+    public void setTimeoutRunnable (Runnable run) {
+        timeoutRunnable = run;
+    }
+
+    public void setEndCriteriaRunnable (Runnable run) {
+        endCriteriaRunnable = run;
     }
 
 }
