@@ -47,7 +47,7 @@ public class SB_Auto implements PartsInterface {
       return driveToTargetsBackground(new NavigationTarget[] {navTarget});
    }
 
-   public boolean driveToTargetsBackground(NavigationTarget[] navTargets) {
+   public boolean driveToTargetsBackground(NavigationTarget... navTargets) {
       if (!isAutoRunning()) return false;    //exit right away if stopped
       parts.autoDrive.addNavTargets(navTargets);
       parts.autoRunLoop();                   // todo: do this or not?
@@ -58,7 +58,7 @@ public class SB_Auto implements PartsInterface {
       return driveToTargets(new NavigationTarget[] {navTarget});
    }
 
-   public boolean driveToTargets(NavigationTarget[] navTargets) {
+   public boolean driveToTargets(NavigationTarget... navTargets) {
       if (!isAutoRunning()) return false;    //exit right away if stopped
       parts.autoDrive.addNavTargets(navTargets);
       return waitForDriveComplete();

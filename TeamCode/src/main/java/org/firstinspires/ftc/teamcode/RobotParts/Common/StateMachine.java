@@ -1,9 +1,10 @@
 package org.firstinspires.ftc.teamcode.RobotParts.Common;
 
+import org.firstinspires.ftc.teamcode.Tools.DataTypes.TaskStep;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class StateMachine {
@@ -242,10 +243,27 @@ public class StateMachine {
         this.endCriteria = endCriteria;
     }
 
+//    public void test() {
+//        addSteps(
+//            new TaskStep(()-> {
+//                System.out.println("step 1");
+//            }),
+//            new TaskStep(() -> true, 300),
+//            new TaskStep(() -> {}, () -> false, 0)
+//        );
+//    }
+
+    public void addSteps(TaskStep... taskSteps) {
+        for (TaskStep taskStep : taskSteps) {
+            addStep(taskStep.step, taskStep.end, taskStep.time);
+        }
+    }
+
     // add a step with end state and time limit
     public void addStep(Runnable step, Supplier<Boolean> end, long time) {
         if (step == null || end == null) return;
         //long timeLimit = (time == null || time < 0) ? 0 : time;
+        //if (!end.get() && time == 0) end = () -> true;  // would never advance to next step?
         if (time < 0) time = 0;
         steps.add(step);
         ends.add(end);
@@ -274,7 +292,7 @@ public class StateMachine {
 
     // add a step that is just a delay
     public void addStep(long time) {
-        addStep( () -> {}, () -> false, 0);
+        addStep( () -> {}, () -> false, time);
     }
 
     // add a step that repeats for time
@@ -282,16 +300,16 @@ public class StateMachine {
         addStep(step, () -> false, time);
     }
 
-    public void setGroups (String[] names) {
+    public void setGroups (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
         killGroup = new ArrayList<>(Arrays.asList(names));
     }
 
-    public void setMemberGroup (String[] names) {
+    public void setMemberGroup (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
     }
 
-    public void setKillGroup (String[] names) {
+    public void setKillGroup (String... names) {
         killGroup = new ArrayList<>(Arrays.asList(names));
     }
 

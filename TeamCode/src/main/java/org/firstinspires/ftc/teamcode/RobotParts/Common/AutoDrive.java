@@ -326,7 +326,7 @@ public class AutoDrive implements PartsInterface {
       else if (parts.positionMgr.hasPosition()) isNavigating = true;
    }
 
-   public void addNavTargets(NavigationTarget[] targets) {
+   public void addNavTargets(NavigationTarget... targets) {
       boolean update = navQueue.isEmpty();
       navQueue.addAll(Arrays.asList(targets));
       if (update) {

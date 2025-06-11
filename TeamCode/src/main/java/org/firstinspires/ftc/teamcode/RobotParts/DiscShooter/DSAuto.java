@@ -48,7 +48,7 @@ public class DSAuto implements PartsInterface {
       return driveToTargetsBackground(new NavigationTarget[] {navTarget});
    }
 
-   public boolean driveToTargetsBackground(NavigationTarget[] navTargets) {
+   public boolean driveToTargetsBackground(NavigationTarget... navTargets) {
       if (!isAutoRunning()) return false;    //exit right away if stopped
       parts.autoDrive.addNavTargets(navTargets);
       parts.autoRunLoop();                   // todo: do this or not?
@@ -59,7 +59,7 @@ public class DSAuto implements PartsInterface {
       return driveToTargets(new NavigationTarget[] {navTarget});
    }
 
-   public boolean driveToTargets(NavigationTarget[] navTargets) {
+   public boolean driveToTargets(NavigationTarget... navTargets) {
       if (!isAutoRunning()) return false;    //exit right away if stopped
       parts.autoDrive.addNavTargets(navTargets);
       return waitForDriveComplete();
@@ -119,6 +119,19 @@ public class DSAuto implements PartsInterface {
               new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false) });
       waitForDriveComplete();
    }
+
+   public void testAutoMethod0v() {
+      driveToTargetsBackground(
+              new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+              new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+              new NavigationTarget(new Position(-12, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,false),
+              new NavigationTarget(new Position(-30, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+              new NavigationTarget(new Position(-12, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+              new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
+              new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false) );
+      waitForDriveComplete();
+   }
+
 
    public void testAutoMethod() {
       isAuto = true;
