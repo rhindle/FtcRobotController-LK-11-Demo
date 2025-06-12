@@ -649,6 +649,7 @@ public class ArcPath {
       }
       Position[] firstArc  = calculateRightAngleArcPath(pos1, posCenter, depth,  direction, numPositions);
       Position[] secondArc = calculateRightAngleArcPath(posCenter, pos2, depth, -direction, numPositions);
+      // todo: 20250612 change this to use combinePaths
       // Let's average out the middle position's angle, for which there are two equal positions with different headings...
       secondArc[0].R = Functions.normalizeAngle((firstArc[firstArc.length - 1].R + secondArc[0].R)/2.0);
       // And then drop the last position from the first arc (note the " - 1" for firstArc.length when building the new array
@@ -671,6 +672,10 @@ public class ArcPath {
    public static Position[] combinePaths (Position[] path1, Position[] path2, boolean deleteMidpoint) {
       Position[] newPath = Arrays.copyOf(path1, path1.length + path2.length - (deleteMidpoint ? 1 : 0));
       System.arraycopy(path2, 0, newPath, path1.length - (deleteMidpoint ? 1 : 0), path2.length);
+      // todo: 20250612 fix this... need to account for the shorter arc, not simply /2. oops.
+      // possible references...
+      // https://stackoverflow.com/questions/1158909/average-of-two-angles-with-wrap-around
+      // https://stackoverflow.com/questions/491738/how-do-you-calculate-the-average-of-a-set-of-circular-data
       if (deleteMidpoint) {
          newPath[path1.length -1].R = Functions.normalizeAngle((path1[path1.length - 1].R + path2[0].R)/2.0);
       }
