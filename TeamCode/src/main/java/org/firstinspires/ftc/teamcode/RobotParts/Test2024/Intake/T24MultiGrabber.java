@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
+import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
 public class T24MultiGrabber implements PartsInterface {
 
@@ -72,13 +73,13 @@ public class T24MultiGrabber implements PartsInterface {
    public static boolean slideOverride          = false;
 
    /* Internal use */
-   private static Servo servoPinch;
-   private static Servo servoWrist;
-   private static Servo servoRotator;
-   private static Servo servoShoulder;
-   static Servo servoLiftShoulder;
+   private static ServoSSR servoPinch;
+   private static ServoSSR servoWrist;
+   private static ServoSSR servoRotator;
+   private static ServoSSR servoShoulder;
+   static ServoSSR servoLiftShoulder;
    static double shoulderNominalPosition;
-   private static Servo servoLiftPinch;
+   private static ServoSSR servoLiftPinch;
    private static DcMotorEx motorSlide;
    private static DcMotorEx motorLift;
    public static DigitalChannel slideLimitSwitchNO = null;
@@ -126,12 +127,12 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    public void initialize(){
-      servoRotator = parts.robot.servo0;
-      servoShoulder = parts.robot.servo2;
-      servoWrist = parts.robot.servo4;
-      servoPinch = parts.robot.servo0B;
-      servoLiftShoulder = parts.robot.servo2B;
-      servoLiftPinch = parts.robot.servo4B;
+      servoRotator = new ServoSSR(parts.robot.servo0);
+      servoShoulder = new ServoSSR(parts.robot.servo2);
+      servoWrist = new ServoSSR(parts.robot.servo4);
+      servoPinch = new ServoSSR(parts.robot.servo0B);
+      servoLiftShoulder = new ServoSSR(parts.robot.servo2B);
+      servoLiftPinch = new ServoSSR(parts.robot.servo4B);
       motorSlide = parts.robot.motor0B;
       motorLift = parts.robot.motor1B;
       slideLimitSwitchNO = parts.robot.digital1B;
@@ -258,7 +259,8 @@ public class T24MultiGrabber implements PartsInterface {
    public static void setWristServo(double newPosition) {
       if (servoWristDisabled) {
          servoWristDisabled = false;
-         parts.robot.enableServo(servoWrist);
+//         parts.robot.enableServo(servoWrist);
+         servoWrist.enable();
       }
       if (isServoAtPosition(servoWrist, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerWrist = getServoSweepTimerValue(servoWrist,newPosition,wristSweepTime);  // get timer before setting position!
@@ -267,7 +269,8 @@ public class T24MultiGrabber implements PartsInterface {
    public static void setPinchServo(double newPosition) {
       if (servoPinchDisabled) {
          servoPinchDisabled = false;
-         parts.robot.enableServo(servoPinch);
+//         parts.robot.enableServo(servoPinch);
+         servoPinch.enable();
       }
       if (isServoAtPosition(servoPinch, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerPinch = getServoSweepTimerValue(servoPinch,newPosition,pinchSweepTime);  // get timer before setting position!
@@ -276,7 +279,8 @@ public class T24MultiGrabber implements PartsInterface {
    public static void setRotatorServo(double newPosition) {
       if (servoRotatorDisabled) {
          servoRotatorDisabled = false;
-         parts.robot.enableServo(servoRotator);
+//         parts.robot.enableServo(servoRotator);
+         servoRotator.enable();
       }
       if (isServoAtPosition(servoRotator, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerRotator = getServoSweepTimerValue(servoRotator,newPosition,rotatorSweepTime);  // get timer before setting position!
@@ -285,7 +289,8 @@ public class T24MultiGrabber implements PartsInterface {
    public static void setShoulderServo(double newPosition) {
       if (servoShoulderDisabled) {
          servoShoulderDisabled = false;
-         parts.robot.enableServo(servoShoulder);
+//         parts.robot.enableServo(servoShoulder);
+         servoShoulder.enable();
       }
       if (shoulderNominalPosition==newPosition) return;
       //if (isServoAtPosition(servoShoulder, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
@@ -297,7 +302,8 @@ public class T24MultiGrabber implements PartsInterface {
    public static void setLiftShoulderServo(double newPosition) {
       if (servoLiftShoulderDisabled) {
          servoLiftShoulderDisabled = false;
-         parts.robot.enableServo(servoLiftShoulder);
+//         parts.robot.enableServo(servoLiftShoulder);
+         servoLiftShoulder.enable();
       }
       if (isServoAtPosition(servoLiftShoulder, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerLiftShoulder = getServoSweepTimerValue(servoLiftShoulder,newPosition,liftShoulderSweepTime);  // get timer before setting position!
@@ -306,7 +312,8 @@ public class T24MultiGrabber implements PartsInterface {
    public static void setLiftPinchServo(double newPosition) {
       if (servoLiftPinchDisabled) {
          servoLiftPinchDisabled = false;
-         parts.robot.enableServo(servoLiftPinch);
+//         parts.robot.enableServo(servoLiftPinch);
+         servoLiftPinch.enable();
       }
       if (isServoAtPosition(servoLiftPinch, newPosition)) return;  // has already been set (but not necessarily done moving), no need to update timer
       timerLiftPinch = getServoSweepTimerValue(servoLiftPinch,newPosition,liftPinchSweepTime);  // get timer before setting position!
@@ -322,12 +329,18 @@ public class T24MultiGrabber implements PartsInterface {
    }
 
    public static void disableServos() {
-      parts.robot.disableServo(servoPinch);
-      parts.robot.disableServo(servoWrist);
-      parts.robot.disableServo(servoShoulder);
-      parts.robot.disableServo(servoRotator);
-      parts.robot.disableServo(servoLiftShoulder);
-      parts.robot.disableServo(servoLiftPinch);
+//      parts.robot.disableServo(servoPinch);
+//      parts.robot.disableServo(servoWrist);
+//      parts.robot.disableServo(servoShoulder);
+//      parts.robot.disableServo(servoRotator);
+//      parts.robot.disableServo(servoLiftShoulder);
+//      parts.robot.disableServo(servoLiftPinch);
+      servoPinch.disable();
+      servoWrist.disable();
+      servoShoulder.disable();
+      servoRotator.disable();
+      servoLiftShoulder.disable();
+      servoLiftPinch.disable();
       servoPinchDisabled = true;
       servoWristDisabled = true;
       servoShoulderDisabled = true;

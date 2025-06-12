@@ -2,15 +2,12 @@ package org.firstinspires.ftc.teamcode.RobotParts.DiscShooter;
 
 import android.graphics.Color;
 
-import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.hardware.rev.RevBlinkinLedDriver.BlinkinPattern;
-import com.qualcomm.robotcore.hardware.PwmControl;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
+import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
 public class DSLed implements PartsInterface {
 
@@ -30,7 +27,7 @@ public class DSLed implements PartsInterface {
    int[][] finalMatrix = new int[cols][rows];
    int[][][] orbMatrix = new int[16][cols][rows];
 
-   private static Servo servoBlinkin;
+   private static ServoSSR servoBlinkin;
    int servoBlinkinSetting, servoBlinkinSettingLast;
 
    /* Constructor */
@@ -56,10 +53,13 @@ public class DSLed implements PartsInterface {
             orbMatrix[i] = parts.neo.buildPixelMapFromString(Character.toString((char)(97+i)), orb, MessageColor.G_ORANGE.color);
          }
       }
-      servoBlinkin = parts.robot.servo2B;
-      ServoImplEx adjust = parts.opMode.hardwareMap.get(ServoImplEx.class,"servo2B");
-      adjust.setPwmRange(new PwmControl.PwmRange(500, 2500));  // Default is 400-2400, but Blinkin wants 500-2500.
-      setBlinkinPattern(RevBlinkinLedDriver.BlinkinPattern.CP2_LARSON_SCANNER);  //60
+      //servoBlinkin = parts.robot.servo2B;
+      //ServoImplEx adjust = parts.opMode.hardwareMap.get(ServoImplEx.class,"servo2B");
+      //adjust.setPwmRange(new PwmControl.PwmRange(500, 2500));  // Default is 400-2400, but Blinkin wants 500-2500.
+      //setBlinkinPattern(RevBlinkinLedDriver.BlinkinPattern.CP2_LARSON_SCANNER);  //60
+      servoBlinkin = new ServoSSR(parts.robot.servo2B);
+//      servoBlinkin.setFullPwmRange();
+      servoBlinkin.setBlinkinPattern(BlinkinPattern.CP2_LARSON_SCANNER);
    }
 
    public void preInit() {
@@ -173,18 +173,18 @@ public class DSLed implements PartsInterface {
 //      parts.neo.applyPixelMapToBuffer(attractMatrix, 16, 16,0,true);
 //   }
 
-   public void setBlinkinPattern(int pattern) {
-      // Q: Why do this craziness instead of defining the servo port as a Blinkin?
-      // A: Because that changes the stored config and the Robot class. Easier to just use all the servo ports as servos.
-      if (pattern<1 || pattern>100) return;              // Or throw an error? Legal Blinkin patters are between 1 and 100
-      int pulseWidth = 995 + 10*pattern;                 // Convert pattern number to pulse width between 1000-2000 μs)
-      double setting = (pulseWidth - 500) / 2000.0;      // Covert pulse width to 0-1 servo position (based on 500-2500 μs)
-      servoBlinkin.setPosition(setting);
-   }
+//   public void setBlinkinPattern(int pattern) {
+//      // Q: Why do this craziness instead of defining the servo port as a Blinkin?
+//      // A: Because that changes the stored config and the Robot class. Easier to just use all the servo ports as servos.
+//      if (pattern<1 || pattern>100) return;              // Or throw an error? Legal Blinkin patters are between 1 and 100
+//      int pulseWidth = 995 + 10*pattern;                 // Convert pattern number to pulse width between 1000-2000 μs)
+//      double setting = (pulseWidth - 500) / 2000.0;      // Covert pulse width to 0-1 servo position (based on 500-2500 μs)
+//      servoBlinkin.setPosition(setting);
+//   }
 
-   public void setBlinkinPattern(BlinkinPattern pattern) {
-      setBlinkinPattern(pattern.ordinal()+1);            // Ordinal starts at 0, so need to add 1 (convert 0-99 to 1-100)
-   }
+//   public void setBlinkinPattern(BlinkinPattern pattern) {
+//      setBlinkinPattern(pattern.ordinal()+1);            // Ordinal starts at 0, so need to add 1 (convert 0-99 to 1-100)
+//   }
 
    public void autoSetBlinkin() {
       if (DSShooter.isArmed) servoBlinkinSetting = BlinkinPattern.FIRE_MEDIUM.ordinal();  //21
@@ -192,7 +192,7 @@ public class DSLed implements PartsInterface {
       else if (parts.userDrive.isDriving) servoBlinkinSetting = BlinkinPattern.CP1_LIGHT_CHASE.ordinal();   //51
       else servoBlinkinSetting = BlinkinPattern.TWINKLES_OCEAN_PALETTE.ordinal(); //25 //43;
       servoBlinkinSetting++;                            // Convert ordinal 0-99 to 1-100
-      if (servoBlinkinSetting != servoBlinkinSettingLast) setBlinkinPattern(servoBlinkinSetting);
+      if (servoBlinkinSetting != servoBlinkinSettingLast) servoBlinkin.setBlinkinPattern(servoBlinkinSetting);
       servoBlinkinSettingLast = servoBlinkinSetting;
    }
 

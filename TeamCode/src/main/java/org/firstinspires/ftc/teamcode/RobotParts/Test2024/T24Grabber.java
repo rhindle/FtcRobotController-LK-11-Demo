@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
+import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
 public class T24Grabber implements PartsInterface {
 
@@ -23,8 +24,8 @@ public class T24Grabber implements PartsInterface {
    static final int wristHorizToReadyTime       = 750;
 
    /* Internal use */
-   private static Servo servoPinch;
-   private static Servo servoWrist;
+   private static ServoSSR servoPinch;
+   private static ServoSSR servoWrist;
    private static boolean servoPinchDisabled = false;
    private static boolean servoWristDisabled = false;
    private static long wristTimer = System.currentTimeMillis();
@@ -46,8 +47,8 @@ public class T24Grabber implements PartsInterface {
    }
 
    public void initialize(){
-      servoPinch = parts.robot.servo0;
-      servoWrist = parts.robot.servo2;
+      servoPinch = new ServoSSR(parts.robot.servo0);
+      servoWrist = new ServoSSR(parts.robot.servo2);
       servoPinch.setPosition(pinchSlightOpen);
       servoWrist.setPosition(wristHorizontal);
    }
@@ -68,8 +69,10 @@ public class T24Grabber implements PartsInterface {
    }
 
    public void eStop() {
-      parts.robot.disableServo(servoPinch);
-      parts.robot.disableServo(servoWrist);
+//      parts.robot.disableServo(servoPinch);
+//      parts.robot.disableServo(servoWrist);
+      servoPinch.disable();
+      servoWrist.disable();
       servoPinchDisabled = true;
       servoWristDisabled = true;
       isArmed = false;
@@ -123,7 +126,8 @@ public class T24Grabber implements PartsInterface {
    public static void setWristServo(double newPosition) {
       if (servoWristDisabled) {
          servoWristDisabled = false;
-         parts.robot.enableServo(servoWrist);
+//         parts.robot.enableServo(servoWrist);
+         servoWrist.enable();
       }
       if (isServoAtPosition(servoWrist, newPosition)) return;  // has already been set (but not necessarily done moving)
       servoWrist.setPosition(newPosition);
@@ -133,7 +137,8 @@ public class T24Grabber implements PartsInterface {
    public static void setPinchServo(double newPosition) {
       if (servoPinchDisabled) {
          servoPinchDisabled = false;
-         parts.robot.enableServo(servoPinch);
+//         parts.robot.enableServo(servoPinch);
+         servoPinch.enable();
       }
       if (isServoAtPosition(servoPinch, newPosition)) return;  // has already been set (but not necessarily done moving)
       servoPinch.setPosition(newPosition);

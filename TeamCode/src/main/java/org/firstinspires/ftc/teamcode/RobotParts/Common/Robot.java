@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoControllerEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
@@ -281,19 +280,19 @@ public class Robot implements PartsInterface {
         );
     }
 
-    public void disableServo(Servo servo) {
-        ServoControllerEx controller = (ServoControllerEx) servo.getController();
-        int servoPort = servo.getPortNumber();
-        controller.setServoPwmDisable(servoPort);
-//        if (controller.isServoPwmEnabled(servoPort)) controller.setServoPwmDisable(servoPort);  //todo:check this; also I think 10.0 adds methods to Servo
-//        else controller.setServoPwmEnable(servoPort);
-    }
-
-    public void enableServo(Servo servo) {
-        ServoControllerEx controller = (ServoControllerEx) servo.getController();
-        int servoPort = servo.getPortNumber();
-        controller.setServoPwmEnable(servoPort);
-    }
+//    public void disableServo(Servo servo) {
+//        ServoControllerEx controller = (ServoControllerEx) servo.getController();
+//        int servoPort = servo.getPortNumber();
+//        controller.setServoPwmDisable(servoPort);
+////        if (controller.isServoPwmEnabled(servoPort)) controller.setServoPwmDisable(servoPort);  //todo:check this; also I think 10.0 adds methods to Servo
+////        else controller.setServoPwmEnable(servoPort);
+//    }
+//
+//    public void enableServo(Servo servo) {
+//        ServoControllerEx controller = (ServoControllerEx) servo.getController();
+//        int servoPort = servo.getPortNumber();
+//        controller.setServoPwmEnable(servoPort);
+//    }
 
     public void initOptions() {
         /* Following left as examples for subclass @override method */

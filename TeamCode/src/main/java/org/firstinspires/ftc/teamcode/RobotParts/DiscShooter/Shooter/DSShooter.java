@@ -4,24 +4,24 @@ import android.annotation.SuppressLint;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
+import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
 public class DSShooter implements PartsInterface {
 
    /* Settings */
    static final double pusherRetracted                 = 0.362;
    static final double pusherExtended                  = 0.660;
-   static final int pusherSweepTime                    = 225;
+   static final int pusherSweepTime                    = 755;  //225;
    static final int pusherAutoCycles                   = 4;     // 3 rings, but extra pushes in case miss
 
    static final double gateOpen                        = 0.352;
    static final double gateClosed                      = 0.015;
-   static final int gateSweepTime                      = 325;
+   static final int gateSweepTime                      = 1200;  //325;
 
    static final double spinnerRPM                      = 3600;
    static final double spinnerTolerance                = 150;
@@ -37,13 +37,13 @@ public class DSShooter implements PartsInterface {
    /* Internal use */
    private static DcMotorEx motorSpinner;
    private static DcMotorEx motorIngester;
-   private static Servo servoPusher;
-   private static Servo servoGate;
-   private static boolean servoPusherDisabled = false;
-   private static boolean servoGateDisabled = false;
+   private static ServoSSR servoPusher;
+   private static ServoSSR servoGate;
+//   private static boolean servoPusherDisabled = false;
+//   private static boolean servoGateDisabled = false;
    private static double spinRPMset;
-   private static long gateTimer = System.currentTimeMillis();
-   private static long pusherTimer = System.currentTimeMillis();
+//   private static long gateTimer = System.currentTimeMillis();
+//   private static long pusherTimer = System.currentTimeMillis();
    private static final double spinMultiplier = 60.0 / 28.0 * 1.0;  // ticksPerRev * gearRatio;;
    public static long cancelTimer = System.currentTimeMillis();
    public static long disarmTimer = System.currentTimeMillis();
@@ -111,8 +111,8 @@ public class DSShooter implements PartsInterface {
    public void initMotors () {
       motorSpinner = parts.robot.motor0B;
       motorIngester = parts.robot.motor1B;
-      servoGate = parts.robot.servo4B;
-      servoPusher = parts.robot.servo1B;
+      servoGate = new ServoSSR(parts.robot.servo4B).setSweepTime(gateSweepTime);
+      servoPusher = new ServoSSR(parts.robot.servo1B).setSweepTime(pusherSweepTime);
 
       stopMotors();
 
@@ -164,10 +164,12 @@ public class DSShooter implements PartsInterface {
    public void eStop() {
       stopMotors();
       cancelStateMachines();
-      parts.robot.disableServo(servoPusher);
-      parts.robot.disableServo(servoGate);
-      servoPusherDisabled = true;
-      servoGateDisabled = true;
+//      parts.robot.disableServo(servoPusher);
+//      parts.robot.disableServo(servoGate);
+      servoPusher.disable();
+      servoGate.disable();
+//      servoPusherDisabled = true;
+//      servoGateDisabled = true;
       isArmed = false;
    }
 
@@ -227,68 +229,83 @@ public class DSShooter implements PartsInterface {
    }
 
    public static void openGate() {
-      setGateServo(gateOpen);
+//      setGateServo(gateOpen);
+      servoGate.setPosition(gateOpen);
    }
    public static void closeGate() {
-      setGateServo(gateClosed);
+//      setGateServo(gateClosed);
+      servoGate.setPosition(gateClosed);
       isArmed = false;
    }
    public static void extendPusher() {
-      setPusherServo(pusherExtended);
+//      setPusherServo(pusherExtended);
+      servoPusher.setPosition(pusherExtended);
    }
    public static void retractPusher() {
-      setPusherServo(pusherRetracted);
+//      setPusherServo(pusherRetracted);
+      servoPusher.setPosition(pusherRetracted);
    }
 
-   public static void setGateServo(double newPosition) {
-      if (servoGateDisabled) {
-         servoGateDisabled = false;
-         parts.robot.enableServo(servoGate);
-      }
-      if (isServoAtPosition(servoGate, newPosition)) return;  // has already been set (but not necessarily done moving)
-      servoGate.setPosition(newPosition);
-      gateTimer = System.currentTimeMillis() + gateSweepTime;
-   }
+//   public static void setGateServo(double newPosition) {
+//      if (servoGateDisabled) {
+//         servoGateDisabled = false;
+////         parts.robot.enableServo(servoGate);
+//         servoGate.enable();
+//      }
+//      if (servoGate.isDisabled()) servoGate.enable();
+////      if (isServoAtPosition(servoGate, newPosition)) return;  // has already been set (but not necessarily done moving)
+//      if (servoGate.isSetPosition(newPosition)) return;  // has already been set (but not necessarily done moving)
+//      servoGate.setPosition(newPosition);
+////      gateTimer = System.currentTimeMillis() + gateSweepTime;
+//   }
 
-   public static void setPusherServo(double newPosition) {
-      if (servoPusherDisabled) {
-         servoPusherDisabled = false;
-         parts.robot.enableServo(servoPusher);
-      }
-      if (isServoAtPosition(servoPusher, newPosition)) return;  // has already been set (but not necessarily done moving)
-      servoPusher.setPosition(newPosition);
-      pusherTimer = System.currentTimeMillis() + pusherSweepTime;
-   }
+//   public static void setPusherServo(double newPosition) {
+//      if (servoPusherDisabled) {
+//         servoPusherDisabled = false;
+////         parts.robot.enableServo(servoPusher);
+//         servoPusher.enable();
+//      }
+////      if (isServoAtPosition(servoPusher, newPosition)) return;  // has already been set (but not necessarily done moving)
+//      if (servoPusher.isSetPosition(newPosition)) return;  // has already been set (but not necessarily done moving)))
+//      servoPusher.setPosition(newPosition);
+////      pusherTimer = System.currentTimeMillis() + pusherSweepTime;
+//   }
 
    public static boolean isGateOpen() {
-      return isServoAtPosition(servoGate,gateOpen,gateTimer);
+//      return isServoAtPosition(servoGate,gateOpen,gateTimer);
+      return servoGate.isAtPosition(gateOpen);
    }
    public boolean isGateClosed() {
-      return isServoAtPosition(servoGate,gateClosed,gateTimer);
+//      return isServoAtPosition(servoGate,gateClosed,gateTimer);
+      return servoGate.isAtPosition(gateClosed);
    }
-   public boolean isGateDoneMoving () {
-      return System.currentTimeMillis() >= gateTimer;
-   }
+//   public boolean isGateDoneMoving () {
+////      return System.currentTimeMillis() >= gateTimer;
+//      return servoGate.isDone();
+//   }
 
    public static boolean isPusherExtended() {
-      return isServoAtPosition(servoPusher,pusherExtended,pusherTimer);
+//      return isServoAtPosition(servoPusher,pusherExtended,pusherTimer);
+      return servoPusher.isAtPosition(pusherExtended);
    }
    public static boolean isPusherRetracted() {
-      return isServoAtPosition(servoPusher,pusherRetracted,pusherTimer);
+//      return isServoAtPosition(servoPusher,pusherRetracted,pusherTimer);
+      return servoPusher.isAtPosition(pusherRetracted);
    }
-   public boolean isPusherDoneMoving () {
-      return System.currentTimeMillis() >= pusherTimer;
-   }
+//   public boolean isPusherDoneMoving () {
+////      return System.currentTimeMillis() >= pusherTimer;
+//      return servoPusher.isDone();
+//   }
 
-   public static boolean isServoAtPosition(Servo servo, double comparePosition, long servoTimer) {
-      return isServoAtPosition(servo.getPosition(), comparePosition) && System.currentTimeMillis() >= servoTimer;
-   }
-   public static boolean isServoAtPosition(Servo servo, double comparePosition) {
-      return isServoAtPosition(servo.getPosition(), comparePosition);
-   }
-   public static boolean isServoAtPosition(double servoPosition, double comparePosition) {
-      return(Math.round(servoPosition*100.0) == Math.round(comparePosition*100.0));
-   }
+//   public static boolean isServoAtPosition(Servo servo, double comparePosition, long servoTimer) {
+//      return isServoAtPosition(servo.getPosition(), comparePosition) && System.currentTimeMillis() >= servoTimer;
+//   }
+//   public static boolean isServoAtPosition(Servo servo, double comparePosition) {
+//      return isServoAtPosition(servo.getPosition(), comparePosition);
+//   }
+//   public static boolean isServoAtPosition(double servoPosition, double comparePosition) {
+//      return(Math.round(servoPosition*100.0) == Math.round(comparePosition*100.0));
+//   }
    public static int getStateFullAuto() {
       return FullAuto.getState();
    }
