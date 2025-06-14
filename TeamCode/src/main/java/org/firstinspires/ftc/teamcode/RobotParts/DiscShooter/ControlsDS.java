@@ -8,12 +8,11 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed.MessageColor;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 public class ControlsDS extends Controls {
 
    boolean isStopped = false;
-   boolean guestOK, teamOK;
+   boolean guestOK, teamOK, eitherOK;
 
    public ControlsDS(Parts parts) {
       super(parts);
@@ -35,8 +34,9 @@ public class ControlsDS extends Controls {
       //DriveData driveDataTeam = new DriveData(gamepad1.left_stick_y, 0, gamepad1.left_stick_x, gamepad1.right_stick_x);
 
       /* Controls will be in the style of dead man switches */
-      guestOK = buttonMgr.isPressed(1,Buttons.left_bumper);
-      teamOK = buttonMgr.isPressed(1,Buttons.right_bumper);
+      guestOK = buttonMgr.isPressed(1,Buttons.left_bumper);          // for allowing the guest controls
+      teamOK = buttonMgr.isPressed(1,Buttons.right_bumper);          // for team only controls, and to authorize shooting
+      eitherOK = teamOK || guestOK;                                           // team controls work either way
 
       /* If neither dead man is pressed, stop everything (if needed) and proceed no further */
       if (!guestOK && !teamOK) {
@@ -48,13 +48,13 @@ public class ControlsDS extends Controls {
       /* If we made it here, things aren't necessarily stopped any more (this affect the e-stop method */
       isStopped = false;
       if (guestOK && teamOK) {
-         parts.dsLed.updateGraphic('3', MessageColor.G_BLUE);
+         parts.dsLed.updateGraphic('3', MessageColor.G_BLUE);   // this now means can shoot (and special team only controls)
       }
       else if (guestOK) {
-         parts.dsLed.updateGraphic('3', MessageColor.G_GREEN);
+         parts.dsLed.updateGraphic('3', MessageColor.G_GREEN);  // this now means either can drive
       }
       else {
-         parts.dsLed.updateGraphic('3', MessageColor.G_PURPLE);
+         parts.dsLed.updateGraphic('3', MessageColor.G_PURPLE); // team controls only
       }
 
       /* If guest is allowed, start with their drive input */
@@ -63,7 +63,7 @@ public class ControlsDS extends Controls {
       }
 
       /* If team is allowed, override with their drive input if not 0 */
-      if (teamOK) {
+      if (eitherOK) {
          if (driveDataTeam.driveSpeed > 0) {
             driveData.driveSpeed = driveDataTeam.driveSpeed;
             driveData.driveAngle = driveDataTeam.driveAngle;
@@ -131,21 +131,21 @@ public class ControlsDS extends Controls {
 
       /* All shooting functions require additional permission: Guest+Team (or just Team) */
 
-      if (teamOrTeamAndGuest(Buttons.a, State.wasTapped)) {
+      if (teamOrTeamAndGuestShoot(Buttons.a, State.wasTapped)) {
          parts.dsShooter.startPushIfArmed();
       }
 
-      if (teamOrTeamAndGuest(Buttons.b, State.wasTapped)) {
+      if (teamOrTeamAndGuestShoot(Buttons.b, State.wasTapped)) {
          parts.dsShooter.startShoot1();
          parts.dsLed.displayMessage('1', DSLed.MessageColor.BLUE);
       }
 
-      if (teamOrTeamAndGuest(Buttons.x, State.wasTapped)) {
+      if (teamOrTeamAndGuestShoot(Buttons.x, State.wasTapped)) {
          parts.dsShooter.startShoot3();
          parts.dsLed.displayMessage('3', DSLed.MessageColor.BLUE);
       }
 
-      if (teamOrTeamAndGuest(Buttons.y, State.wasTapped)) {
+      if (teamOrTeamAndGuestShoot(Buttons.y, State.wasTapped)) {
          parts.dsShooter.startFullAuto();
          if (DSShooter.getStateFullAuto()>0) parts.dsLed.displayMessage('A', MessageColor.BLUE);
          else parts.dsLed.displayMessage('A', MessageColor.YELLOW);
@@ -203,27 +203,17 @@ public class ControlsDS extends Controls {
               buttonMgr.getState(1,Buttons.right_trigger, State.isHeld) &&
               buttonMgr.getState(1,Buttons.left_trigger, State.wasDoubleTapped)) {
          parts.dsAuto.testAutoMethod4();
-//         parts.autoDrive.addNavTargets(new NavigationTarget[]{
-//                 new NavigationTarget(new Position(-28,-1,0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-//                 new NavigationTarget(new Position(-15, -1, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-//                 new NavigationTarget(new Position(-12, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,false),
-//                 new NavigationTarget(new Position(-30, -13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-//                 new NavigationTarget(new Position(-12, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-//                 new NavigationTarget(new Position(-24, 13, 0), parts.dsMisc.toleranceTransition, 1.0,5000,true),
-//                 new NavigationTarget(new Position(-33, -4, 0), parts.dsMisc.toleranceHigh, 1.0,5000,false),
-//                 });
-//   NavigationTarget test = new NavigationTarget(new Position(-24,0,0), toleranceTransition,1.0,5000,true);
       }
    }
 
    public boolean eitherGuestOrTeam(Buttons button, State state) {
-      // if either was enabled and activated the control, return true
-      boolean team = teamOK && buttonMgr.getState(1, button, state);
+      // if either was enabled and activated the control, return true (change to either 20250614)
+      boolean team = eitherOK && buttonMgr.getState(1, button, state);
       boolean guest = guestOK && buttonMgr.getState(2, button, state);
       return team || guest;
    }
 
-   public boolean teamOrTeamAndGuest(Buttons button, State state) {
+   public boolean teamOrTeamAndGuestShoot(Buttons button, State state) {
       // requires either team or team+guest (additional lockout for shooting functions)
       boolean team = teamOK && buttonMgr.getState(1, button, state);
       boolean guest = guestOK && teamOK && buttonMgr.getState(2, button, state);
@@ -231,7 +221,8 @@ public class ControlsDS extends Controls {
    }
 
    public boolean teamControl(Buttons button, State state) {
-      return teamOK && buttonMgr.getState(1, button, state);
+      // requires team control enabled (as either 20250614)
+      return eitherOK && buttonMgr.getState(1, button, state);
    }
 
    public void stopEverything() {
