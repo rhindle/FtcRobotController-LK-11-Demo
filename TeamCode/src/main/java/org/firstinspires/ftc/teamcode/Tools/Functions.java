@@ -14,11 +14,11 @@ public class Functions {
         return Math.sqrt(Math.pow(arg0, 2) + Math.pow(arg1, 2));
     }
 
-    public static double normalizeAngle(double A) {
+    public static double normalizeAngle(double angle) {
         // normalize angle A to -179 to +180 range
-        while (A > 180) A -= 360;
-        while (A <= -180) A += 360;
-        return A;
+        while (angle > 180) angle -= 360;
+        while (angle <= -180) angle += 360;
+        return angle;
     }
 
     public static double calculateLoopTime() {
@@ -33,6 +33,18 @@ public class Functions {
 
     public static double clamp(double num, double min, double max) {
         return Math.max(min, Math.min(num, max));
+    }
+
+    public static double averageAngle(double... anglesDeg) {
+        double xCos = 0.0;
+        double ySin = 0.0;
+        for (double angle : anglesDeg) {
+            xCos += Math.cos(Math.toRadians(normalizeAngle(angle)));
+            ySin += Math.sin(Math.toRadians(normalizeAngle(angle)));
+        }
+        xCos /= anglesDeg.length;
+        ySin /= anglesDeg.length;
+        return normalizeAngle(Math.toDegrees(Math.atan2(ySin, xCos)));
     }
 
 }
