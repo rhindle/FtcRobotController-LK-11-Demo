@@ -22,6 +22,7 @@ public class StateMachine {
     boolean success = true;
     boolean autoReset = false;
     boolean abortOnTimeout = false;
+    boolean returnStatus = false;
 
     ArrayList<String> killGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
@@ -62,21 +63,11 @@ public class StateMachine {
             // do the state machine stuff
             if (!machine.running) continue;
             if (timeout(machine.overallStartTime, machine.overallTimeLimit)) {    // whole machine timed out
-                machine.state = runState.TIMEOUT;
-                machine.running = false;
-                machine.done = true; //???
-                machine.success = false;
-                machine.currentStep = -1;
-                if (machine.timeoutRunnable != null) machine.timeoutRunnable.run();
+                machine.changeRunMode(runModeChange.TIMEOUT);
                 continue;
             }
             if (machine.endCriteria.get()) {              // hit the end criteria which suppose is a success?
-                machine.state = runState.COMPLETED;
-                machine.running = false;
-                machine.done = true;
-                machine.success = true;
-                machine.currentStep = -1;
-                if (machine.endCriteriaRunnable != null) machine.endCriteriaRunnable.run();
+                machine.changeRunMode(runModeChange.END);
                 continue;
             }
             if (machine.currentStep == -1) machine.nextStep();
@@ -86,23 +77,19 @@ public class StateMachine {
                 if (machine.stepRunnable != null) machine.stepRunnable.run();   // run the runnable
                 if (machine.stepEnd.get() || timeout(machine.stepStartTime, machine.stepTimeLimit)) {   // meets end criteria or exceeds time
                     if (machine.abortOnTimeout && timeout(machine.stepStartTime, machine.stepTimeLimit)) {  // if abortOnTimeout, any timeout is a failure
-                        machine.state = runState.FAILED;  // or TIMEOUT?
-                        machine.running = false;
-                        machine.done = true;
-                        machine.success = false;
-                        machine.currentStep = -1;
-                        if (machine.abortRunnable != null) machine.abortRunnable.run();
+                        machine.changeRunMode(runModeChange.ABORT);
                         continue;
                     }
                     if (machine.nextStep()) {            // if there's another step, do it
                         doLoop = true;
                     }
                     else {                               // no more steps = success
-                        machine.state = runState.COMPLETED;
-                        machine.running = false;
-                        machine.done = true;
-                        machine.success = true;
-                        machine.currentStep = -1;
+                        if (machine.autoReset) {
+                            machine.changeRunMode(runModeChange.RESTART);
+                        }
+                        else {
+                            machine.changeRunMode(runModeChange.COMPLETE);
+                        }
                     }
                 }
             } while (doLoop);  // the loop is so execution can continue until there is something to wait for
@@ -156,53 +143,131 @@ public class StateMachine {
         FAILED;
     }
 
-    public void stop() {
-        if (running || paused) {
-            success = false;
-            if (stopRunnable != null) stopRunnable.run();  // do we have to check for null?
-        }
-        state = runState.STOPPED;
-        running = false;
-        paused = false;
-        done = true; //???
-        currentStep = -1;
+    enum runModeChange {
+        TIMEOUT,
+        START,
+        RESTART,
+        STOP,
+        PAUSE,
+        UNPAUSE,
+        COMPLETE,
+        ABORT,
+        END;
     }
 
-    public void start() {
-        state = runState.RUNNING;
-        running = true;
-        paused = false;
-        done = false;
-        success = false;
-        currentStep = -1;  //what about unpausing?
-        overallStartTime = System.currentTimeMillis();
-        stepStartTime = overallStartTime;
-        assassinate();
+    public boolean stop() {
+        return changeRunMode(runModeChange.STOP);
+    }
+
+    public boolean start() {
+        if (paused) {
+            unPause();
+            return false;
+        }
+        if (running) {
+            return false;
+        }
+        restart();
+        return true;
+    }
+
+    public boolean restart() {
+        return changeRunMode(runModeChange.RESTART);
     }
 
     public boolean pause() {
-        if (!paused && running) {
-            state = runState.PAUSED;
-            running = false;
-            paused = true;
-            return true;
-        }
-        return false;
+        return changeRunMode(runModeChange.PAUSE);
     }
 
     public boolean unPause() {
-        if (paused) {
-            state = runState.RUNNING;
-            running = true;
-            paused = false;
-            // todo: reconsider what to do about the timers. Should the timer statuses be saved upon pausing?
-            // Here, we just reset them all the way
-            overallStartTime = System.currentTimeMillis();
-            stepStartTime = overallStartTime;
-            return true;
-        }
-        return false;
+        return changeRunMode(runModeChange.UNPAUSE);
     }
+
+    private boolean changeRunMode (runModeChange mode) {
+        switch (mode) {
+            case START:
+                // move start() code here after testing
+                return true;
+            case RESTART:
+                state = runState.RUNNING;
+                running = true;
+                paused = false;
+                done = false;
+                success = false;
+                currentStep = -1;  //what about unpausing?
+                overallStartTime = System.currentTimeMillis();
+                stepStartTime = overallStartTime;
+                assassinate();
+                return true;
+            case STOP:
+                returnStatus = false;
+                if (running || paused) {
+                    success = false;
+                    if (stopRunnable != null) stopRunnable.run();  // do we have to check for null?
+                    returnStatus = true;
+                }
+                state = runState.STOPPED;
+                running = false;
+                paused = false;
+                done = true; //???
+                currentStep = -1;
+                return returnStatus;
+            case PAUSE:
+                if (!paused && running) {
+                    state = runState.PAUSED;
+                    running = false;
+                    paused = true;
+                    return true;
+                }
+                return false;
+            case UNPAUSE:
+                if (paused) {
+                    state = runState.RUNNING;
+                    running = true;
+                    paused = false;
+                    // todo: reconsider what to do about the timers. Should the timer statuses be saved upon pausing?
+                    // Here, we just reset them all the way
+                    overallStartTime = System.currentTimeMillis();
+                    stepStartTime = overallStartTime;
+                    return true;
+                }
+                return false;
+            case TIMEOUT:  // whole machine
+                state = runState.TIMEOUT;
+                running = false;
+                done = true; //???
+                success = false;
+                currentStep = -1;
+                if (timeoutRunnable != null) timeoutRunnable.run();
+                return true;
+            case ABORT:   // single runnable
+                state = runState.FAILED;  // or TIMEOUT?
+                running = false;
+                done = true;
+                success = false;
+                currentStep = -1;
+                if (abortRunnable != null) abortRunnable.run();
+                return true;
+            case END:   // whole machine end criteria
+                state = runState.COMPLETED;
+                running = false;
+                done = true;
+                success = true;
+                currentStep = -1;
+                if (endCriteriaRunnable != null) endCriteriaRunnable.run();
+                return true;
+            case COMPLETE:  // all steps complete
+                state = runState.COMPLETED;
+                running = false;
+                done = true;
+                success = true;
+                currentStep = -1;
+                return true;
+            default:
+                return false;
+        }
+    }
+
 
     public boolean isDone() {
         return done;
