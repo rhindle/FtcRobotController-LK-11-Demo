@@ -32,6 +32,8 @@ public class StateMachine {
 
     long overallStartTime;
     long stepStartTime;
+    long pausedStepTime;
+    long pausedOverallTime;
 
     Runnable stepRunnable;
     Supplier<Boolean> stepEnd;
@@ -134,7 +136,7 @@ public class StateMachine {
         }
     }
 
-    enum runState {
+    static enum runState {
         RUNNING,
         PAUSED,
         STOPPED,
@@ -143,7 +145,7 @@ public class StateMachine {
         FAILED;
     }
 
-    enum runModeChange {
+    static enum runModeChange {
         TIMEOUT,
         START,
         RESTART,
@@ -160,15 +162,7 @@ public class StateMachine {
     }
 
     public boolean start() {
-        if (paused) {
-            unPause();
-            return false;
-        }
-        if (running) {
-            return false;
-        }
-        restart();
-        return true;
+        return changeRunMode(runModeChange.START);
     }
 
     public boolean restart() {
@@ -186,7 +180,14 @@ public class StateMachine {
     private boolean changeRunMode (runModeChange mode) {
         switch (mode) {
             case START:
-                // move start() code here after testing
+                if (paused) {
+                    unPause();
+                    return false;
+                }
+                if (running) {
+                    return false;
+                }
+                restart();
                 return true;
             case RESTART:
                 state = runState.RUNNING;
@@ -217,6 +218,8 @@ public class StateMachine {
                     state = runState.PAUSED;
                     running = false;
                     paused = true;
+                    pausedOverallTime = System.currentTimeMillis() - overallStartTime;
+                    pausedStepTime = System.currentTimeMillis() - stepStartTime;
                     return true;
                 }
                 return false;
@@ -226,9 +229,11 @@ public class StateMachine {
                     running = true;
                     paused = false;
                     // todo: reconsider what to do about the timers. Should the timer statuses be saved upon pausing?
-                    // Here, we just reset them all the way
-                    overallStartTime = System.currentTimeMillis();
-                    stepStartTime = overallStartTime;
+                    //// Here, we just reset them all the way
+                    //overallStartTime = System.currentTimeMillis();
+                    //stepStartTime = overallStartTime;
+                    overallStartTime = System.currentTimeMillis() - pausedOverallTime;
+                    stepStartTime = System.currentTimeMillis() - pausedStepTime;
                     return true;
                 }
                 return false;
@@ -267,7 +272,6 @@ public class StateMachine {
                 return false;
         }
     }
-
 
     public boolean isDone() {
         return done;
