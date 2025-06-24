@@ -121,6 +121,8 @@ public class StateMachine {
         return true;
     }
 
+    // todo: Add static ways to: stop all machines, pause all machines, stop/pause machines in groups, etc.
+
     private void assassinate() {
         if (killGroup.isEmpty()) return;                      // if killgroup is empty, nothing to do
         for (String kName : killGroup) {

@@ -14,6 +14,8 @@ import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSLed;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSMisc;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.DSSpeedControl;
 import org.firstinspires.ftc.teamcode.RobotParts.DiscShooter.Shooter.DSShooter;
+import org.firstinspires.ftc.teamcode.RobotParts.SMTest.SMT_LED;
+import org.firstinspires.ftc.teamcode.RobotParts.SMTest.SMT_Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.SB_Auto;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.SB_Misc;
@@ -83,6 +85,11 @@ public class Parts implements PartsInterface {
    public SB_Intake sb_Intake;
 //   public SB_Intake_Backup sb_Intake;
    public SB_Auto sb_Auto;
+   //---
+
+   //---SMTTest Unique
+   public SMT_Misc smt_Misc;
+   public SMT_LED smt_LED;
    //---
 
    /* Constructor */
