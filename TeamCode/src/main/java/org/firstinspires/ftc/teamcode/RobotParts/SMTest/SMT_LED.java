@@ -1,9 +1,8 @@
 package org.firstinspires.ftc.teamcode.RobotParts.SMTest;
 
-import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
@@ -26,10 +25,10 @@ public class SMT_LED implements PartsInterface {
 
    void construct(Parts parts){
       this.parts = parts;
-      rgbIndicator = new ServoSSR(parts.robot.servo0);
    }
 
    public void initialize(){
+      rgbIndicator = new ServoSSR(parts.robot.servo0);
       rgbIndicator.setPosition(rgbIndicatorColor.Yellow.color);
       machine1 = new StateMachine("machine1");
       machine2 = new StateMachine("machine2");
@@ -80,12 +79,12 @@ public class SMT_LED implements PartsInterface {
       machine3.addStep( 333);
       machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
       machine3.addStep( 333);
-      machine3.addStep( () -> machine1.restart() );
+      machine3.addStep( () -> machine1.restart(), () -> true );  // need to disambiguate functions that return a boolean
 
       machine4.setGroups("oops"); //not going to kill the others
       //machine4.setMemberGroup("led");
       machine4.setAutoReset(false);
-      machine4.addStep( () -> machine1.pause() );
+      machine4.addStep( () -> machine1.pause(), () -> true );
       machine4.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Sage.color) );
       machine4.addStep( 1000);
       machine4.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Azure.color) );
@@ -94,7 +93,7 @@ public class SMT_LED implements PartsInterface {
       machine4.addStep( 1000);
       machine4.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Azure.color) );
       machine4.addStep( 1000);
-      machine4.addStep( () -> machine1.unPause() );
+      machine4.addStep( () -> machine1.unPause(), () -> true );
 
 
    }
@@ -109,6 +108,10 @@ public class SMT_LED implements PartsInterface {
    }
 
    public void runLoop() {
+      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine1", machine1.getStatus());
+      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine2", machine2.getStatus());
+      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine3", machine3.getStatus());
+      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine4", machine4.getStatus());
    }
 
    public void stop() {

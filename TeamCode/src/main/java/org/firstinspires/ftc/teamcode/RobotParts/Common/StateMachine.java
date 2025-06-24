@@ -13,6 +13,8 @@ public class StateMachine {
     static ArrayList<StateMachine> list = new ArrayList<StateMachine>();
     static HashMap<String, StateMachine> map = new HashMap<>();
 
+    static boolean pausedAll = false;
+
     // internal variables
     String name;
     runState state = runState.STOPPED;
@@ -24,7 +26,7 @@ public class StateMachine {
     boolean abortOnTimeout = false;
     boolean returnStatus = false;
 
-    ArrayList<String> killGroup = new ArrayList<>();
+    ArrayList<String> stopGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
 
     int currentStep = -1;
@@ -68,7 +70,7 @@ public class StateMachine {
                 machine.changeRunMode(runModeChange.TIMEOUT);
                 continue;
             }
-            if (machine.endCriteria.get()) {              // hit the end criteria which suppose is a success?
+            if (machine.endCriteria != null && machine.endCriteria.get()) {              // hit the end criteria which suppose is a success?
                 machine.changeRunMode(runModeChange.END);
                 continue;
             }
@@ -77,6 +79,11 @@ public class StateMachine {
             do {
                 doLoop = false;
                 if (machine.stepRunnable != null) machine.stepRunnable.run();   // run the runnable
+                // The runnable might have caused the machine to stop or pause, so have to account for that in the code below!
+                // Todo: Should paused advance to the next step if appropriate?
+                if (!machine.running || machine.paused) {
+                    continue;
+                }
                 if (machine.stepEnd.get() || timeout(machine.stepStartTime, machine.stepTimeLimit)) {   // meets end criteria or exceeds time
                     if (machine.abortOnTimeout && timeout(machine.stepStartTime, machine.stepTimeLimit)) {  // if abortOnTimeout, any timeout is a failure
                         machine.changeRunMode(runModeChange.ABORT);
@@ -123,19 +130,82 @@ public class StateMachine {
 
     // todo: Add static ways to: stop all machines, pause all machines, stop/pause machines in groups, etc.
 
-    private void assassinate() {
-        if (killGroup.isEmpty()) return;                      // if killgroup is empty, nothing to do
-        for (String kName : killGroup) {
+    public static void stopAll() {
+        for (StateMachine machine : list) {
+            machine.stop();
+        }
+    }
+
+    public static void pauseAll() {
+        for (StateMachine machine : list) {
+            machine.pause();
+            pausedAll = true;
+        }
+    }
+
+    public static void unPauseAll() {
+        if (!pausedAll) return;
+        for (StateMachine machine : list) {
+            machine.unPause();
+            pausedAll = false;
+        }
+    }
+
+    public static void stopGroups(String... names) {
+        for (String sName : names) {
             for (StateMachine machine : list) {
-                if (machine == this) continue;                // don't want to kill ourself
-                if (machine.memberGroup.isEmpty()) continue;  // if membergroup is empty, nothing to do
-                for (String sName : machine.memberGroup) {
-                    if (sName.equals(kName)) {
+                if (machine.memberGroup.isEmpty()) continue;
+                for (String gName : machine.memberGroup) {
+                    if (gName.equals(sName)) {
                         machine.stop();
                     }
                 }
             }
         }
+    }
+
+    public static void pauseGroups(String... names) {
+        // should probably only be one running (potentially each group)
+        for (String sName : names) {
+            for (StateMachine machine : list) {
+                if (machine.memberGroup.isEmpty()) continue;
+                for (String gName : machine.memberGroup) {
+                    if (gName.equals(sName)) {
+                        machine.pause();
+                    }
+                }
+            }
+        }
+    }
+
+    public static void unPauseGroups(String... names) {
+        // should probably only be one paused (potentially each group)
+        for (String sName : names) {
+            for (StateMachine machine : list) {
+                if (machine.memberGroup.isEmpty()) continue;
+                for (String gName : machine.memberGroup) {
+                    if (gName.equals(sName)) {
+                        machine.unPause();
+                    }
+                }
+            }
+        }
+    }
+
+    private void deconflict() {
+        if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
+//        for (String sName : stopGroup) {
+//            for (StateMachine machine : list) {
+//                if (machine == this) continue;                // don't want to stop ourself
+//                if (machine.memberGroup.isEmpty()) continue;  // if membergroup is empty, nothing to do
+//                for (String gName : machine.memberGroup) {
+//                    if (gName.equals(sName)) {
+//                        machine.stop();
+//                    }
+//                }
+//            }
+//        }
+        stopGroups(stopGroup.toArray(new String[0]));   // this will stop "this" machine as well, but then we restart so it's OK
     }
 
     static enum runState {
@@ -189,9 +259,11 @@ public class StateMachine {
                 if (running) {
                     return false;
                 }
-                restart();
-                return true;
+                //restart();
+                //return true;
+                // Continue on into case RESTART
             case RESTART:
+                deconflict();
                 state = runState.RUNNING;
                 running = true;
                 paused = false;
@@ -200,7 +272,6 @@ public class StateMachine {
                 currentStep = -1;  //what about unpausing?
                 overallStartTime = System.currentTimeMillis();
                 stepStartTime = overallStartTime;
-                assassinate();
                 return true;
             case STOP:
                 returnStatus = false;
@@ -209,7 +280,7 @@ public class StateMachine {
                     if (stopRunnable != null) stopRunnable.run();  // do we have to check for null?
                     returnStatus = true;
                 }
-                state = runState.STOPPED;
+                if (!success) state = runState.STOPPED;  // leave as completed?
                 running = false;
                 paused = false;
                 done = true; //???
@@ -288,6 +359,14 @@ public class StateMachine {
     public boolean isRunning() {
         return running;
         //return state == runState.RUNNING;
+    }
+
+    public int getCurrentStep() {
+        return currentStep;
+    }
+
+    public String getStatus() {
+        return currentStep + ", " + state.toString();
     }
 
     public boolean isTimedOut() {
@@ -373,28 +452,28 @@ public class StateMachine {
 
     public void setGroups (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
-        killGroup = new ArrayList<>(Arrays.asList(names));
+        stopGroup = new ArrayList<>(Arrays.asList(names));
     }
 
     public void setMemberGroup (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
     }
 
-    public void setKillGroup (String... names) {
-        killGroup = new ArrayList<>(Arrays.asList(names));
+    public void setStopGroup (String... names) {
+        stopGroup = new ArrayList<>(Arrays.asList(names));
     }
 
     public void addGroup (String name) {
         memberGroup.add(name);
-        killGroup.add(name);
+        stopGroup.add(name);
     }
 
     public void addMemberGroup (String name) {
         memberGroup.add(name);
     }
 
-    public void addKillGroup (String name) {
-        killGroup.add(name);
+    public void addStopGroup (String name) {
+        stopGroup.add(name);
     }
 
     public void setStopRunnable (Runnable run) {

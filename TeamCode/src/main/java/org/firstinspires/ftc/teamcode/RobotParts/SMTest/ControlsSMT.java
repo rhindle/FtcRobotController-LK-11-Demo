@@ -36,16 +36,16 @@ public class ControlsSMT extends Controls {
    public void userInput() {
 
       if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
-         parts.smt_LED.machine1.restart();
+         parts.smt_LED.machine1.start();
       }
       if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
-         parts.smt_LED.machine2.restart();
+         parts.smt_LED.machine2.start();
       }
       if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
-         parts.smt_LED.machine3.restart();
+         parts.smt_LED.machine3.start();
       }
       if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
-         parts.smt_LED.machine4.restart();
+         parts.smt_LED.machine4.start();
       }
 
 

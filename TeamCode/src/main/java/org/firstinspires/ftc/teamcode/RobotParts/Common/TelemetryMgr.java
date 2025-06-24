@@ -145,6 +145,7 @@ public class TelemetryMgr {
         SPEED("SPD"),
         DISCSHOOTER("DSS"),
         T24MULTIGRAB("GRB"),
+        LED("LED"),
         SB_INTAKE("SBI"),
         PINPOINT ("PPT"),
         PINPOINT_EXT ("PPX"),
