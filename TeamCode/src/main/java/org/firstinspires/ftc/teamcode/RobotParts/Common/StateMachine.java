@@ -64,6 +64,12 @@ public class StateMachine {
         this.name = name;
     }
 
+    String getCallingClass() {
+        // todo: Find a way to identify from where the task was created (for stopping all in a class)
+        //return Thread.currentThread().getStackTrace()[2].getClassName();
+        return "";
+    }
+
     public static void runLoop() {
         for (StateMachine machine : list ) {
             // do the state machine stuff

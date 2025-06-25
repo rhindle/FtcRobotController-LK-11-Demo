@@ -38,55 +38,55 @@ public class SMT_LED implements PartsInterface {
 
       machine1.setGroups("led", "servo");
       machine1.setAutoReset(true);
-      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Violet.color) );
+      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Violet) );
       machine1.addStep( 1000);
-      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine1.addStep( 500);
-      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Violet.color) );
+      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Violet) );
       machine1.addStep( 500);
-      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine1.addStep( 250);
-      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Violet.color) );
+      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Violet) );
       machine1.addStep( 250);
-      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine1.addStep( 1000);
 
       machine2.setGroups("led", "servo");
       machine2.setAutoReset(false);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Red.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
       machine2.addStep( 500);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine2.addStep( 500);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Red.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
       machine2.addStep( 500);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine2.addStep( 500);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Red.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
       machine2.addStep( 500);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine2.addStep( 500);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Red.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
       machine2.addStep( 500);
-      machine2.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine2.addStep( 500);
 
       machine3.setGroups("led", "servo");
       machine3.setAutoReset(false);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Blue.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
       machine3.addStep( 333);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine3.addStep( 333);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Blue.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
       machine3.addStep( 333);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine3.addStep( 333);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Blue.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
       machine3.addStep( 333);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine3.addStep( 333);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Blue.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
       machine3.addStep( 333);
-      machine3.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
       machine3.addStep( 333);
       machine3.addStep( () -> machine1.restart(), () -> true );  // need to disambiguate functions that return a boolean
 
@@ -94,13 +94,13 @@ public class SMT_LED implements PartsInterface {
       //machine4.setMemberGroup("led");
       machine4.setAutoReset(false);
       machine4.addStep( () -> machine1.pause(), () -> true );
-      machine4.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Sage.color) );
+      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Sage) );
       machine4.addStep( 1000);
-      machine4.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Azure.color) );
+      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Azure) );
       machine4.addStep( 1000);
-      machine4.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Sage.color) );
+      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Sage) );
       machine4.addStep( 1000);
-      machine4.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Azure.color) );
+      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Azure) );
       machine4.addStep( 1000);
       machine4.addStep( () -> machine1.unPause(), () -> true );
 
@@ -149,6 +149,10 @@ public class SMT_LED implements PartsInterface {
       machine4.stop();
       rgbIndicator.setPosition(rgbIndicatorColor.Off.color);
       //StateMachine.stopAll();
+   }
+
+   void setLedColor (rgbIndicatorColor colorName) {
+      rgbIndicator.setPosition(colorName.color);
    }
 
    public enum rgbIndicatorColor {
