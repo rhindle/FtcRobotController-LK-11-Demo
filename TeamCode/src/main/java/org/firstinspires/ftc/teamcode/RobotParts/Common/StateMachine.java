@@ -25,6 +25,7 @@ public class StateMachine {
     boolean autoReset = false;
     boolean abortOnTimeout = false;
     boolean returnStatus = false;
+    boolean tempNoStop = false;
 
     ArrayList<String> stopGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
@@ -60,6 +61,7 @@ public class StateMachine {
     public StateMachine(String name) {
         list.add(this);
         map.put(name, this);
+        this.name = name;
     }
 
     public static void runLoop() {
@@ -94,6 +96,7 @@ public class StateMachine {
                     }
                     else {                               // no more steps = success
                         if (machine.autoReset) {
+                            machine.tempNoStop = true;   // todo: what behavior is desired?
                             machine.changeRunMode(runModeChange.RESTART);
                         }
                         else {
@@ -192,6 +195,14 @@ public class StateMachine {
         }
     }
 
+    public static void addTelemetry() {
+        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "===== State Machines =====");
+        for (StateMachine machine : list ) {
+            TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, machine.name, machine.getStatus());
+        }
+        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "========================");
+    }
+
     private void deconflict() {
         if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
 //        for (String sName : stopGroup) {
@@ -236,8 +247,24 @@ public class StateMachine {
     public boolean start() {
         return changeRunMode(runModeChange.START);
     }
+//    public boolean start(boolean stop) {
+//        tempNoStop = !stop;
+//        return changeRunMode(runModeChange.START);
+//    }
+    public boolean startNoStop() {
+        tempNoStop = true;
+        return changeRunMode(runModeChange.START);
+    }
 
     public boolean restart() {
+        return changeRunMode(runModeChange.RESTART);
+    }
+//    public boolean restart(boolean stop) {  // this is useful when one task will call and wait for another
+//        tempNoStop = !stop;
+//        return changeRunMode(runModeChange.RESTART);
+//    }
+    public boolean restartNoStop() {
+        tempNoStop = true;
         return changeRunMode(runModeChange.RESTART);
     }
 
@@ -263,7 +290,8 @@ public class StateMachine {
                 //return true;
                 // Continue on into case RESTART
             case RESTART:
-                deconflict();
+                if (!tempNoStop) deconflict();
+                tempNoStop = false;
                 state = runState.RUNNING;
                 running = true;
                 paused = false;
@@ -440,6 +468,11 @@ public class StateMachine {
         addStep(step, () -> true, 0);
     }
 
+    // add a step that runs once (no end state, no time limit); for cases where the Runnable can be confused with a Supplier
+    public void addRunn(Runnable step) {
+        addStep(step, () -> true, 0);
+    }
+
     // add a step that is just a delay
     public void addStep(long time) {
         addStep( () -> {}, () -> false, time);
@@ -455,11 +488,11 @@ public class StateMachine {
         stopGroup = new ArrayList<>(Arrays.asList(names));
     }
 
-    public void setMemberGroup (String... names) {
+    public void setMemberGroups (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
     }
 
-    public void setStopGroup (String... names) {
+    public void setStopGroups (String... names) {
         stopGroup = new ArrayList<>(Arrays.asList(names));
     }
 

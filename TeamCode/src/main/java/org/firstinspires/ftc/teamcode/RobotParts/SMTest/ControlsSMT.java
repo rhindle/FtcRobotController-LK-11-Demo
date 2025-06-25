@@ -47,7 +47,9 @@ public class ControlsSMT extends Controls {
       if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
          parts.smt_LED.machine4.start();
       }
-
+      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
+         parts.smt_LED.machine5.restart();
+      }
 
 //      speedFactor = 0.5f;
 //      parts.userDrive.setSpeedMaximum(0.5);

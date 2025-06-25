@@ -70,6 +70,7 @@ public class PartsSMT extends Parts {
         smt_LED.runLoop();
 
         addTelemetryLoopEnd();
+        StateMachine.addTelemetry();
         TelemetryMgr.Update();
     }
 
@@ -86,6 +87,7 @@ public class PartsSMT extends Parts {
         smt_LED.runLoop();
 
         addTelemetryLoopEnd();
+        StateMachine.addTelemetry();
         TelemetryMgr.Update();
     }
 

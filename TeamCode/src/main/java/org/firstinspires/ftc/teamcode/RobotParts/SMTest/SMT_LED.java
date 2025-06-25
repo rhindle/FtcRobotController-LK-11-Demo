@@ -17,6 +17,7 @@ public class SMT_LED implements PartsInterface {
    public StateMachine machine2;
    public StateMachine machine3;
    public StateMachine machine4;
+   public StateMachine machine5;
 
    /* Constructor */
    public SMT_LED(Parts parts){
@@ -39,6 +40,14 @@ public class SMT_LED implements PartsInterface {
       machine1.setAutoReset(true);
       machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Violet.color) );
       machine1.addStep( 1000);
+      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine1.addStep( 500);
+      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Violet.color) );
+      machine1.addStep( 500);
+      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
+      machine1.addStep( 250);
+      machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Violet.color) );
+      machine1.addStep( 250);
       machine1.addStep( () -> rgbIndicator.setPosition(rgbIndicatorColor.Off.color) );
       machine1.addStep( 1000);
 
@@ -95,7 +104,26 @@ public class SMT_LED implements PartsInterface {
       machine4.addStep( 1000);
       machine4.addStep( () -> machine1.unPause(), () -> true );
 
-
+      machine5 = new StateMachine("machine5");
+      machine5.setStopGroups("led", "servo");    // tasks to kill
+      machine5.setMemberGroups("led", "servo");  // will be killed by
+      machine5.setAutoReset(false);
+      // when this starts, it will kill the other led tasks.
+      machine5.addRunn(machine1::restartNoStop);
+      machine5.addStep( 2000);
+      machine5.addRunn(machine1::pause);
+      machine5.addRunn(machine2::restartNoStop);
+      machine5.addStep(machine2::isDone);
+      machine5.addRunn(machine1::unPause);
+      machine5.addStep( 2000);
+      machine5.addRunn(machine4::restartNoStop);
+      machine5.addStep(machine4::isDone);
+      machine5.addStep( 2000);
+      machine5.addRunn(machine1::pause);
+      machine5.addRunn(machine3::restartNoStop);
+      machine5.addStep(machine3::isDone);
+      // machine3 ends with starting machine1 and killing everything else
+      // do something else?
    }
 
    public void preInit() {
@@ -108,10 +136,10 @@ public class SMT_LED implements PartsInterface {
    }
 
    public void runLoop() {
-      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine1", machine1.getStatus());
-      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine2", machine2.getStatus());
-      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine3", machine3.getStatus());
-      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine4", machine4.getStatus());
+//      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine1", machine1.getStatus());
+//      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine2", machine2.getStatus());
+//      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine3", machine3.getStatus());
+//      TelemetryMgr.message(TelemetryMgr.Category.LED, "Machine4", machine4.getStatus());
    }
 
    public void stop() {
