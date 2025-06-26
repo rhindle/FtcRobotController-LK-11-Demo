@@ -489,68 +489,104 @@ public class StateMachine {
     /* Step Setting */
     /*==============*/
 
+    // todo: rebuild this with aborts?
     public void addSteps(TaskStep... taskSteps) {
         for (TaskStep taskStep : taskSteps) {
             addStep(taskStep.step, taskStep.end, taskStep.time);
         }
     }
 
-    // add a step with end state and time limit
-    public void addStep(Runnable step, Supplier<Boolean> end, long time) {
+    public void addRunStep(Runnable step) {
+        addStep(step, () -> true, 0, false);
+    }
+    public void addRunStep(Runnable step, Supplier<Boolean> end) {
+        addStep(step, end, 0, false);
+    }
+    public void addRunStep(Runnable step, Supplier<Boolean> end, long time) {
+        addStep(step, end, time, false);
+    }
+    public void addRunStep(Runnable step, Supplier<Boolean> end, long time, boolean abortOnTimeout) {
+        addStep(step, end, time, abortOnTimeout);
+    }
+    public void addRunStep(Runnable step, long time) {
+        addStep(step, () -> false, time, false);
+    }
+
+    public void addWaitFor(Supplier<Boolean> end) {
+        addStep( () -> {}, end, 0, false);
+    }
+    public void addWaitFor(Supplier<Boolean> end, long time) {
+        addStep( () -> {}, end, time, false);
+    }
+    public void addWaitFor(Supplier<Boolean> end, long time, boolean abortOnTimeout) {
+        addStep( () -> {}, end, time, abortOnTimeout);
+    }
+    public void addWaitFor(long time) {
+        addStep( () -> {}, () -> false, time, false);
+    }
+
+    public void addDelayOf(long time) {
+        addStep( () -> {}, () -> false, time, false);
+    }
+
+
+    // add a step with all possible parameters
+    public void addStep(Runnable step, Supplier<Boolean> end, long time, boolean abortOnTimeout) {
         if (step == null || end == null) return;
         if (time < 0) time = 0;
+        if (time == 0) abortOnTimeout = false;
         steps.add(step);
         ends.add(end);
         times.add(time);
-        aborts.add(false);
+        aborts.add(abortOnTimeout);
+    }
+
+    // add a step with end state and time limit
+    public void addStep(Runnable step, Supplier<Boolean> end, long time) {
+        addStep(step, end, time, false);
     }
 
     // add a step with end state, no time limit
     public void addStep(Runnable step, Supplier<Boolean> end) {
-        addStep(step, end, 0);
+        addStep(step, end, 0, false);
     }
 
     // add a step with only end state
     public void addStep(Supplier<Boolean> end) {
-        addStep( () -> {}, end, 0);
+        addStep( () -> {}, end, 0, false);
     }
 
     // add a step end state and time limit
     public void addStep(Supplier<Boolean> end, long time) {
-        addStep( () -> {}, end, time);
+        addStep( () -> {}, end, time, false);
     }
 
     // add a step that runs once (no end state, no time limit)
     public void addStep(Runnable step) {
-        addStep(step, () -> true, 0);
+        addStep(step, () -> true, 0, false);
     }
 
     // add a step that runs once (no end state, no time limit); for cases where the Runnable can be confused with a Supplier
     public void addRunn(Runnable step) {
-        addStep(step, () -> true, 0);
+        addStep(step, () -> true, 0, false);
     }
 
     // add a step that is just a delay
     public void addStep(long time) {
-        addStep( () -> {}, () -> false, time);
+        addStep( () -> {}, () -> false, time, false);
     }
     public void addDelay(long time) {
-        addStep( () -> {}, () -> false, time);
+        addStep( () -> {}, () -> false, time, false);
     }
 
     // add a step that repeats for time
     public void addStep(Runnable step, long time) {
-        addStep(step, () -> false, time);
+        addStep(step, () -> false, time, false);
     }
 
     // add a step with end state and time limit that aborts the task on timeout
     public void addAbort(Supplier<Boolean> end, long time) {
-        if (end == null) return;
-        if (time < 0) time = 0;
-        steps.add( () -> {} );
-        ends.add(end);
-        times.add(time);
-        aborts.add(true);
+        addStep( () -> {}, end, time, true);
     }
 
     /*===============*/

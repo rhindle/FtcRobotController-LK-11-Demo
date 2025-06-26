@@ -50,90 +50,90 @@ public class SMT_LED implements PartsInterface {
 
       machine1.setGroups("led", "servo");
       machine1.setAutoReset(true);
-      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Violet) );
-      machine1.addStep( 1000);
-      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine1.addStep( 500);
-      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Violet) );
-      machine1.addStep( 500);
-      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine1.addStep( 250);
-      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Violet) );
-      machine1.addStep( 250);
-      machine1.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine1.addStep( 1000);
+      machine1.addRunStep( () -> setLedColor(rgbIndicatorColor.Violet) );
+      machine1.addDelayOf( 1000);
+      machine1.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine1.addDelayOf( 500);
+      machine1.addRunStep( () -> setLedColor(rgbIndicatorColor.Violet) );
+      machine1.addDelayOf( 500);
+      machine1.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine1.addDelayOf( 250);
+      machine1.addRunStep( () -> setLedColor(rgbIndicatorColor.Violet) );
+      machine1.addDelayOf( 250);
+      machine1.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine1.addDelayOf( 1000);
 
       machine2.setGroups("led", "servo");
       machine2.setAutoReset(false);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addStep( 500);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addStep( 500);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addStep( 500);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addStep( 500);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addStep( 500);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addStep( 500);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addStep( 500);
-      machine2.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addStep( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Red) );
+      machine2.addDelayOf( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine2.addDelayOf( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Red) );
+      machine2.addDelayOf( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine2.addDelayOf( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Red) );
+      machine2.addDelayOf( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine2.addDelayOf( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Red) );
+      machine2.addDelayOf( 500);
+      machine2.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine2.addDelayOf( 500);
 
       machine3.setGroups("led", "servo");
       machine3.setAutoReset(false);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addStep( 333);
-      machine3.addStep( () -> machine1.restart(), () -> true );  // need to disambiguate functions that return a boolean
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Blue) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Blue) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Blue) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Blue) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> setLedColor(rgbIndicatorColor.Off) );
+      machine3.addDelayOf( 333);
+      machine3.addRunStep( () -> machine1.restart() );
 
       machine4.setGroups("oops"); //not going to kill the others
       //machine4.setMemberGroup("led");
       machine4.setAutoReset(false);
-      machine4.addStep( () -> machine1.pause(), () -> true );
-      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Sage) );
-      machine4.addStep( 1000);
-      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Azure) );
-      machine4.addStep( 1000);
-      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Sage) );
-      machine4.addStep( 1000);
-      machine4.addStep( () -> setLedColor(rgbIndicatorColor.Azure) );
-      machine4.addStep( 1000);
-      machine4.addStep( () -> machine1.unPause(), () -> true );
+      machine4.addRunStep( () -> machine1.pause() );
+      machine4.addRunStep( () -> setLedColor(rgbIndicatorColor.Sage) );
+      machine4.addDelayOf( 1000);
+      machine4.addRunStep( () -> setLedColor(rgbIndicatorColor.Azure) );
+      machine4.addDelayOf( 1000);
+      machine4.addRunStep( () -> setLedColor(rgbIndicatorColor.Sage) );
+      machine4.addDelayOf( 1000);
+      machine4.addRunStep( () -> setLedColor(rgbIndicatorColor.Azure) );
+      machine4.addDelayOf( 1000);
+      machine4.addRunStep( () -> machine1.unPause() );
 
       machine5 = new StateMachine("machine5");
       machine5.setStopGroups("led", "servo");    // tasks to kill
       machine5.setMemberGroups("led", "servo");  // will be killed by
       machine5.setAutoReset(false);
       // when this starts, it will kill the other led tasks.
-      machine5.addRunn(machine1::restartNoStop);
-      machine5.addStep( 2000);
-      machine5.addRunn(machine1::pause);
-      machine5.addRunn(machine2::restartNoStop);
-      machine5.addStep(machine2::isDone);
-      machine5.addRunn(machine1::unPause);
-      machine5.addStep( 2000);
-      machine5.addRunn(machine4::restartNoStop);
-      machine5.addStep(machine4::isDone);
-      machine5.addStep( 2000);
-      machine5.addRunn(machine1::pause);
-      machine5.addRunn(machine3::restartNoStop);
-      machine5.addStep(machine3::isDone);
+      machine5.addRunStep(machine1::restartNoStop);
+      machine5.addDelayOf( 2000);
+      machine5.addRunStep(machine1::pause);
+      machine5.addRunStep(machine2::restartNoStop);
+      machine5.addWaitFor(machine2::isDone);
+      machine5.addRunStep(machine1::unPause);
+      machine5.addDelayOf( 2000);
+      machine5.addRunStep(machine4::restartNoStop);
+      machine5.addWaitFor(machine4::isDone);
+      machine5.addDelayOf( 2000);
+      machine5.addRunStep(machine1::pause);
+      machine5.addRunStep(machine3::restartNoStop);
+      machine5.addWaitFor(machine3::isDone);
       // machine3 ends with starting machine1 and killing everything else
       // do something else?
 
@@ -141,10 +141,10 @@ public class SMT_LED implements PartsInterface {
       limitTask.setAutoReset(true);
       limitTask.setNoBulkStop(true);  // keep this task running!
       //if (slideLimitSwitchNC.getState() && !slideLimitSwitchNO.getState()) slideTemp=1;
-      limitTask.addStep( () -> slideLimitSwitchNC.getState() );
-      limitTask.addStep( () -> setLedColor(rgbIndicatorColor.Orange) );
-      limitTask.addStep( () -> !slideLimitSwitchNC.getState() );
-      limitTask.addStep( () -> setLedColor(rgbIndicatorColor.Indigo) );
+      limitTask.addWaitFor( () -> slideLimitSwitchNC.getState() );
+      limitTask.addRunStep( () -> setLedColor(rgbIndicatorColor.Orange) );
+      limitTask.addWaitFor( () -> !slideLimitSwitchNC.getState() );
+      limitTask.addRunStep( () -> setLedColor(rgbIndicatorColor.Indigo) );
       limitTask.start();
 
    }
