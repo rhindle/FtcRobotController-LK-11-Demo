@@ -12,11 +12,11 @@ public class StateMachine {
     // instance tracking
     static ArrayList<StateMachine> list = new ArrayList<StateMachine>();
     static HashMap<String, StateMachine> map = new HashMap<>();
-
     static boolean pausedAll = false;
 
     // internal variables
     String name;
+    String className;
     runState state = runState.STOPPED;
     boolean running = false;
     boolean paused = false;
@@ -26,13 +26,13 @@ public class StateMachine {
     boolean abortOnTimeout = false;
     boolean returnStatus = false;
     boolean tempNoStop = false;
+    boolean noBulkStop = false;  // this makes the task invincible except when stopped directly
 
     ArrayList<String> stopGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
 
     int currentStep = -1;
-    long overallTimeLimit = 0;  // this will be weird if paused
-
+    long overallTimeLimit = 0;
     long overallStartTime;
     long stepStartTime;
     long pausedStepTime;
@@ -41,11 +41,13 @@ public class StateMachine {
     Runnable stepRunnable;
     Supplier<Boolean> stepEnd;
     Long stepTimeLimit;
+    Boolean stepAbort;
 
     Supplier<Boolean> endCriteria;
     ArrayList<Runnable> steps = new ArrayList<>();
     ArrayList<Supplier<Boolean>> ends = new ArrayList<>();
     ArrayList<Long> times = new ArrayList<>();
+    ArrayList<Boolean> aborts = new ArrayList<>();
 
     Runnable stopRunnable;
     Runnable abortRunnable;
@@ -62,13 +64,18 @@ public class StateMachine {
         list.add(this);
         map.put(name, this);
         this.name = name;
+        this.className = getCallingClass();
     }
 
-    String getCallingClass() {
-        // todo: Find a way to identify from where the task was created (for stopping all in a class)
-        //return Thread.currentThread().getStackTrace()[2].getClassName();
-        return "";
+    public static void Reset() {
+        list = new ArrayList<StateMachine>();
+        map = new HashMap<>();
+        pausedAll = false;
     }
+
+    /*==================*/
+    /*  Static Methods  */
+    /*==================*/
 
     public static void runLoop() {
         for (StateMachine machine : list ) {
@@ -93,7 +100,7 @@ public class StateMachine {
                     continue;
                 }
                 if (machine.stepEnd.get() || timeout(machine.stepStartTime, machine.stepTimeLimit)) {   // meets end criteria or exceeds time
-                    if (machine.abortOnTimeout && timeout(machine.stepStartTime, machine.stepTimeLimit)) {  // if abortOnTimeout, any timeout is a failure
+                    if ((machine.abortOnTimeout || machine.stepAbort) && timeout(machine.stepStartTime, machine.stepTimeLimit)) {  // if abortOnTimeout, any timeout is a failure
                         machine.changeRunMode(runModeChange.ABORT);
                         continue;
                     }
@@ -127,37 +134,59 @@ public class StateMachine {
         return System.currentTimeMillis() - start >= limit;
     }
 
-    private boolean nextStep() {
-        currentStep++;
-        if (currentStep >= steps.size()) return false;
-        stepRunnable = steps.get(currentStep);
-        stepEnd = ends.get(currentStep);
-        stepTimeLimit = times.get(currentStep);
-        stepStartTime = System.currentTimeMillis();
-        return true;
+    private static String getCallingClass() {
+        String myName = StateMachine.class.getName();
+        //RobotLog.vv("SM", "My Name: "+myName);
+        String eName = "n/a";
+        boolean foundMe = false;
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        //int count = 0;
+        for (StackTraceElement element : stackTrace) {
+            eName = element.getClassName();
+            //RobotLog.vv("SM", count+" "+eName);
+            //count++;
+            if (eName.equals(myName)) foundMe = true;
+            if (foundMe && !eName.equals(myName)) break;
+        }
+        return shortName(eName);
+        //return Thread.currentThread().getStackTrace()[4].getClassName();
     }
 
-    // todo: Add static ways to: stop all machines, pause all machines, stop/pause machines in groups, etc.
+    private static String shortName(String fullName) {
+        return fullName.substring(fullName.lastIndexOf(".") + 1);
+    }
+
+    public static void addTelemetry() {
+        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "============ State Machines ============");
+        for (StateMachine machine : list ) {
+            TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, machine.name, machine.getStatus()+" ("+machine.className+")");
+        }
+        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "======================================");
+    }
+
+    /*=================*/
+    /* Static Controls */
+    /*=================*/
 
     public static void stopAll() {
         for (StateMachine machine : list) {
-            machine.stop();
+            if (!machine.noBulkStop) machine.stop();
         }
     }
 
     public static void pauseAll() {
         for (StateMachine machine : list) {
-            machine.pause();
-            pausedAll = true;
+            if (!machine.noBulkStop) machine.pause();
         }
+        pausedAll = true;
     }
 
     public static void unPauseAll() {
         if (!pausedAll) return;
         for (StateMachine machine : list) {
             machine.unPause();
-            pausedAll = false;
         }
+        pausedAll = false;
     }
 
     public static void stopGroups(String... names) {
@@ -166,7 +195,7 @@ public class StateMachine {
                 if (machine.memberGroup.isEmpty()) continue;
                 for (String gName : machine.memberGroup) {
                     if (gName.equals(sName)) {
-                        machine.stop();
+                        if (!machine.noBulkStop) machine.stop();
                     }
                 }
             }
@@ -180,7 +209,7 @@ public class StateMachine {
                 if (machine.memberGroup.isEmpty()) continue;
                 for (String gName : machine.memberGroup) {
                     if (gName.equals(sName)) {
-                        machine.pause();
+                        if (!machine.noBulkStop) machine.pause();
                     }
                 }
             }
@@ -201,28 +230,31 @@ public class StateMachine {
         }
     }
 
-    public static void addTelemetry() {
-        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "===== State Machines =====");
-        for (StateMachine machine : list ) {
-            TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, machine.name, machine.getStatus());
+    public static void stopClass() {
+        String cName = getCallingClass();
+        for (StateMachine machine : list) {
+            if (machine.className.equals(cName)) {
+                if (!machine.noBulkStop) machine.stop();
+            }
         }
-        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "========================");
     }
 
-    private void deconflict() {
-        if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
-//        for (String sName : stopGroup) {
-//            for (StateMachine machine : list) {
-//                if (machine == this) continue;                // don't want to stop ourself
-//                if (machine.memberGroup.isEmpty()) continue;  // if membergroup is empty, nothing to do
-//                for (String gName : machine.memberGroup) {
-//                    if (gName.equals(sName)) {
-//                        machine.stop();
-//                    }
-//                }
-//            }
-//        }
-        stopGroups(stopGroup.toArray(new String[0]));   // this will stop "this" machine as well, but then we restart so it's OK
+    public static void pauseClass() {
+        String cName = getCallingClass();
+        for (StateMachine machine : list) {
+            if (machine.className.equals(cName)) {
+                if (!machine.noBulkStop) machine.pause();
+            }
+        }
+    }
+
+    public static void unPauseClass() {
+        String cName = getCallingClass();
+        for (StateMachine machine : list) {
+            if (machine.className.equals(cName)) {
+                machine.unPause();
+            }
+        }
     }
 
     static enum runState {
@@ -246,41 +278,9 @@ public class StateMachine {
         END;
     }
 
-    public boolean stop() {
-        return changeRunMode(runModeChange.STOP);
-    }
-
-    public boolean start() {
-        return changeRunMode(runModeChange.START);
-    }
-//    public boolean start(boolean stop) {
-//        tempNoStop = !stop;
-//        return changeRunMode(runModeChange.START);
-//    }
-    public boolean startNoStop() {
-        tempNoStop = true;
-        return changeRunMode(runModeChange.START);
-    }
-
-    public boolean restart() {
-        return changeRunMode(runModeChange.RESTART);
-    }
-//    public boolean restart(boolean stop) {  // this is useful when one task will call and wait for another
-//        tempNoStop = !stop;
-//        return changeRunMode(runModeChange.RESTART);
-//    }
-    public boolean restartNoStop() {
-        tempNoStop = true;
-        return changeRunMode(runModeChange.RESTART);
-    }
-
-    public boolean pause() {
-        return changeRunMode(runModeChange.PAUSE);
-    }
-
-    public boolean unPause() {
-        return changeRunMode(runModeChange.UNPAUSE);
-    }
+    /*==================*/
+    /* Internal Methods */
+    /*==================*/
 
     private boolean changeRunMode (runModeChange mode) {
         switch (mode) {
@@ -296,7 +296,7 @@ public class StateMachine {
                 //return true;
                 // Continue on into case RESTART
             case RESTART:
-                if (!tempNoStop) deconflict();
+                if (!tempNoStop) deConflict();
                 tempNoStop = false;
                 state = runState.RUNNING;
                 running = true;
@@ -335,10 +335,6 @@ public class StateMachine {
                     state = runState.RUNNING;
                     running = true;
                     paused = false;
-                    // todo: reconsider what to do about the timers. Should the timer statuses be saved upon pausing?
-                    //// Here, we just reset them all the way
-                    //overallStartTime = System.currentTimeMillis();
-                    //stepStartTime = overallStartTime;
                     overallStartTime = System.currentTimeMillis() - pausedOverallTime;
                     stepStartTime = System.currentTimeMillis() - pausedStepTime;
                     return true;
@@ -380,6 +376,68 @@ public class StateMachine {
         }
     }
 
+    private boolean nextStep() {
+        currentStep++;
+        if (currentStep >= steps.size()) return false;
+        stepRunnable = steps.get(currentStep);
+        stepEnd = ends.get(currentStep);
+        stepTimeLimit = times.get(currentStep);
+        stepAbort = aborts.get(currentStep);
+        stepStartTime = System.currentTimeMillis();
+        return true;
+    }
+
+    private void deConflict() {
+        if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
+        stopGroups(stopGroup.toArray(new String[0]));   // this will stop "this" machine as well, but then we restart so it's OK
+    }
+
+    /*==============*/
+    /*   Controls   */
+    /*==============*/
+
+    public boolean stop() {
+        return changeRunMode(runModeChange.STOP);
+    }
+
+    public boolean start() {
+        return changeRunMode(runModeChange.START);
+    }
+
+    public boolean startNoStop() {
+        tempNoStop = true;
+        return changeRunMode(runModeChange.START);
+    }
+
+    public boolean restart() {
+        return changeRunMode(runModeChange.RESTART);
+    }
+
+    public boolean restartNoStop() {
+        tempNoStop = true;
+        return changeRunMode(runModeChange.RESTART);
+    }
+
+    public boolean pause() {
+        return changeRunMode(runModeChange.PAUSE);
+    }
+
+    public boolean unPause() {
+        return changeRunMode(runModeChange.UNPAUSE);
+    }
+
+    /*==============*/
+    /*    Status    */
+    /*==============*/
+
+    public int getCurrentStep() {
+        return currentStep;
+    }
+
+    public String getStatus() {
+        return currentStep + ", " + state.toString();
+    }
+
     public boolean isDone() {
         return done;
         //return state == runState.COMPLETED;
@@ -395,17 +453,13 @@ public class StateMachine {
         //return state == runState.RUNNING;
     }
 
-    public int getCurrentStep() {
-        return currentStep;
-    }
-
-    public String getStatus() {
-        return currentStep + ", " + state.toString();
-    }
-
     public boolean isTimedOut() {
         return state == runState.TIMEOUT;
     }
+
+    /*==============*/
+    /*   Setters    */
+    /*==============*/
 
     public StateMachine setAutoReset(boolean state) {
         autoReset = state;
@@ -427,15 +481,13 @@ public class StateMachine {
         this.endCriteria = endCriteria;
     }
 
-//    public void test() {
-//        addSteps(
-//            new TaskStep(()-> {
-//                System.out.println("step 1");
-//            }),
-//            new TaskStep(() -> true, 300),
-//            new TaskStep(() -> {}, () -> false, 0)
-//        );
-//    }
+    public void setNoBulkStop(boolean state) {
+        noBulkStop = state;
+    }
+
+    /*==============*/
+    /* Step Setting */
+    /*==============*/
 
     public void addSteps(TaskStep... taskSteps) {
         for (TaskStep taskStep : taskSteps) {
@@ -446,12 +498,11 @@ public class StateMachine {
     // add a step with end state and time limit
     public void addStep(Runnable step, Supplier<Boolean> end, long time) {
         if (step == null || end == null) return;
-        //long timeLimit = (time == null || time < 0) ? 0 : time;
-        //if (!end.get() && time == 0) end = () -> true;  // would never advance to next step?
         if (time < 0) time = 0;
         steps.add(step);
         ends.add(end);
         times.add(time);
+        aborts.add(false);
     }
 
     // add a step with end state, no time limit
@@ -483,11 +534,28 @@ public class StateMachine {
     public void addStep(long time) {
         addStep( () -> {}, () -> false, time);
     }
+    public void addDelay(long time) {
+        addStep( () -> {}, () -> false, time);
+    }
 
     // add a step that repeats for time
     public void addStep(Runnable step, long time) {
         addStep(step, () -> false, time);
     }
+
+    // add a step with end state and time limit that aborts the task on timeout
+    public void addAbort(Supplier<Boolean> end, long time) {
+        if (end == null) return;
+        if (time < 0) time = 0;
+        steps.add( () -> {} );
+        ends.add(end);
+        times.add(time);
+        aborts.add(true);
+    }
+
+    /*===============*/
+    /* Group Setting */
+    /*===============*/
 
     public void setGroups (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
@@ -502,31 +570,60 @@ public class StateMachine {
         stopGroup = new ArrayList<>(Arrays.asList(names));
     }
 
-    public void addGroup (String name) {
-        memberGroup.add(name);
-        stopGroup.add(name);
+    public void addGroups (String... names) {
+        memberGroup.addAll(Arrays.asList(names));
+        stopGroup.addAll(Arrays.asList(names));
     }
 
-    public void addMemberGroup (String name) {
-        memberGroup.add(name);
+    public void addMemberGroups (String... names) {
+        memberGroup.addAll(Arrays.asList(names));
     }
 
+    public void addStopGroups (String... names) {
+        stopGroup.addAll(Arrays.asList(names));
+    }
+
+    /**
+     * Add @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+     * @param name
+     */
     public void addStopGroup (String name) {
         stopGroup.add(name);
     }
 
+    /*===================*/
+    /* Special Runnables */
+    /*===================*/
+
+    /**
+     * Specifies a runnable to be used when the running task is stopped.
+     * @param run The runnable to run
+     */
     public void setStopRunnable (Runnable run) {
         stopRunnable = run;
     }
 
+    /**
+     * Specifies a runnable to be used when the task aborts due to step timeout.
+     * Either abortOnTimeout must be set (for entire task) or individual step abort set with addAbort().
+     * @param run The runnable to run
+     */
     public void setAbortRunnable (Runnable run) {
         abortRunnable = run;
     }
 
+    /**
+     * Specifies a runnable to be used when the overall task timeout occurs.
+     * @param run The runnable to run
+     */
     public void setTimeoutRunnable (Runnable run) {
         timeoutRunnable = run;
     }
 
+    /**
+     * Specifies a runnable to be used when the overall task end criteria is met.
+     * @param run The runnable to run
+     */
     public void setEndCriteriaRunnable (Runnable run) {
         endCriteriaRunnable = run;
     }

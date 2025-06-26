@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.RobotParts.SMTest;
 
+import com.qualcomm.robotcore.hardware.DigitalChannel;
+
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
@@ -11,13 +12,18 @@ public class SMT_LED implements PartsInterface {
    /* Public OpMode members. */
    public Parts parts;
 
-   public ServoSSR rgbIndicator;
+   public static ServoSSR rgbIndicator;
+   public static DigitalChannel slideLimitSwitchNO = null;
+   public static DigitalChannel slideLimitSwitchNC = null;
+   public static DigitalChannel liftLimitSwitchNO = null;
+   public static DigitalChannel liftLimitSwitchNC = null;
 
    public StateMachine machine1;
    public StateMachine machine2;
    public StateMachine machine3;
    public StateMachine machine4;
    public StateMachine machine5;
+   public StateMachine limitTask;
 
    /* Constructor */
    public SMT_LED(Parts parts){
@@ -31,10 +37,16 @@ public class SMT_LED implements PartsInterface {
    public void initialize(){
       rgbIndicator = new ServoSSR(parts.robot.servo0);
       rgbIndicator.setPosition(rgbIndicatorColor.Yellow.color);
+      slideLimitSwitchNO = parts.robot.digital1;
+      slideLimitSwitchNC = parts.robot.digital0;
+      liftLimitSwitchNO = parts.robot.digital3;
+      liftLimitSwitchNC = parts.robot.digital2;
+
       machine1 = new StateMachine("machine1");
       machine2 = new StateMachine("machine2");
       machine3 = new StateMachine("machine3");
       machine4 = new StateMachine("machine4");
+      limitTask = new StateMachine("limitTask");
 
       machine1.setGroups("led", "servo");
       machine1.setAutoReset(true);
@@ -124,6 +136,17 @@ public class SMT_LED implements PartsInterface {
       machine5.addStep(machine3::isDone);
       // machine3 ends with starting machine1 and killing everything else
       // do something else?
+
+      limitTask.setGroups("safety");
+      limitTask.setAutoReset(true);
+      limitTask.setNoBulkStop(true);  // keep this task running!
+      //if (slideLimitSwitchNC.getState() && !slideLimitSwitchNO.getState()) slideTemp=1;
+      limitTask.addStep( () -> slideLimitSwitchNC.getState() );
+      limitTask.addStep( () -> setLedColor(rgbIndicatorColor.Orange) );
+      limitTask.addStep( () -> !slideLimitSwitchNC.getState() );
+      limitTask.addStep( () -> setLedColor(rgbIndicatorColor.Indigo) );
+      limitTask.start();
+
    }
 
    public void preInit() {
@@ -143,10 +166,11 @@ public class SMT_LED implements PartsInterface {
    }
 
    public void stop() {
-      machine1.stop(); // temporary solution
-      machine2.stop();
-      machine3.stop();
-      machine4.stop();
+//      machine1.stop(); // temporary solution
+//      machine2.stop();
+//      machine3.stop();
+//      machine4.stop();
+      StateMachine.stopClass();
       rgbIndicator.setPosition(rgbIndicatorColor.Off.color);
       //StateMachine.stopAll();
    }

@@ -33,6 +33,8 @@ public class PartsSMT extends Parts {
         positionMgr = new PositionMgr(this);
         smt_Misc = new SMT_Misc(this);
         smt_LED = new SMT_LED(this);
+
+        StateMachine.Reset();
     }
 
     @Override

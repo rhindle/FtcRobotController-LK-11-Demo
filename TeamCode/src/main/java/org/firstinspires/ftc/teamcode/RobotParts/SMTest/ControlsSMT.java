@@ -4,7 +4,6 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.Buttons;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.Tools.Functions;
 
 public class ControlsSMT extends Controls {
 
@@ -49,6 +48,9 @@ public class ControlsSMT extends Controls {
       }
       if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
          parts.smt_LED.machine5.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.back, State.wasTapped)) {
+         parts.smt_LED.stop();
       }
 
 //      speedFactor = 0.5f;
