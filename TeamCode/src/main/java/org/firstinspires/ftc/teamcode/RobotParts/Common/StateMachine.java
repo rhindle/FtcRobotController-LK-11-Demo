@@ -60,6 +60,10 @@ public class StateMachine {
     long long1, long2, long3;
     double dub1, dub2, dub3;
 
+    /**
+     * Construct a new state machine.
+     * @param name The name of the machine (used primarily for telemetry debugging)
+     */
     public StateMachine(String name) {
         list.add(this);
         map.put(name, this);
@@ -67,7 +71,10 @@ public class StateMachine {
         this.className = getCallingClass();
     }
 
-    // Reset the static variables (otherwise the lists keep growing)
+    /**
+     * Reset the static variables (otherwise the lists keep growing).
+     * Only to be called near the beginning of the opMode before the new machines are instantiated.
+     */
     public static void Reset() {
         list = new ArrayList<StateMachine>();
         map = new HashMap<>();
@@ -78,6 +85,10 @@ public class StateMachine {
     /*  Static Methods  */
     /*==================*/
 
+    /**
+     * The main loop called periodically each loop of the OpMode (by Parts).
+     * This processes all of the state machines.
+     */
     public static void runLoop() {
         for (StateMachine machine : list ) {
             // do the state machine stuff
@@ -130,11 +141,24 @@ public class StateMachine {
 //        }
     }
 
+    /**
+     * Calculate if a timeout has occurred based on the start time and limit supplied.
+     * @param start The start time for calculating if the timeout has occurred.
+     * @param limit The time limit (ms)
+     * @return True if the timeout has occurred.
+     */
     private static boolean timeout (long start, long limit) {
         if (limit == 0) return false;
         return System.currentTimeMillis() - start >= limit;
     }
 
+    /**
+     * Get the name of the calling class.
+     * Used for control (stop, pause, unpause) of machines belonging to the same class.
+     * Also used for telemetry debugging.
+     * For internal use.
+     * @return The full name of the calling class.
+     */
     private static String getCallingClass() {
         String myName = StateMachine.class.getName();
         //RobotLog.vv("SM", "My Name: "+myName);
@@ -153,10 +177,18 @@ public class StateMachine {
         //return Thread.currentThread().getStackTrace()[4].getClassName();
     }
 
+    /**
+     * Get the short name of a class for use in telemetry. For internal use.
+     * @param fullName The full name of the class (separated by dots).
+     * @return The short name of the class (last part of the name after the final dot).
+     */
     private static String shortName(String fullName) {
         return fullName.substring(fullName.lastIndexOf(".") + 1);
     }
 
+    /**
+     * Add state machine status to telemetry for debugging.
+     */
     public static void addTelemetry() {
         TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "============ State Machines ============");
         for (StateMachine machine : list ) {
@@ -169,12 +201,20 @@ public class StateMachine {
     /* Static Controls */
     /*=================*/
 
+    /**
+     * Stop all machines that are currently running.
+     * Machines that have noBulkStop set to True will not be stopped.
+     */
     public static void stopAll() {
         for (StateMachine machine : list) {
             if (!machine.noBulkStop) machine.stop();
         }
     }
 
+    /**
+     * Pause all machines that are currently running.
+     * Machines that have noBulkStop set to True will not be paused.
+     */
     public static void pauseAll() {
         for (StateMachine machine : list) {
             if (!machine.noBulkStop) machine.pause();
@@ -182,6 +222,10 @@ public class StateMachine {
         pausedAll = true;
     }
 
+    /**
+     * Unpause all machines that are currently paused.
+     * The machines must previously have been paused with the pauseAll() method, as tracked by the pausedAll variable.
+     */
     public static void unPauseAll() {
         if (!pausedAll) return;
         for (StateMachine machine : list) {
@@ -190,6 +234,10 @@ public class StateMachine {
         pausedAll = false;
     }
 
+    /**
+     * Stop all machines that are members of the specified groups.
+     * @param names The names of the groups to stop.
+     */
     public static void stopGroups(String... names) {
         for (String sName : names) {
             for (StateMachine machine : list) {
@@ -203,6 +251,10 @@ public class StateMachine {
         }
     }
 
+    /**
+     * Pause all machines that are members of the specified groups.
+     * @param names The names of the groups to pause.
+     */
     public static void pauseGroups(String... names) {
         // should probably only be one running (potentially each group)
         for (String sName : names) {
@@ -217,6 +269,10 @@ public class StateMachine {
         }
     }
 
+    /**
+     * Unpause all machines that are members of the specified groups.
+     * @param names The names of the groups to unpause.
+     */
     public static void unPauseGroups(String... names) {
         // should probably only be one paused (potentially each group)
         for (String sName : names) {
@@ -231,7 +287,10 @@ public class StateMachine {
         }
     }
 
-    public static void stopClass() {
+    /**
+     * Stop all machines belonging to the calling class.
+     */
+    public static void stopByClass() {
         String cName = getCallingClass();
         for (StateMachine machine : list) {
             if (machine.className.equals(cName)) {
@@ -240,7 +299,10 @@ public class StateMachine {
         }
     }
 
-    public static void pauseClass() {
+    /**
+     * Pause all machines belonging to the calling class.
+     */
+    public static void pauseByClass() {
         String cName = getCallingClass();
         for (StateMachine machine : list) {
             if (machine.className.equals(cName)) {
@@ -249,7 +311,10 @@ public class StateMachine {
         }
     }
 
-    public static void unPauseClass() {
+    /**
+     * Unpause all machines belonging to the calling class.
+     */
+    public static void unPauseByClass() {
         String cName = getCallingClass();
         for (StateMachine machine : list) {
             if (machine.className.equals(cName)) {
@@ -287,6 +352,11 @@ public class StateMachine {
     /* Internal Methods */
     /*==================*/
 
+    /**
+     * Update the "Run Mode" of the machine, setting variables as necessary.
+     * For internal use.
+     * @param mode The run mode to change to.
+     */
     private boolean changeRunMode (runModeChange mode) {
         switch (mode) {
             case START:
@@ -388,6 +458,11 @@ public class StateMachine {
         }
     }
 
+    /**
+     * Advance to the next step.
+     * Set current variables for the step runnable, end condition, time limit, and abort state. For internal use.
+     * @return True if there is another step, False if there are no more steps.
+     */
     private boolean nextStep() {
         currentStep++;
         if (currentStep >= steps.size()) return false;
@@ -399,6 +474,9 @@ public class StateMachine {
         return true;
     }
 
+    /**
+     * Stops all machines in the same group. For internal use.
+     */
     private void deConflict() {
         if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
         stopGroups(stopGroup.toArray(new String[0]));   // this will stop "this" machine as well, but then we restart so it's OK
@@ -408,36 +486,69 @@ public class StateMachine {
     /*   Controls   */
     /*==============*/
 
+    /**
+     * Stop a machine.
+     * @return True if running or paused. False if not needing to be stopped.
+     */
     public boolean stop() {
         return changeRunMode(runModeChange.STOP);
     }
 
+    /**
+     * Start a machine. If not running, restart. If paused, unpause.
+     * @return True if restarted, False if unpaused or already running.
+     */
     public boolean start() {
         return changeRunMode(runModeChange.START);
     }
 
+    /**
+     * Start a machine, skipping the deConflict() step if restarting.
+     * Useful for running another machine in the same group and waiting for it to finish.
+     * Otherwise, when it restarted, it would stop the calling machine.
+     */
     public boolean startNoStop() {
         tempNoStop = true;
         return changeRunMode(runModeChange.START);
     }
 
+    /**
+     * Restart the machine.
+     */
     public boolean restart() {
         return changeRunMode(runModeChange.RESTART);
     }
 
+    /**
+     * Restart a machine, skipping the deConflict() step.
+     * Useful for running another machine in the same group and waiting for it to finish.
+     * Otherwise, when it restarted, it would stop the calling machine.
+     */
     public boolean restartNoStop() {
         tempNoStop = true;
         return changeRunMode(runModeChange.RESTART);
     }
 
+    /**
+     * Pause the machine if it is in a running state and not already paused.
+     * @return True if successfully paused, false if not running or already paused.
+     */
     public boolean pause() {
         return changeRunMode(runModeChange.PAUSE);
     }
 
+    /**
+     * Unpause (resume) the machine if it is in a paused state.
+     * @return True if unpaused, false if not in a paused state.
+     */
     public boolean unPause() {
         return changeRunMode(runModeChange.UNPAUSE);
     }
 
+    /**
+     * "End" the machine. Similar to stop(), but without triggering any runnables.
+     * Primarily intended for internal use to exit the state machine early under some condition.
+     */
     public boolean end() {
         return changeRunMode(runModeChange.END);
     }

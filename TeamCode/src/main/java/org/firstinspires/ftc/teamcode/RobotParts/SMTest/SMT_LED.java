@@ -165,7 +165,7 @@ public class SMT_LED implements PartsInterface {
    }
 
    public void stop() {
-      StateMachine.stopClass();
+      StateMachine.stopByClass();
       setLedColor(rgbIndicatorColor.Off);
    }
 
