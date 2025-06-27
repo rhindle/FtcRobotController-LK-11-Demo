@@ -17,15 +17,15 @@ public class StateMachine {
     // internal variables
     String name;
     String className;
-    runState state = runState.STOPPED;
+    runState state = runState.UNUSED;
     boolean running = false;
     boolean paused = false;
     boolean done = false;
     boolean success = true;
-    boolean autoReset = false;
+    boolean autoRestart = false;
     boolean abortOnTimeout = false;
     boolean returnStatus = false;
-    boolean tempNoStop = false;
+    boolean tempNoStop = false;  // this makes Restart skip deConflict()
     boolean noBulkStop = false;  // this makes the task invincible except when stopped directly
 
     ArrayList<String> stopGroup = new ArrayList<>();
@@ -67,6 +67,7 @@ public class StateMachine {
         this.className = getCallingClass();
     }
 
+    // Reset the static variables (otherwise the lists keep growing)
     public static void Reset() {
         list = new ArrayList<StateMachine>();
         map = new HashMap<>();
@@ -86,7 +87,7 @@ public class StateMachine {
                 continue;
             }
             if (machine.endCriteria != null && machine.endCriteria.get()) {              // hit the end criteria which suppose is a success?
-                machine.changeRunMode(runModeChange.END);
+                machine.changeRunMode(runModeChange.ENDCONDITION);
                 continue;
             }
             if (machine.currentStep == -1) machine.nextStep();
@@ -108,12 +109,12 @@ public class StateMachine {
                         doLoop = true;
                     }
                     else {                               // no more steps = success
-                        if (machine.autoReset) {
+                        if (machine.autoRestart) {
                             machine.tempNoStop = true;   // todo: what behavior is desired?
                             machine.changeRunMode(runModeChange.RESTART);
                         }
                         else {
-                            machine.changeRunMode(runModeChange.COMPLETE);
+                            machine.changeRunMode(runModeChange.FINISH);
                         }
                     }
                 }
@@ -261,9 +262,12 @@ public class StateMachine {
         RUNNING,
         PAUSED,
         STOPPED,
+        FINISHED,
         COMPLETED,
         TIMEOUT,
-        FAILED;
+        ENDED,
+        FAILED,
+        UNUSED;
     }
 
     static enum runModeChange {
@@ -273,9 +277,10 @@ public class StateMachine {
         STOP,
         PAUSE,
         UNPAUSE,
-        COMPLETE,
+        FINISH,
         ABORT,
-        END;
+        END,
+        ENDCONDITION;
     }
 
     /*==================*/
@@ -356,7 +361,14 @@ public class StateMachine {
                 currentStep = -1;
                 if (abortRunnable != null) abortRunnable.run();
                 return true;
-            case END:   // whole machine end criteria
+            case END:   // self-ended
+                state = runState.ENDED;
+                running = false;
+                done = true;
+                success = true;
+                currentStep = -1;
+                return true;
+            case ENDCONDITION:   // whole machine end criteria
                 state = runState.COMPLETED;
                 running = false;
                 done = true;
@@ -364,8 +376,8 @@ public class StateMachine {
                 currentStep = -1;
                 if (endCriteriaRunnable != null) endCriteriaRunnable.run();
                 return true;
-            case COMPLETE:  // all steps complete
-                state = runState.COMPLETED;
+            case FINISH:  // all steps complete
+                state = runState.FINISHED;
                 running = false;
                 done = true;
                 success = true;
@@ -426,33 +438,55 @@ public class StateMachine {
         return changeRunMode(runModeChange.UNPAUSE);
     }
 
+    public boolean end() {
+        return changeRunMode(runModeChange.END);
+    }
+
     /*==============*/
     /*    Status    */
     /*==============*/
 
+    /**
+     * @return The current step number.
+     */
     public int getCurrentStep() {
         return currentStep;
     }
 
+    /**
+     * @return The step number and current state, in String format. Used for telemetry.
+     */
     public String getStatus() {
         return currentStep + ", " + state.toString();
     }
 
+    /**
+     * @return True if the machine is "done" (finished, completed, ended, aborted) and not running.
+     */
     public boolean isDone() {
         return done;
-        //return state == runState.COMPLETED;
+        //return state == runState.FINISHED;
     }
 
+    /**
+     * @return True if the machine successfully finished all steps or completed the end condition.
+     */
     public boolean isSuccess() {
         return success;
-        //return state == runState.COMPLETED;
+        //return state == runState.FINISHED;
     }
 
+    /**
+     * @return True if the machine is currently in a running state.
+     */
     public boolean isRunning() {
         return running;
         //return state == runState.RUNNING;
     }
 
+    /**
+     * @return True if the machine has timed out.
+     */
     public boolean isTimedOut() {
         return state == runState.TIMEOUT;
     }
@@ -461,26 +495,64 @@ public class StateMachine {
     /*   Setters    */
     /*==============*/
 
-    public StateMachine setAutoReset(boolean state) {
-        autoReset = state;
+    /**
+     * The machine will automatically restart (loop) when it finishes the last step.
+     * @param state If true, the machine will restart when it finishes.
+     * @return this, for method chaining.
+     */
+    public StateMachine setAutoRestart(boolean state) {
+        autoRestart = state;
         return this;
     }
 
+    /**
+     * The machine will stop when the time limit is reached for ANY step and will have a state of ABORT.
+     * @param state If true, the machine will abort upon timeout of any step.
+     * @return this, for method chaining.
+     */
     public StateMachine setAbortOnTimeout(boolean state) {
         abortOnTimeout = state;
         return this;
     }
 
-    public StateMachine setTimeLimit (long limit) {
+    /**
+     * Sets the time limit for the entire machine, zeroed at restart.
+     * The machine will stop when this time limit is reached and will have a state of TIMEOUT.
+     * @param timeLimit The time limit (ms) for the entire machine.
+     * @return this, for method chaining.
+     */
+    public StateMachine setTimeLimit (long timeLimit) {
         // sanitize input?
-        overallTimeLimit = limit;
+        overallTimeLimit = timeLimit;
         return this;
     }
 
+    /**
+     * Changes the current step pointer to the specified step number.
+     * This intended to allow a certain amount of flow control within a machine.
+     * However, the step numbers will need to manually counted and updated.
+     * @param stepNumber The step number (index 0..n) to jump to.
+     */
+    public void gotoStep (int stepNumber) {
+        if (stepNumber < 0) return;
+        if (stepNumber >= steps.size()) return;
+        currentStep = stepNumber - 1;   // intent is for this to only be used within the machine; step counter will increment by one
+    }
+
+    /**
+     * Sets the end condition for the machine. The machine will stop when this condition is met and will have a state of COMPLETED.
+     * @param endCriteria The end condition for the entire machine.
+     */
     public void setEndCriteria(Supplier<Boolean> endCriteria) {
         this.endCriteria = endCriteria;
     }
 
+    /**
+     * Sets the bulk stop state. If true, the machine will only be stopped individually with the stop() method.
+     * It will not be stopped as part of a group or class. This is intended for machines that are "safe" and/or
+     * need to run continuously for any reason.
+     * @param state If true, the machine will not be stopped by group, class, or other bulk stop.
+     */
     public void setNoBulkStop(boolean state) {
         noBulkStop = state;
     }
@@ -496,41 +568,105 @@ public class StateMachine {
         }
     }
 
-    public void addRunStep(Runnable step) {
-        addStep(step, () -> true, 0, false);
-    }
-    public void addRunStep(Runnable step, Supplier<Boolean> end) {
-        addStep(step, end, 0, false);
-    }
-    public void addRunStep(Runnable step, Supplier<Boolean> end, long time) {
-        addStep(step, end, time, false);
-    }
-    public void addRunStep(Runnable step, Supplier<Boolean> end, long time, boolean abortOnTimeout) {
-        addStep(step, end, time, abortOnTimeout);
-    }
-    public void addRunStep(Runnable step, long time) {
-        addStep(step, () -> false, time, false);
+    /**
+     * Add a step that runs a single time.
+      * @param runnable The runnable to run.
+     */
+    public void addRunOnce(Runnable runnable) {
+        addStep(runnable, () -> true, 0, false);
     }
 
-    public void addWaitFor(Supplier<Boolean> end) {
-        addStep( () -> {}, end, 0, false);
+    /**
+     * Add a step that runs repeatedly until the end condition is met.
+     * @param runnable The runnable to run.
+     * @param endCondition The end condition to advance to the next step.
+     */
+    public void addRunPlus(Runnable runnable, Supplier<Boolean> endCondition) {
+        addStep(runnable, endCondition, 0, false);
     }
-    public void addWaitFor(Supplier<Boolean> end, long time) {
-        addStep( () -> {}, end, time, false);
+
+    /**
+     * Add a step that runs repeatedly until the end condition is met or a certain amount of time passes.
+     * @param runnable The runnable to run.
+     * @param endCondition The end condition to advance to the next step.
+     * @param timeOut The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
+     */
+    public void addRunPlus(Runnable runnable, Supplier<Boolean> endCondition, long timeOut) {
+        addStep(runnable, endCondition, timeOut, false);
     }
-    public void addWaitFor(Supplier<Boolean> end, long time, boolean abortOnTimeout) {
-        addStep( () -> {}, end, time, abortOnTimeout);
+
+    /**
+     * Add a step that runs repeatedly until the end condition is met or a certain amount of time passes.
+     * If abortOnTimeout is true, the machine will abort upon timeout.
+     * @param runnable The runnable to run.
+     * @param endCondition The end condition to advance to the next step.
+     * @param timeOut The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
+     * @param abortOnTimeout If true, the machine will "abort" (stop) if the timeout is reached.
+     */
+    public void addRunPlus(Runnable runnable, Supplier<Boolean> endCondition, long timeOut, boolean abortOnTimeout) {
+        addStep(runnable, endCondition, timeOut, abortOnTimeout);
     }
+
+    /**
+     * Add a step that runs repeatedly for a certain amount of time.
+     * @param runnable The runnable to run.
+     * @param time The amount of time (ms) to wait before advancing to the next step.
+     */
+    public void addRunPlus(Runnable runnable, long time) {
+        addStep(runnable, () -> false, time, false);
+    }
+
+    /**
+     * Add a step that waits for an end condition to be met (true).
+     * @param endCondition The end condition to advance to the next step.
+     */
+    public void addWaitFor(Supplier<Boolean> endCondition) {
+        addStep( () -> {}, endCondition, 0, false);
+    }
+
+    /**
+     * Add a step that waits for an end condition to be met (true) or a certain amount of time to pass.
+     * @param endCondition The end condition to advance to the next step.
+     * @param timeOut The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
+     */
+    public void addWaitFor(Supplier<Boolean> endCondition, long timeOut) {
+        addStep( () -> {}, endCondition, timeOut, false);
+    }
+
+    /**
+     * Add a step that waits for an end condition to be met (true) or a certain amount of time to pass.
+     * If abortOnTimeout is true, the machine will abort upon timeout.
+     * @param endCondition The end condition to advance to the next step.
+     * @param timeOut The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
+     * @param abortOnTimeout If true, the machine will "abort" (stop) if the timeout is reached.
+     */
+    public void addWaitFor(Supplier<Boolean> endCondition, long timeOut, boolean abortOnTimeout) {
+        addStep( () -> {}, endCondition, timeOut, abortOnTimeout);
+    }
+
+    /**
+     * Add a step that waits for a certain amount of time to pass.
+     * @param time The amount of time (ms) to wait.
+     */
     public void addWaitFor(long time) {
         addStep( () -> {}, () -> false, time, false);
     }
 
+    /**
+     * Add a step that waits for a certain amount of time to pass.
+     * @param time The amount of time (ms) to wait.
+     */
     public void addDelayOf(long time) {
         addStep( () -> {}, () -> false, time, false);
     }
 
-
-    // add a step with all possible parameters
+    /**
+     * Add a step with all possible parameters. Primarily for internal use.
+     * @param step The runnable to run.
+     * @param end The end condition to advance to the next step.
+     * @param time The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
+     * @param abortOnTimeout If true, the machine will "abort" (stop) if the timeout is reached.
+     */
     public void addStep(Runnable step, Supplier<Boolean> end, long time, boolean abortOnTimeout) {
         if (step == null || end == null) return;
         if (time < 0) time = 0;
@@ -593,38 +729,58 @@ public class StateMachine {
     /* Group Setting */
     /*===============*/
 
+    /**
+     * Sets names of groups that this machine belongs to.
+     * They will be stopped when this machine is restarted,
+     * and this machine will be stopped when they are restarted.
+     * @param names The names of the groups this machine belongs to.
+     */
     public void setGroups (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
         stopGroup = new ArrayList<>(Arrays.asList(names));
     }
 
+    /**
+     * Sets names of groups to that stop this machine when they are restarted.
+     * @param names The names of the groups to be stopped by.
+     */
     public void setMemberGroups (String... names) {
         memberGroup = new ArrayList<>(Arrays.asList(names));
     }
 
+    /**
+     * Sets the names of groups to stop when this machine is restarted.
+     * @param names The names of the groups to stop.
+     */
     public void setStopGroups (String... names) {
         stopGroup = new ArrayList<>(Arrays.asList(names));
     }
 
+    /**
+     * Adds names of groups that this machine belongs to.
+     * They will be stopped when this machine is restarted,
+     * and this machine will be stopped when they are restarted.
+     * @param names The names of the groups this machine belongs to.
+     */
     public void addGroups (String... names) {
         memberGroup.addAll(Arrays.asList(names));
         stopGroup.addAll(Arrays.asList(names));
     }
 
+    /**
+     * Adds names of groups to that stop this machine when they are restarted.
+     * @param names The names of the groups to be stopped by.
+     */
     public void addMemberGroups (String... names) {
         memberGroup.addAll(Arrays.asList(names));
     }
 
+    /**
+     * Adds names of groups to stop when this machine is restarted.
+     * @param names The names of the groups to stop.
+     */
     public void addStopGroups (String... names) {
         stopGroup.addAll(Arrays.asList(names));
-    }
-
-    /**
-     * Add @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-     * @param name
-     */
-    public void addStopGroup (String name) {
-        stopGroup.add(name);
     }
 
     /*===================*/
@@ -633,7 +789,7 @@ public class StateMachine {
 
     /**
      * Specifies a runnable to be used when the running task is stopped.
-     * @param run The runnable to run
+     * @param run The runnable to run.
      */
     public void setStopRunnable (Runnable run) {
         stopRunnable = run;
@@ -642,7 +798,7 @@ public class StateMachine {
     /**
      * Specifies a runnable to be used when the task aborts due to step timeout.
      * Either abortOnTimeout must be set (for entire task) or individual step abort set with addAbort().
-     * @param run The runnable to run
+     * @param run The runnable to run.
      */
     public void setAbortRunnable (Runnable run) {
         abortRunnable = run;
@@ -650,7 +806,7 @@ public class StateMachine {
 
     /**
      * Specifies a runnable to be used when the overall task timeout occurs.
-     * @param run The runnable to run
+     * @param run The runnable to run.
      */
     public void setTimeoutRunnable (Runnable run) {
         timeoutRunnable = run;
@@ -658,7 +814,7 @@ public class StateMachine {
 
     /**
      * Specifies a runnable to be used when the overall task end criteria is met.
-     * @param run The runnable to run
+     * @param run The runnable to run.
      */
     public void setEndCriteriaRunnable (Runnable run) {
         endCriteriaRunnable = run;
