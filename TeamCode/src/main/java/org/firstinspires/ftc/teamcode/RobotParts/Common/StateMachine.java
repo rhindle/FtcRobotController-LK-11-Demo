@@ -672,10 +672,14 @@ public class StateMachine {
     /* Step Setting */
     /*==============*/
 
-    // todo: rebuild this with aborts?
+    /**
+     * Add multiple steps at once as TaskStep objects.
+     * A potential use for this is preparing a set of steps that can be reused in several state machines.
+     * @param taskSteps The TaskStep objects to add as steps to the state machine.
+     */
     public void addSteps(TaskStep... taskSteps) {
         for (TaskStep taskStep : taskSteps) {
-            addStep(taskStep.step, taskStep.end, taskStep.time);
+            addStep(taskStep.step, taskStep.end, taskStep.time, taskStep.abort);
         }
     }
 
