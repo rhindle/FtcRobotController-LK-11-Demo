@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine.TaskStep;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
@@ -24,6 +25,7 @@ public class SMT_LED implements PartsInterface {
    public StateMachine machine4;
    public StateMachine machine5;
    public StateMachine limitTask;
+   public StateMachine testTask;
 
    /* Constructor */
    public SMT_LED(Parts parts){
@@ -149,6 +151,14 @@ public class SMT_LED implements PartsInterface {
       limitTask.addWaitFor( () -> !slideLimitSwitchNC.getState() );
       limitTask.addRunOnce( () -> setLedColor(rgbIndicatorColor.Indigo) );
       limitTask.start();
+
+      testTask = new StateMachine("testTask");
+      testTask.setGroups("test");
+      testTask.addSteps(
+              new TaskStep( () -> setLedColor(rgbIndicatorColor.Violet) ),
+              new TaskStep( 500 ),
+              new TaskStep( () -> setLedColor(rgbIndicatorColor.Blue), () -> false, 2000)
+      );
 
    }
 
