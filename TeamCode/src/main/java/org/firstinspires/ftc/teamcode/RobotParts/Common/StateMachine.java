@@ -2,19 +2,17 @@ package org.firstinspires.ftc.teamcode.RobotParts.Common;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
 
 public class StateMachine {
 
-    // instance tracking
-    static ArrayList<StateMachine> list = new ArrayList<StateMachine>();
-    static HashMap<String, StateMachine> map = new HashMap<>();
+    /* Instance tracking */
+    static ArrayList<StateMachine> list = new ArrayList<>();
     static boolean pausedAll = false;
 
-    // internal variables
+    /* Internal variables */
     String name;
     String className;
     runState state = runState.UNUSED;
@@ -66,7 +64,6 @@ public class StateMachine {
      */
     public StateMachine(String name) {
         list.add(this);
-        map.put(name, this);
         this.name = name;
         this.className = getCallingClass();
     }
@@ -77,7 +74,6 @@ public class StateMachine {
      */
     public static void Reset() {
         list = new ArrayList<StateMachine>();
-        map = new HashMap<>();
         pausedAll = false;
     }
 
@@ -86,59 +82,74 @@ public class StateMachine {
     /*==================*/
 
     /**
-     * The main loop called periodically each loop of the OpMode (by Parts).
+     * The main loop must be called periodically each loop of the OpMode (by Parts).
      * This processes all of the state machines.
      */
     public static void runLoop() {
+
+        // Loop through all of the state machines.
         for (StateMachine machine : list ) {
-            // do the state machine stuff
+
+            // If the state machine isn't running, no further processing necessary.
             if (!machine.running) continue;
-            if (timeout(machine.overallStartTime, machine.overallTimeLimit)) {    // whole machine timed out
+
+            // Check if the overall machine timeout (if set) has been exceeded.
+            if (timeout(machine.overallStartTime, machine.overallTimeLimit)) {
                 machine.changeRunMode(runModeChange.TIMEOUT);
                 continue;
             }
-            if (machine.endCriteria != null && machine.endCriteria.get()) {              // hit the end criteria which suppose is a success?
-                machine.changeRunMode(runModeChange.ENDCONDITION);
-                continue;
-            }
+
+            // If the machine is restarting, load the first step into the step "buffer" variables.
             if (machine.currentStep == -1) machine.nextStep();
+
+            // This loop if for iterating within a single machine, allowing several steps to
+            // be performed in quick succession (if there isn't a timeout or end criteria
+            // being waited for) rather than waiting for the next full loop.
             boolean doLoop;
             do {
                 doLoop = false;
-                if (machine.stepRunnable != null) machine.stepRunnable.run();   // run the runnable
-                // The runnable might have caused the machine to stop or pause, so have to account for that in the code below!
-                // Todo: Should paused advance to the next step if appropriate?
-                if (!machine.running || machine.paused) {
+
+                // Check if the machine ending criteria (if set) has been met.
+                // Depending on the use, this could be a success or a failure.
+                if (machine.endCriteria != null && machine.endCriteria.get()) {
+                    machine.changeRunMode(runModeChange.ENDCONDITION);
                     continue;
                 }
-                if (machine.stepEnd.get() || timeout(machine.stepStartTime, machine.stepTimeLimit)) {   // meets end criteria or exceeds time
-                    if ((machine.abortOnTimeout || machine.stepAbort) && timeout(machine.stepStartTime, machine.stepTimeLimit)) {  // if abortOnTimeout, any timeout is a failure
-                        machine.changeRunMode(runModeChange.ABORT);
-                        continue;
-                    }
-                    if (machine.nextStep()) {            // if there's another step, do it
+
+                // Run the runnable associated with the step.
+                // (The runnable might cause the machine to stop or pause.)
+                if (machine.stepRunnable != null) machine.stepRunnable.run();
+                if (!machine.running || machine.paused) continue;
+
+                // Check for abort associated with step timeout.
+                // Note that abortOnTimeout, if true, makes any timeout a failure.
+                if ((machine.abortOnTimeout || machine.stepAbort) &&
+                        timeout(machine.stepStartTime, machine.stepTimeLimit)) {
+                    machine.changeRunMode(runModeChange.ABORT);
+                    continue;
+                }
+
+                // Advance step if end criteria met or step timeout.
+                if (machine.stepEnd.get() || timeout(machine.stepStartTime, machine.stepTimeLimit)) {
+
+                    // If there's another step, load it and loop again.
+                    if (machine.nextStep()) {
                         doLoop = true;
                     }
-                    else {                               // no more steps = success
+                    // If there isn't a next step, restart or enter FINISHED state
+                    else {
                         if (machine.autoRestart) {
                             machine.tempNoStop = true;   // todo: what behavior is desired?
                             machine.changeRunMode(runModeChange.RESTART);
+                            doLoop = true;
                         }
                         else {
                             machine.changeRunMode(runModeChange.FINISH);
                         }
                     }
                 }
-            } while (doLoop);  // the loop is so execution can continue until there is something to wait for
+            } while (doLoop);
         }
-//        for (StateMachine machine : map.values()) {
-//            // whatever
-//        }
-//        for (Map.Entry<String, StateMachine> entry : map.entrySet()) {
-//            String name = entry.getKey();
-//            StateMachine machine = entry.getValue();
-//            // whatever
-//        }
     }
 
     /**
@@ -460,7 +471,8 @@ public class StateMachine {
 
     /**
      * Advance to the next step.
-     * Set current variables for the step runnable, end condition, time limit, and abort state. For internal use.
+     * Set current "buffer" variables for the step runnable, end condition, time limit, and abort state.
+     * For internal use.
      * @return True if there is another step, False if there are no more steps.
      */
     private boolean nextStep() {
