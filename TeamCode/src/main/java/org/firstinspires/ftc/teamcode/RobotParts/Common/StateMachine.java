@@ -25,6 +25,7 @@ public class StateMachine {
     boolean returnStatus = false;
     boolean tempNoStop = false;  // this makes Restart skip deConflict()
     boolean noBulkStop = false;  // this makes the task invincible except when stopped directly
+    boolean lastStepTimeout = false;
 
     ArrayList<String> stopGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
@@ -40,12 +41,14 @@ public class StateMachine {
     Supplier<Boolean> stepEnd;
     Long stepTimeLimit;
     Boolean stepAbort;
+    Runnable stepTimeoutRunnable;
 
     Supplier<Boolean> endCriteria;
     ArrayList<Runnable> steps = new ArrayList<>();
     ArrayList<Supplier<Boolean>> ends = new ArrayList<>();
     ArrayList<Long> times = new ArrayList<>();
     ArrayList<Boolean> aborts = new ArrayList<>();
+    ArrayList<Runnable> timeoutSteps = new ArrayList<>();
 
     Runnable stopRunnable;
     Runnable abortRunnable;
@@ -54,9 +57,9 @@ public class StateMachine {
     // do we need pauseRunnable? unPauseRunnable?
 
     // future internal use?
-    boolean bool1, bool2, bool3;
-    long long1, long2, long3;
-    double dub1, dub2, dub3;
+    public boolean bool1, bool2, bool3;
+    public long long1, long2, long3;
+    public double dub1, dub2, dub3;
 
     /**
      * Construct a new state machine.
@@ -100,7 +103,10 @@ public class StateMachine {
             }
 
             // If the machine is restarting, load the first step into the step "buffer" variables.
-            if (machine.currentStep == -1) machine.nextStep();
+            if (machine.currentStep == -1) {
+                machine.lastStepTimeout = false;
+                machine.nextStep();
+            }
 
             // This loop if for iterating within a single machine, allowing several steps to
             // be performed in quick succession (if there isn't a timeout or end criteria
@@ -121,22 +127,29 @@ public class StateMachine {
                 if (machine.stepRunnable != null) machine.stepRunnable.run();
                 if (!machine.running || machine.paused) continue;
 
+                boolean stepTimedOut = timeout(machine.stepStartTime, machine.stepTimeLimit);
+
                 // Check for abort associated with step timeout.
                 // Note that abortOnTimeout, if true, makes any timeout a failure.
-                if ((machine.abortOnTimeout || machine.stepAbort) &&
-                        timeout(machine.stepStartTime, machine.stepTimeLimit)) {
+                if ((machine.abortOnTimeout || machine.stepAbort) && stepTimedOut) {
                     machine.changeRunMode(runModeChange.ABORT);
                     continue;
                 }
 
                 // Advance step if end criteria met or step timeout.
-                if (machine.stepEnd.get() || timeout(machine.stepStartTime, machine.stepTimeLimit)) {
+                if (machine.stepEnd.get() || stepTimedOut) {
+
+                    // Store whether the step timed out.
+                    machine.lastStepTimeout = stepTimedOut;
+
+                    // if the step timed out, run the step timeout runnable if it exists.  (Not the same as an abort!)
+                    if (stepTimedOut && machine.stepTimeoutRunnable != null) machine.stepTimeoutRunnable.run();
 
                     // If there's another step, load it and loop again.
                     if (machine.nextStep()) {
                         doLoop = true;
                     }
-                    // If there isn't a next step, restart or enter FINISHED state
+                    // If there isn't a next step, restart or enter FINISHED state.
                     else {
                         if (machine.autoRestart) {
                             machine.tempNoStop = true;   // todo: what behavior is desired?
@@ -482,6 +495,7 @@ public class StateMachine {
         stepEnd = ends.get(currentStep);
         stepTimeLimit = times.get(currentStep);
         stepAbort = aborts.get(currentStep);
+        stepTimeoutRunnable = timeoutSteps.get(currentStep);
         stepStartTime = System.currentTimeMillis();
         return true;
     }
@@ -614,6 +628,13 @@ public class StateMachine {
         return state == runState.TIMEOUT;
     }
 
+    /**
+     * @return True if the previous step timed out.
+     */
+    public boolean lastStepTimeout() {
+        return lastStepTimeout;
+    }
+
     /*==============*/
     /*   Setters    */
     /*==============*/
@@ -723,6 +744,18 @@ public class StateMachine {
     }
 
     /**
+     * Add a step that runs repeatedly until the end condition is met or a certain amount of time passes,
+     * plus a runnable to run if the timeout is reached before the end condition is met.
+     * @param runnable The runnable to run.
+     * @param endCondition The end condition to advance to the next step.
+     * @param timeOut The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
+     * @param timeoutStep The runnable to run if the timeout is reached.
+     */
+    public void addRunPlus(Runnable runnable, Supplier<Boolean> endCondition, long timeOut, Runnable timeoutStep) {
+        addStep(runnable, endCondition, timeOut, false, timeoutStep);
+    }
+
+    /**
      * Add a step that runs repeatedly until the end condition is met or a certain amount of time passes.
      * If abortOnTimeout is true, the machine will abort upon timeout.
      * @param runnable The runnable to run.
@@ -761,6 +794,17 @@ public class StateMachine {
     }
 
     /**
+     * Add a step that waits for an end condition to be met (true) or a certain amount of time to pass,
+     * plus a runnable to run if the timeout is reached before the end condition is met.
+     * @param endCondition The end condition to advance to the next step.
+     * @param timeOut The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
+     * @param timeoutStep The runnable to run if the timeout is reached.
+     */
+    public void addWaitFor(Supplier<Boolean> endCondition, long timeOut, Runnable timeoutStep) {
+        addStep( () -> {}, endCondition, timeOut, false, timeoutStep);
+    }
+
+    /**
      * Add a step that waits for an end condition to be met (true) or a certain amount of time to pass.
      * If abortOnTimeout is true, the machine will abort upon timeout.
      * @param endCondition The end condition to advance to the next step.
@@ -793,8 +837,9 @@ public class StateMachine {
      * @param end The end condition to advance to the next step.
      * @param time The amount of time (ms) to wait before advancing to the next step (without meeting the end condition).
      * @param abortOnTimeout If true, the machine will "abort" (stop) if the timeout is reached.
+     * @param timeoutStep The runnable to run if the timeout is reached, but abort is not set.
      */
-    public void addStep(Runnable step, Supplier<Boolean> end, long time, boolean abortOnTimeout) {
+    public void addStep(Runnable step, Supplier<Boolean> end, long time, boolean abortOnTimeout, Runnable timeoutStep) {
         if (step == null || end == null) return;
         if (time < 0) time = 0;
         if (time == 0) abortOnTimeout = false;
@@ -802,6 +847,11 @@ public class StateMachine {
         ends.add(end);
         times.add(time);
         aborts.add(abortOnTimeout);
+        timeoutSteps.add(timeoutStep);
+    }
+
+    public void addStep(Runnable step, Supplier<Boolean> end, long time, boolean abortOnTimeout) {
+        addStep(step, end, time, abortOnTimeout, () -> {});
     }
 
     // add a step with end state and time limit
@@ -956,12 +1006,23 @@ public class StateMachine {
         public Supplier<Boolean> end;
         public long time;
         public boolean abort = false;
+        public Runnable timeoutStep;
 
         public TaskStep() {
             this.step = () -> {};
             this.end = () -> true;
             this.time = 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
+        }
+
+        // create a step with all properties
+        public TaskStep(Runnable step, Supplier<Boolean> end, long time, boolean abort, Runnable timeoutStep) {
+            this.step = (step != null) ? step : () -> {};
+            this.end = (end != null) ? end : () -> true;
+            this.time = (time >= 0) ? time : 0;
+            this.abort = abort;
+            this.timeoutStep = (timeoutStep != null) ? timeoutStep : () -> {};
         }
 
         // create a step with end state, time limit, and abort state
@@ -970,6 +1031,7 @@ public class StateMachine {
             this.end = (end != null) ? end : () -> true;
             this.time = (time >= 0) ? time : 0;
             this.abort = abort;
+            this.timeoutStep = () -> {};
         }
 
         // create a step with end state and time limit
@@ -978,6 +1040,16 @@ public class StateMachine {
             this.end = (end != null) ? end : () -> true;
             this.time = (time >= 0) ? time : 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
+        }
+
+        // create a step with end state, time limit, and timeout step
+        public TaskStep(Runnable step, Supplier<Boolean> end, long time, Runnable timeoutStep) {
+            this.step = (step != null) ? step : () -> {};
+            this.end = (end != null) ? end : () -> true;
+            this.time = (time >= 0) ? time : 0;
+            this.abort = false;
+            this.timeoutStep = (timeoutStep != null) ? timeoutStep : () -> {};
         }
 
         // create a step with end state, no time limit
@@ -986,6 +1058,7 @@ public class StateMachine {
             this.end = (end != null) ? end : () -> true;
             this.time = 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
         }
 
         // create a step with only end state
@@ -994,6 +1067,7 @@ public class StateMachine {
             this.end = (end != null) ? end : () -> true;
             this.time = 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
         }
 
         // create a step with end state and time limit
@@ -1002,6 +1076,16 @@ public class StateMachine {
             this.end = (end != null) ? end : () -> true;
             this.time = (time >= 0) ? time : 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
+        }
+
+        // create a step with end state, time limit, and timeout step
+        public TaskStep(Supplier<Boolean> end, long time, Runnable timeoutStep) {
+            this.step = () -> {};
+            this.end = (end != null) ? end : () -> true;
+            this.time = (time >= 0) ? time : 0;
+            this.abort = false;
+            this.timeoutStep = (timeoutStep != null) ? timeoutStep : () -> {};
         }
 
         // create a step with end state, time limit, and abort state
@@ -1010,6 +1094,7 @@ public class StateMachine {
             this.end = (end != null) ? end : () -> true;
             this.time = (time >= 0) ? time : 0;
             this.abort = abort;
+            this.timeoutStep = () -> {};
         }
 
         // create a step that runs once (no end state, no time limit)
@@ -1018,6 +1103,7 @@ public class StateMachine {
             this.end = () -> true;
             this.time = 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
         }
 
         // create a step that is just a delay
@@ -1026,6 +1112,7 @@ public class StateMachine {
             this.end = () -> false;
             this.time = (time >= 0) ? time : 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
         }
 
         // create a step that repeats for time
@@ -1034,11 +1121,12 @@ public class StateMachine {
             this.end = () -> false;
             this.time = (time >= 0) ? time : 0;
             this.abort = false;
+            this.timeoutStep = () -> {};
         }
 
         @NonNull
         public TaskStep clone() {
-            return new TaskStep(step, end, time, abort);
+            return new TaskStep(step, end, time, abort, timeoutStep);
         }
 
     }
