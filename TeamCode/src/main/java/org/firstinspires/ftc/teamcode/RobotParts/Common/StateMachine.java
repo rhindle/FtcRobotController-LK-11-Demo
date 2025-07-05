@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 
 import androidx.annotation.NonNull;
 
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 public class StateMachine {
 
     /* Instance tracking */
@@ -20,43 +22,46 @@ public class StateMachine {
     boolean paused = false;
     boolean done = false;
     boolean success = true;
-    boolean autoRestart = false;
-    boolean abortOnTimeout = false;
+    boolean autoRestart = false;     // this makes the machine self restart at the last step
+    boolean abortOnTimeout = false;  // this makes any step timeout a failure of the machine
     boolean returnStatus = false;
-    boolean tempNoStop = false;  // this makes Restart skip deConflict()
-    boolean noBulkStop = false;  // this makes the task invincible except when stopped directly
-    boolean lastStepTimeout = false;
-
-    ArrayList<String> stopGroup = new ArrayList<>();
-    ArrayList<String> memberGroup = new ArrayList<>();
+    boolean tempNoStop = false;      // this makes Restart skip deConflict()
+    boolean noBulkStop = false;      // this makes the task invincible except when stopped directly
+    boolean lastStepTimeout = false; // status for potential use in the next step
+    boolean forceNext = false;       // this makes the machine advance to the next step
 
     int currentStep = -1;
-    long overallTimeLimit = 0;
     long overallStartTime;
     long stepStartTime;
     long pausedStepTime;
     long pausedOverallTime;
 
-    Runnable stepRunnable;
-    Supplier<Boolean> stepEnd;
-    Long stepTimeLimit;
-    Boolean stepAbort;
-    Runnable stepTimeoutRunnable;
-
-    Supplier<Boolean> endCriteria;
+    // Arrays to hold the step-related data
     ArrayList<Runnable> steps = new ArrayList<>();
     ArrayList<Supplier<Boolean>> ends = new ArrayList<>();
     ArrayList<Long> times = new ArrayList<>();
     ArrayList<Boolean> aborts = new ArrayList<>();
     ArrayList<Runnable> timeoutSteps = new ArrayList<>();
 
+    // Settable machine data
+    ArrayList<String> stopGroup = new ArrayList<>();
+    ArrayList<String> memberGroup = new ArrayList<>();
+    long overallTimeLimit = 0;
+    Supplier<Boolean> endCriteria;
     Runnable stopRunnable;
     Runnable abortRunnable;
     Runnable timeoutRunnable;
     Runnable endCriteriaRunnable;
-    // do we need pauseRunnable? unPauseRunnable?
+        // do we need pauseRunnable? unPauseRunnable?
 
-    // future internal use?
+    // Stored data for current step being processed
+    Runnable stepRunnable;
+    Supplier<Boolean> stepEnd;
+    Long stepTimeLimit;
+    Boolean stepAbort;
+    Runnable stepTimeoutRunnable;
+
+    // Future use? Public for access where the runnables are created.
     public boolean bool1, bool2, bool3;
     public long long1, long2, long3;
     public double dub1, dub2, dub3;
@@ -105,7 +110,7 @@ public class StateMachine {
             // If the machine is restarting, load the first step into the step "buffer" variables.
             if (machine.currentStep == -1) {
                 machine.lastStepTimeout = false;
-                machine.nextStep();
+                machine.loadNextStep();
             }
 
             // This loop if for iterating within a single machine, allowing several steps to
@@ -137,7 +142,7 @@ public class StateMachine {
                 }
 
                 // Advance step if end criteria met or step timeout.
-                if (machine.stepEnd.get() || stepTimedOut) {
+                if (machine.stepEnd.get() || stepTimedOut || machine.forceNext) {
 
                     // Store whether the step timed out.
                     machine.lastStepTimeout = stepTimedOut;
@@ -146,7 +151,7 @@ public class StateMachine {
                     if (stepTimedOut && machine.stepTimeoutRunnable != null) machine.stepTimeoutRunnable.run();
 
                     // If there's another step, load it and loop again.
-                    if (machine.nextStep()) {
+                    if (machine.loadNextStep()) {
                         doLoop = true;
                     }
                     // If there isn't a next step, restart or enter FINISHED state.
@@ -219,6 +224,13 @@ public class StateMachine {
             TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, machine.name, machine.getStatus()+" ("+machine.className+")");
         }
         TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "======================================");
+    }
+    public static void addTelemetry(LinearOpMode opMode) {
+        opMode.telemetry.addData("=========== State Machines ===========", "");
+        for (StateMachine machine : list ) {
+            opMode.telemetry.addData(machine.name, machine.getStatus()+" ("+machine.className+")");
+        }
+        opMode.telemetry.addData("====================================", "");
     }
 
     /*=================*/
@@ -488,8 +500,9 @@ public class StateMachine {
      * For internal use.
      * @return True if there is another step, False if there are no more steps.
      */
-    private boolean nextStep() {
+    private boolean loadNextStep() {
         currentStep++;
+        forceNext = false;
         if (currentStep >= steps.size()) return false;
         stepRunnable = steps.get(currentStep);
         stepEnd = ends.get(currentStep);
@@ -595,6 +608,41 @@ public class StateMachine {
         return changeRunMode(runModeChange.END);
     }
 
+    /**
+     * Cause the machine to advance to the next step. Primitive flow control for use in a
+     * step runnable in certain cases where the logic may be simpler than using
+     * an exit criteria.
+     */
+    public void nextStep() {
+        forceNext = true;
+    }
+
+    /**
+     * Changes the current step pointer to the specified step number.
+     * This intended to allow a certain amount of flow control within a machine.
+     * However, the step numbers will need to manually counted and updated.
+     * @param stepNumber The step number (index 0..n) to jump to.
+     */
+    public void gotoStep (int stepNumber) {
+        if (stepNumber < 0) return;
+        if (stepNumber >= steps.size()) return;
+        currentStep = stepNumber - 1;   // intent is for this to only be used within the machine; step counter will increment by one
+        forceNext = true;
+    }
+
+    /**
+     * Adjusts the current step pointer by the specified number.
+     * This intended to allow a certain amount of flow control within a machine.
+     * @param stepAdd The number to increment (or decrement if negative) the step index (currentStep) by.
+     */
+    public void gotoStepRelative (int stepAdd) {
+        currentStep += stepAdd;
+        if (currentStep < 0) currentStep = 0;
+        if (currentStep > steps.size()) currentStep = steps.size();
+        currentStep--;       // intent is for this to only be used within the machine; step counter will increment by one
+        forceNext = true;
+    }
+
     /*==============*/
     /*    Status    */
     /*==============*/
@@ -685,30 +733,6 @@ public class StateMachine {
         // sanitize input?
         overallTimeLimit = timeLimit;
         return this;
-    }
-
-    /**
-     * Changes the current step pointer to the specified step number.
-     * This intended to allow a certain amount of flow control within a machine.
-     * However, the step numbers will need to manually counted and updated.
-     * @param stepNumber The step number (index 0..n) to jump to.
-     */
-    public void gotoStep (int stepNumber) {
-        if (stepNumber < 0) return;
-        if (stepNumber >= steps.size()) return;
-        currentStep = stepNumber - 1;   // intent is for this to only be used within the machine; step counter will increment by one
-    }
-
-    /**
-     * Adjusts the current step pointer by the specified number.
-     * This intended to allow a certain amount of flow control within a machine.
-     * @param stepAdd The number to increment (or decrement if negative) the step index (currentStep) by.
-     */
-    public void gotoStepRelative (int stepAdd) {
-        currentStep += stepAdd;
-        if (currentStep < 0) currentStep = 0;
-        if (currentStep > steps.size()) currentStep = steps.size();
-        currentStep--;       // intent is for this to only be used within the machine; step counter will increment by one
     }
 
     /**
