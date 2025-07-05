@@ -19,6 +19,7 @@ public class SMT_LED implements PartsInterface {
    public static DigitalChannel liftLimitSwitchNO = null;
    public static DigitalChannel liftLimitSwitchNC = null;
 
+   private StateMachine task;
    public StateMachine machine1;
    public StateMachine machine2;
    public StateMachine machine3;
@@ -45,116 +46,123 @@ public class SMT_LED implements PartsInterface {
       liftLimitSwitchNC = parts.robot.digital2;
 
       machine1 = new StateMachine("machine1");
-      machine1.setGroups("led", "servo");
-      machine1.setAutoRestart(true);
-      machine1.setTimeoutRunnable( () -> setLedColor(rgbIndicatorColor.Yellow) );
-      machine1.setStopRunnable( () -> setLedColor(rgbIndicatorColor.White) );
-      machine1.setEndCriteriaRunnable( () -> setLedColor(rgbIndicatorColor.Green) );
-      machine1.setEndCriteria( () -> liftLimitSwitchNC.getState() );
-      machine1.setTimeLimit(5000);
-      machine1.addRunOnce( () -> setLedColor(rgbIndicatorColor.Violet) );  //0
-      machine1.addDelayOf( 1000);                                     //1
-      machine1.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );     //2
-      machine1.addDelayOf( 500);                                      //3
-      machine1.addRunOnce( () -> setLedColor(rgbIndicatorColor.Violet) );  //4
-      machine1.addDelayOf( 500);                                      //5
-      machine1.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );     //6
-      machine1.addDelayOf( 250);                                      //7
-      machine1.addRunOnce( () -> setLedColor(rgbIndicatorColor.Violet) );  //8
-      machine1.addDelayOf( 250);                                      //9
-      machine1.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );     //10
+      task = machine1;
+      task.setGroups("led", "servo");
+      task.setAutoRestart(true);
+      task.setTimeoutRunnable( () -> setLedColor(rgbIndicatorColor.Yellow) );
+      task.setStopRunnable( () -> setLedColor(rgbIndicatorColor.White) );
+      task.setEndCriteriaRunnable( () -> setLedColor(rgbIndicatorColor.Green) );
+      task.setEndCriteria( () -> liftLimitSwitchNC.getState() );
+      task.setTimeLimit(5000);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Violet) );  //0
+      task.addDelayOf( 1000);                                     //1
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );     //2
+      task.addDelayOf( 500);                                      //3
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Violet) );  //4
+      task.addDelayOf( 500);                                      //5
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );     //6
+      task.addDelayOf( 250);                                      //7
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Violet) );  //8
+      task.addDelayOf( 250);                                      //9
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );     //10
 //      machine1.addRunOnce( () -> {                                         //11
 //         if (liftLimitSwitchNC.getState()) machine1.gotoStep(7);
 //         //if (liftLimitSwitchNC.getState()) machine1.end();
 //      } );
-      machine1.addDelayOf( 1000);                                     //12
+      task.addDelayOf( 1000);                                     //12
 
       machine2 = new StateMachine("machine2");
-      machine2.setGroups("led", "servo");
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addDelayOf( 500);
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addDelayOf( 500);
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addDelayOf( 500);
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addDelayOf( 500);
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addDelayOf( 500);
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addDelayOf( 500);
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
-      machine2.addDelayOf( 500);
-      machine2.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine2.addDelayOf( 500);
+      task = machine2;
+      task.setGroups("led", "servo");
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
+      task.addDelayOf( 500);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 500);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
+      task.addDelayOf( 500);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 500);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
+      task.addDelayOf( 500);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 500);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Red) );
+      task.addDelayOf( 500);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 500);
 
       machine3 = new StateMachine("machine3");
-      machine3.setGroups("led", "servo");
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
-      machine3.addDelayOf( 333);
-      machine3.addRunOnce( () -> machine1.restart() );
+      task = machine3;
+      task.setGroups("led", "servo");
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Blue) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );
+      task.addDelayOf( 333);
+      task.addRunOnce( () -> machine1.restart() );
 
       machine4 = new StateMachine("machine4");
-      machine4.setGroups("oops"); //not going to kill the others
+      task = machine4;
+      task.setGroups("oops"); //not going to kill the others
       //machine4.setMemberGroup("led");
-      machine4.addRunOnce( () -> machine1.pause() );
-      machine4.addRunOnce( () -> setLedColor(rgbIndicatorColor.Sage) );
-      machine4.addDelayOf( 1000);
-      machine4.addRunOnce( () -> setLedColor(rgbIndicatorColor.Azure) );
-      machine4.addDelayOf( 1000);
-      machine4.addRunOnce( () -> setLedColor(rgbIndicatorColor.Sage) );
-      machine4.addDelayOf( 1000);
-      machine4.addRunOnce( () -> setLedColor(rgbIndicatorColor.Azure) );
-      machine4.addDelayOf( 1000);
-      machine4.addRunOnce( () -> machine1.unPause() );
+      task.addRunOnce( () -> machine1.pause() );
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Sage) );
+      task.addDelayOf( 1000);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Azure) );
+      task.addDelayOf( 1000);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Sage) );
+      task.addDelayOf( 1000);
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Azure) );
+      task.addDelayOf( 1000);
+      task.addRunOnce( () -> machine1.unPause() );
 
       machine5 = new StateMachine("machine5");
-      machine5.setStopGroups("led", "servo");    // tasks to kill
-      machine5.setMemberGroups("led", "servo");  // will be killed by
+      task = machine5;
+      task.setStopGroups("led", "servo");    // tasks to kill
+      task.setMemberGroups("led", "servo");  // will be killed by
       // when this starts, it will kill the other led tasks.
-      machine5.addRunOnce(machine1::restartNoStop);
-      machine5.addDelayOf( 2000);
-      machine5.addRunOnce(machine1::pause);
-      machine5.addRunOnce(machine2::restartNoStop);
-      machine5.addWaitFor(machine2::isDone);
-      machine5.addRunOnce(machine1::unPause);
-      machine5.addDelayOf( 2000);
-      machine5.addRunOnce(machine4::restartNoStop);
-      machine5.addWaitFor(machine4::isDone);
-      machine5.addDelayOf( 2000);
-      machine5.addRunOnce(machine1::pause);
-      machine5.addRunOnce(machine3::restartNoStop);
-      machine5.addWaitFor(machine3::isDone);
+      task.addRunOnce(machine1::restartNoStop);
+      task.addDelayOf( 2000);
+      task.addRunOnce(machine1::pause);
+      task.addRunOnce(machine2::restartNoStop);
+      task.addWaitFor(machine2::isDone);
+      task.addRunOnce(machine1::unPause);
+      task.addDelayOf( 2000);
+      task.addRunOnce(machine4::restartNoStop);
+      task.addWaitFor(machine4::isDone);
+      task.addDelayOf( 2000);
+      task.addRunOnce(machine1::pause);
+      task.addRunOnce(machine3::restartNoStop);
+      task.addWaitFor(machine3::isDone);
       // machine3 ends with starting machine1 and killing everything else
       // do something else?
 
       limitTask = new StateMachine("limitTask");
-      limitTask.setGroups("safety");
-      limitTask.setAutoRestart(true);
-      limitTask.setNoBulkStop(true);  // keep this task running!
-      limitTask.addWaitFor( () -> slideLimitSwitchNC.getState() );
-      limitTask.addRunOnce( () -> setLedColor(rgbIndicatorColor.Orange) );
-      limitTask.addWaitFor( () -> !slideLimitSwitchNC.getState() );
-      limitTask.addRunOnce( () -> setLedColor(rgbIndicatorColor.Indigo) );
-      limitTask.start();
+      task = limitTask;
+      task.setGroups("safety");
+      task.setAutoRestart(true);
+      task.setNoBulkStop(true);  // keep this task running!
+      task.addWaitFor( () -> slideLimitSwitchNC.getState() );
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Orange) );
+      task.addWaitFor( () -> !slideLimitSwitchNC.getState() );
+      task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Indigo) );
+      task.start();
 
       testTask = new StateMachine("testTask");
-      testTask.setGroups("test");
-      testTask.addSteps(
+      task = testTask;
+      task.setGroups("test");
+      task.addSteps(
               new TaskStep( () -> setLedColor(rgbIndicatorColor.Violet) ),
               new TaskStep( 500 ),
               new TaskStep( () -> setLedColor(rgbIndicatorColor.Blue), () -> false, 2000)
