@@ -502,10 +502,26 @@ public class StateMachine {
 
     /**
      * Stops all machines in the same group. For internal use.
+     * The code is the same as stopGroups(), but this method is not static
+     * and has an additional check to prevent stopping the calling machine
+     * so that it will not trigger its stopRunnable if set.
      */
     private void deConflict() {
-        if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
-        stopGroups(stopGroup.toArray(new String[0]));   // this will stop "this" machine as well, but then we restart so it's OK
+//        if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
+//        stopGroups(stopGroup.toArray(new String[0]));   // this will stop "this" machine as well, but then we restart so it's OK
+//                                                        // 20250704 actually, it is not OK to stop because that may trigger a stop runnable
+        if (stopGroup.isEmpty()) return;                      // If stopgroup is empty, nothing to do
+        for (String sName : stopGroup) {
+            for (StateMachine machine : list) {
+                if (machine == this) continue;                // Don't want to stop ourself because it will trigger stopRunnable (if set)
+                if (machine.memberGroup.isEmpty()) continue;  // If membergroup is empty, nothing to do
+                for (String gName : machine.memberGroup) {
+                    if (gName.equals(sName)) {
+                        if (!machine.noBulkStop) machine.stop();
+                    }
+                }
+            }
+        }
     }
 
     /*==============*/
@@ -681,6 +697,18 @@ public class StateMachine {
         if (stepNumber < 0) return;
         if (stepNumber >= steps.size()) return;
         currentStep = stepNumber - 1;   // intent is for this to only be used within the machine; step counter will increment by one
+    }
+
+    /**
+     * Adjusts the current step pointer by the specified number.
+     * This intended to allow a certain amount of flow control within a machine.
+     * @param stepAdd The number to increment (or decrement if negative) the step index (currentStep) by.
+     */
+    public void gotoStepRelative (int stepAdd) {
+        currentStep += stepAdd;
+        if (currentStep < 0) currentStep = 0;
+        if (currentStep > steps.size()) currentStep = steps.size();
+        currentStep--;       // intent is for this to only be used within the machine; step counter will increment by one
     }
 
     /**
