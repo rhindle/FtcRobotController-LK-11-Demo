@@ -275,16 +275,7 @@ public class StateMachine {
      * @param names The names of the groups to stop.
      */
     public static void stopGroups(String... names) {
-        for (String sName : names) {
-            for (StateMachine machine : list) {
-                if (machine.memberGroup.isEmpty()) continue;
-                for (String gName : machine.memberGroup) {
-                    if (gName.equals(sName)) {
-                        if (!machine.noBulkStop) machine.stop();
-                    }
-                }
-            }
-        }
+        controlGroups(runModeChange.STOP, names, null);
     }
 
     /**
@@ -293,16 +284,7 @@ public class StateMachine {
      */
     public static void pauseGroups(String... names) {
         // should probably only be one running (potentially each group)
-        for (String sName : names) {
-            for (StateMachine machine : list) {
-                if (machine.memberGroup.isEmpty()) continue;
-                for (String gName : machine.memberGroup) {
-                    if (gName.equals(sName)) {
-                        if (!machine.noBulkStop) machine.pause();
-                    }
-                }
-            }
-        }
+        controlGroups(runModeChange.PAUSE, names, null);
     }
 
     /**
@@ -311,12 +293,36 @@ public class StateMachine {
      */
     public static void unPauseGroups(String... names) {
         // should probably only be one paused (potentially each group)
+        controlGroups(runModeChange.UNPAUSE, names, null);
+    }
+
+    /**
+     * For internal use to avoid code duplication. Controls groups of state machines.
+     * @param mode The mode to process (STOP, PAUSE, or UNPAUSE)
+     * @param names Array of group names to control
+     * @param caller The calling state machine (not static), for use only with deConflict()
+     */
+    private static void controlGroups(runModeChange mode, String[] names, StateMachine caller) {
+        if (mode != runModeChange.STOP
+                && mode != runModeChange.PAUSE
+                && mode != runModeChange.UNPAUSE) return;
         for (String sName : names) {
             for (StateMachine machine : list) {
+                if (caller != null && machine == caller) continue; // Don't want to control calling machine using deConflict() because it will trigger stopRunnable (if set)
                 if (machine.memberGroup.isEmpty()) continue;
                 for (String gName : machine.memberGroup) {
                     if (gName.equals(sName)) {
-                        machine.unPause();
+                        switch (mode) {
+                            case STOP:
+                                if (!machine.noBulkStop) machine.stop();
+                                break;
+                            case PAUSE:
+                                if (!machine.noBulkStop) machine.pause();
+                                break;
+                            case UNPAUSE:
+                                machine.unPause();
+                                break;
+                        }
                     }
                 }
             }
@@ -514,27 +520,13 @@ public class StateMachine {
     }
 
     /**
-     * Stops all machines in the same group. For internal use.
-     * The code is the same as stopGroups(), but this method is not static
-     * and has an additional check to prevent stopping the calling machine
-     * so that it will not trigger its stopRunnable if set.
+     * For internal use. Stops all machines in the same group.
+     * Uses the same method as stopGroups(), except includes the calling machine as a parameter
+     * for an additional check to prevent stopping itself and triggering its stopRunnable if set.
      */
     private void deConflict() {
-//        if (stopGroup.isEmpty()) return;                      // if stopgroup is empty, nothing to do
-//        stopGroups(stopGroup.toArray(new String[0]));   // this will stop "this" machine as well, but then we restart so it's OK
-//                                                        // 20250704 actually, it is not OK to stop because that may trigger a stop runnable
         if (stopGroup.isEmpty()) return;                      // If stopgroup is empty, nothing to do
-        for (String sName : stopGroup) {
-            for (StateMachine machine : list) {
-                if (machine == this) continue;                // Don't want to stop ourself because it will trigger stopRunnable (if set)
-                if (machine.memberGroup.isEmpty()) continue;  // If membergroup is empty, nothing to do
-                for (String gName : machine.memberGroup) {
-                    if (gName.equals(sName)) {
-                        if (!machine.noBulkStop) machine.stop();
-                    }
-                }
-            }
-        }
+        controlGroups(runModeChange.STOP, stopGroup.toArray(new String[0]), this);
     }
 
     /*==============*/
@@ -602,7 +594,7 @@ public class StateMachine {
 
     /**
      * "End" the machine. Similar to stop(), but without triggering any runnables.
-     * Primarily intended for internal use to exit the state machine early under some condition.
+     * Primarily intended for use within a machine to end early under some condition.
      */
     public boolean end() {
         return changeRunMode(runModeChange.END);
