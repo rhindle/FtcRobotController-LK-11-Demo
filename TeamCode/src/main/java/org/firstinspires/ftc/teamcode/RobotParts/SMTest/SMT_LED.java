@@ -49,11 +49,11 @@ public class SMT_LED implements PartsInterface {
       task = machine1;
       task.setGroups("led", "servo");
       task.setAutoRestart(true);
-      task.setTimeoutRunnable( () -> setLedColor(rgbIndicatorColor.Yellow) );
       task.setStopRunnable( () -> setLedColor(rgbIndicatorColor.White) );
-      task.setEndCriteriaRunnable( () -> setLedColor(rgbIndicatorColor.Green) );
-      task.setEndCriteria( () -> liftLimitSwitchNC.getState() );
       task.setTimeLimit(5000);
+      task.setTimeoutRunnable( () -> setLedColor(rgbIndicatorColor.Yellow) );
+      task.setEndCriteria( () -> liftLimitSwitchNC.getState() );
+      task.setEndCriteriaRunnable( () -> setLedColor(rgbIndicatorColor.Green) );
       task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Violet) );  //0
       task.addDelayOf( 1000);                                     //1
       task.addRunOnce( () -> setLedColor(rgbIndicatorColor.Off) );     //2

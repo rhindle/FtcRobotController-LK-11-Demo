@@ -8,6 +8,12 @@ import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+// todo: Add overall documentation for this class
+
+// NOTE: Any Runnables must not be blocking! (Including any methods they call.)
+//       By design, they are not started in separate threads,
+//       so any delay will delay execution of the entire program.
+
 public class StateMachine {
 
     /* Instance tracking */
@@ -52,7 +58,9 @@ public class StateMachine {
     Runnable abortRunnable;
     Runnable timeoutRunnable;
     Runnable endCriteriaRunnable;
-        // do we need pauseRunnable? unPauseRunnable?
+    Runnable pauseRunnable;
+    Runnable unPauseRunnable;
+    // should the runnables be packed into an array based on runModeChange?
 
     // Stored data for current step being processed
     Runnable stepRunnable;
@@ -444,6 +452,7 @@ public class StateMachine {
                     paused = true;
                     pausedOverallTime = System.currentTimeMillis() - overallStartTime;
                     pausedStepTime = System.currentTimeMillis() - stepStartTime;
+                    if (pauseRunnable != null) pauseRunnable.run();
                     return true;
                 }
                 return false;
@@ -454,6 +463,7 @@ public class StateMachine {
                     paused = false;
                     overallStartTime = System.currentTimeMillis() - pausedOverallTime;
                     stepStartTime = System.currentTimeMillis() - pausedStepTime;
+                    if (unPauseRunnable != null) unPauseRunnable.run();
                     return true;
                 }
                 return false;
@@ -1004,9 +1014,9 @@ public class StateMachine {
         stopGroup.addAll(Arrays.asList(names));
     }
 
-    /*===================*/
-    /* Special Runnables */
-    /*===================*/
+    /*=======================*/
+    /* Mode Change Runnables */
+    /*=======================*/
 
     /**
      * Specifies a runnable to be used when the running task is stopped.
@@ -1018,7 +1028,8 @@ public class StateMachine {
 
     /**
      * Specifies a runnable to be used when the task aborts due to step timeout.
-     * Either abortOnTimeout must be set (for entire task) or individual step abort set with addAbort().
+     * Either abortOnTimeout must be set (for entire task) or
+     * individual step created with with abortOnTimeout parameter true.
      * @param run The runnable to run.
      */
     public void setAbortRunnable (Runnable run) {
@@ -1040,6 +1051,26 @@ public class StateMachine {
     public void setEndCriteriaRunnable (Runnable run) {
         endCriteriaRunnable = run;
     }
+
+    /**
+     * Specifies a runnable to be used when the running task is paused.
+     * @param run The runnable to run.
+     */
+    public void setPauseRunnable (Runnable run) {
+        pauseRunnable = run;
+    }
+
+    /**
+     * Specifies a runnable to be used when the running task is unpaused.
+     * @param run The runnable to run.
+     */
+    public void setUnPauseRunnable (Runnable run) {
+        unPauseRunnable = run;
+    }
+
+    /*================*/
+    /* TaskStep class */
+    /*================*/
 
     /**
      * Class for creating steps that can be added to a state machine with addSteps().
