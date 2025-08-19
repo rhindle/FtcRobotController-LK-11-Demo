@@ -115,18 +115,18 @@ public class StateMachine {
                 continue;
             }
 
-            // If the machine is restarting, load the first step into the step "buffer" variables.
-            if (machine.currentStep == -1) {
-                machine.lastStepTimeout = false;
-                machine.loadNextStep();
-            }
-
             // This loop if for iterating within a single machine, allowing several steps to
             // be performed in quick succession (if there isn't a timeout or end criteria
             // being waited for) rather than waiting for the next full loop.
             boolean doLoop;
             do {
                 doLoop = false;
+
+                // If the machine is restarting, load the first step into the step "buffer" variables.
+                if (machine.currentStep == -1) {
+                    machine.lastStepTimeout = false;
+                    machine.loadNextStep();
+                }
 
                 // Check if the machine ending criteria (if set) has been met.
                 // Depending on the use, this could be a success or a failure.
