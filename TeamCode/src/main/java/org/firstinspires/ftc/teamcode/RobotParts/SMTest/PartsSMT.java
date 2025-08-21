@@ -34,7 +34,7 @@ public class PartsSMT extends Parts {
         smt_Misc = new SMT_Misc(this);
         smt_LED = new SMT_LED(this);
 
-        StateMachine.Reset();
+        StateMachine.reset();
     }
 
     @Override
@@ -73,6 +73,8 @@ public class PartsSMT extends Parts {
 
         addTelemetryLoopEnd();
         StateMachine.addTelemetry();
+        //StateMachine.addTelemetry(opMode);
+        //StateMachine.addTelemetry(opMode.telemetry);
         TelemetryMgr.Update();
     }
 

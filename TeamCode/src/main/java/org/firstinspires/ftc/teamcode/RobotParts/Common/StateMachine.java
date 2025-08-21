@@ -8,7 +8,29 @@ import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+
 // todo: Add overall documentation for this class
+
+/*
+
+    Requirements
+
+    Initialization - Before instantiating any StateMachine objects, reset() the class. This
+    re-initializes the static tracking array, clearing out any references to previously created
+    machines.
+        StateMachine.reset();
+
+    Periodic - Every iteration of your main LinearOpMode "run loop", runLoop() is required to
+    process all of the StateMachine objects.
+        StateMachine.runLoop();
+
+    Telemetry - If desired, some basic debugging information can be added to the telemetry.
+    Add this once to your periodic loop where you want the telemetry to be inserted.
+    Pass your opMode.telemetry as the argument so it has access to the telemetry methods.
+        StateMachine.addTelemetry([Telemetry telemetry]);
+
+ */
 
 // NOTE: Any Runnables must not be blocking! (Including any methods they call.)
 //       By design, they are not started in separate threads,
@@ -84,21 +106,21 @@ public class StateMachine {
         this.className = getCallingClass();
     }
 
-    /**
-     * Reset the static variables (otherwise the lists keep growing).
-     * Only to be called near the beginning of the opMode before the new machines are instantiated.
-     */
-    public static void Reset() {
-        list = new ArrayList<StateMachine>();
-        pausedAll = false;
-    }
-
     /*==================*/
     /*  Static Methods  */
     /*==================*/
 
     /**
-     * The main loop must be called periodically each loop of the OpMode (by Parts).
+     * Reset the static variables (otherwise the lists keep growing).
+     * Only to be called near the beginning of the opMode before the new machines are instantiated.
+     */
+    public static void reset() {
+        list = new ArrayList<StateMachine>();
+        pausedAll = false;
+    }
+
+    /**
+     * The main loop must be called periodically each loop of the OpMode.
      * This processes all of the state machines.
      */
     public static void runLoop() {
@@ -239,6 +261,13 @@ public class StateMachine {
             opMode.telemetry.addData(machine.name, machine.getStatus()+" ("+machine.className+")");
         }
         opMode.telemetry.addData("====================================", "");
+    }
+    public static void addTelemetry(Telemetry telemetry) {
+        telemetry.addData("=========== State Machines ===========", "");
+        for (StateMachine machine : list ) {
+            telemetry.addData(machine.name, machine.getStatus()+" ("+machine.className+")");
+        }
+        telemetry.addData("====================================", "");
     }
 
     /*=================*/
