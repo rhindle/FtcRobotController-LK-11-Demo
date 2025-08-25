@@ -57,6 +57,7 @@ public class StateMachine {
     boolean noBulkStop = false;      // this makes the task invincible except when stopped directly
     boolean lastStepTimeout = false; // status for potential use in the next step
     boolean forceNext = false;       // this makes the machine advance to the next step
+    boolean restarted = false;       // to allow only a single auto restart in the runLoop iterator
 
     int currentStep = -1;
     long overallStartTime;
@@ -140,6 +141,8 @@ public class StateMachine {
             // This loop if for iterating within a single machine, allowing several steps to
             // be performed in quick succession (if there isn't a timeout or end criteria
             // being waited for) rather than waiting for the next full loop.
+            // Tracking whether the machine has already restarted prevents an infinite loop.
+            machine.restarted = false;
             boolean doLoop;
             do {
                 doLoop = false;
@@ -148,6 +151,7 @@ public class StateMachine {
                 if (machine.currentStep == -1) {
                     machine.lastStepTimeout = false;
                     machine.loadNextStep();
+                    machine.restarted = true;
                 }
 
                 // Check if the machine ending criteria (if set) has been met.
@@ -189,7 +193,7 @@ public class StateMachine {
                         if (machine.autoRestart) {
                             machine.tempNoStop = true;   // todo: what behavior is desired?
                             machine.changeRunMode(runModeChange.RESTART);
-                            doLoop = true;
+                            if (!machine.restarted) doLoop = true;
                         }
                         else {
                             machine.changeRunMode(runModeChange.FINISH);
@@ -912,6 +916,15 @@ public class StateMachine {
      */
     public void addDelayOf(long time) {
         addStep( () -> {}, () -> false, time, false);
+    }
+
+    /**
+     * Add a step that "yields" by stopping execution of the state machine for one cycle.
+     * This is presently done by adding a delay of 1ms, which will allow not more than one
+     * opMode cycle to complete before the machine continues.
+     */
+    public void addYield() {
+        addStep( () -> {}, () -> false, 1, false);
     }
 
     /**
