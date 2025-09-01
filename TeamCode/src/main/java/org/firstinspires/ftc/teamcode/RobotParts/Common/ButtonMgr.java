@@ -133,6 +133,14 @@ public class ButtonMgr {
         }
     }
 
+    public boolean getState(int controller, String button, State state) {
+        try {
+            return getState(controller, Buttons.valueOf(button), state);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     class ControlData {
         int index;
         Buttons name;
