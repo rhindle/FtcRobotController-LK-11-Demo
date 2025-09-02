@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.RobotParts.Common;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -23,29 +22,29 @@ import java.util.List;
 public class RobotV2 implements PartsInterface {
     /* Public OpMode members. */
 
-    public DcMotorEx[] motorArray;
     public final String[] motorName = {
             "motor0", "motor1", "motor2", "motor3",
             "motor0B", "motor1B", "motor2B", "motor3B"
     };
+    public DcMotorEx[] motorArray = new DcMotorEx[motorName.length];
 
-    public Servo[] servoArray;
     public final String[] servoName = {
             "servo0", "servo1", "servo2", "servo3", "servo4", "servo5",
             "servo0B", "servo1B", "servo2B", "servo3B", "servo4B", "servo5B"
     };
+    public Servo[] servoArray = new Servo[servoName.length];
 
-    public DigitalChannel[] digitalArray;
     public final String[] digitalName = {
             "digital0", "digital1", "digital2", "digital3", "digital4", "digital5", "digital6", "digital7",
             "digital0B", "digital1B", "digital2B", "digital3B", "digital4B", "digital5B", "digital6B", "digital7B"
     };
+    public DigitalChannel[] digitalArray = new DigitalChannel[digitalName.length];
 
-    public AnalogInput[] analogArray;
     public final String[] analogName = {
             "analog0", "analog1", "analog2", "analog3",
             "analog0B", "analog1B", "analog2B", "analog3B"
     };
+    public AnalogInput[] analogArray = new AnalogInput[analogName.length];
 
     // todo: May want to divvy up robot-unique variables like done in Parts class?
     public NormalizedColorSensor sensorColor    = null;
