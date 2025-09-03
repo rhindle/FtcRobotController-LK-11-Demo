@@ -17,36 +17,38 @@ import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.i2c.DFR304Range;
 import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class RobotV2 implements PartsInterface {
     /* Public OpMode members. */
 
-    public final String[] motorName = {
+    public String[] motorNames = {
             "motor0", "motor1", "motor2", "motor3",
             "motor0B", "motor1B", "motor2B", "motor3B"
     };
-    public DcMotorEx[] motorArray = new DcMotorEx[motorName.length];
+    public DcMotorEx[] motorArray;
 
-    public final String[] servoName = {
+    public String[] servoNames = {
             "servo0", "servo1", "servo2", "servo3", "servo4", "servo5",
             "servo0B", "servo1B", "servo2B", "servo3B", "servo4B", "servo5B"
     };
-    public Servo[] servoArray = new Servo[servoName.length];
+    public Servo[] servoArray;
 
-    public final String[] digitalName = {
+    public String[] digitalNames = {
             "digital0", "digital1", "digital2", "digital3", "digital4", "digital5", "digital6", "digital7",
             "digital0B", "digital1B", "digital2B", "digital3B", "digital4B", "digital5B", "digital6B", "digital7B"
     };
-    public DigitalChannel[] digitalArray = new DigitalChannel[digitalName.length];
+    public DigitalChannel[] digitalArray;
 
-    public final String[] analogName = {
+    public String[] analogNames = {
             "analog0", "analog1", "analog2", "analog3",
             "analog0B", "analog1B", "analog2B", "analog3B"
     };
-    public AnalogInput[] analogArray = new AnalogInput[analogName.length];
+    public AnalogInput[] analogArray;
 
     // todo: May want to divvy up robot-unique variables like done in Parts class?
+    // todo: Consider also moving sensors to a separate class, since they are more likely to vary by robot / opMode.
     public NormalizedColorSensor sensorColor    = null;
     public DistanceSensor sensor2MLeft = null;
     public DistanceSensor sensor2MMiddle = null;
@@ -54,15 +56,13 @@ public class RobotV2 implements PartsInterface {
     public DFR304Range ultraSensor = null;
     public QwiicLEDStickLK qled = null;
 
-
     public IMU sensorIMU        = null;
     public RevHubOrientationOnRobot hubOrientation = new RevHubOrientationOnRobot(
         RevHubOrientationOnRobot.LogoFacingDirection.UP,
         RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
     );
 
-    // Bulk Reads - Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
-    List<LynxModule> allHubs = null;  // gets populated in construct()
+    List<LynxModule> allHubs = null;  // gets populated in init()
 
     /* local OpMode members. */
     private ElapsedTime period  = new ElapsedTime();
@@ -81,15 +81,10 @@ public class RobotV2 implements PartsInterface {
     void construct(Parts parts){
         this.opMode = parts.opMode;
         this.hardwareMap = parts.opMode.hardwareMap;
-        // Bulk Reads - Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
-        allHubs = hardwareMap.getAll(LynxModule.class);
     }
-
     void construct(LinearOpMode opMode){
         this.opMode = opMode;
         this.hardwareMap = opMode.hardwareMap;
-        // Bulk Reads - Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
-        allHubs = hardwareMap.getAll(LynxModule.class);
     }
 
     public void initialize(){
@@ -119,9 +114,16 @@ public class RobotV2 implements PartsInterface {
     /* Initialize standard Hardware interfaces */
     public void init() {
 
-        settingOptions();
+        initOptionsStart();
+
+        motorArray = new DcMotorEx[motorNames.length];
+        servoArray = new Servo[servoNames.length];
+        digitalArray = new DigitalChannel[digitalNames.length];
+        analogArray = new AnalogInput[analogNames.length];
 
         // Bulk Reads - Important Step 1:  Make sure you use DcMotorEx when you instantiate your motors.
+        // Bulk Reads - Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
+        allHubs = hardwareMap.getAll(LynxModule.class);
         // Bulk Reads - Important Step 3: Option B. Set all Expansion hubs to use the MANUAL Bulk Caching mode
         for (LynxModule module : allHubs) {
             module.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
@@ -132,10 +134,6 @@ public class RobotV2 implements PartsInterface {
         initDigital();
         initAnalog();
 
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "sensorIMU".
-
         // todo: This can probably be moved to ImuMgr
         // Initialize IMU directly
         sensorIMU = hardwareMap.get(IMU.class, "imu");
@@ -145,13 +143,13 @@ public class RobotV2 implements PartsInterface {
             )
         );
 
-        initOptions();
+        initOptionsEnd();
     }
 
     public void initMotors() {
         DcMotorEx.RunMode runmode = DcMotorEx.RunMode.RUN_WITHOUT_ENCODER;
-        for (int i = 0; i < motorName.length; i++) {
-            motorArray[i] = hardwareMap.get(DcMotorEx.class, motorName[i]);
+        for (int i = 0; i < motorNames.length; i++) {
+            motorArray[i] = hardwareMap.get(DcMotorEx.class, motorNames[i]);
             motorArray[i].setDirection(DcMotorEx.Direction.FORWARD);
             motorArray[i].setPower(0);
             motorArray[i].setMode(runmode);
@@ -159,32 +157,55 @@ public class RobotV2 implements PartsInterface {
     }
 
     public void initServos() {
-        for (int i = 0; i < servoName.length; i++) {
-            servoArray[i] = hardwareMap.get(Servo.class, servoName[i]);
+        for (int i = 0; i < servoNames.length; i++) {
+            servoArray[i] = hardwareMap.get(Servo.class, servoNames[i]);
         }
     }
 
     public void initDigital() {
-        for (int i = 0; i < digitalName.length; i++) {
-            digitalArray[i] = hardwareMap.get(DigitalChannel.class, digitalName[i]);
+        for (int i = 0; i < digitalNames.length; i++) {
+            digitalArray[i] = hardwareMap.get(DigitalChannel.class, digitalNames[i]);
             digitalArray[i].setMode(DigitalChannel.Mode.INPUT);
         }
     }
 
     public void initAnalog() {
-        for (int i = 0; i < analogName.length; i++) {
-            analogArray[i] = hardwareMap.get(AnalogInput.class, analogName[i]);
+        for (int i = 0; i < analogNames.length; i++) {
+            analogArray[i] = hardwareMap.get(AnalogInput.class, analogNames[i]);
         }
     }
 
-    public void settingOptions() {
+    public Servo getServoByName(String name) {
+        return servoArray[Arrays.asList(servoNames).indexOf(name)];
+        //for (int i = 0; i < servoNames.length; i++) {
+        //    if (servoNames[i].equals(name)) {
+        //        return servoArray[i];
+        //    }
+        //}
+        //return null;
+    }
+
+    public DcMotorEx getMotorByName(String name) {
+        return motorArray[Arrays.asList(motorNames).indexOf(name)];
+    }
+
+    public DigitalChannel getDigitalByName(String name) {
+        return digitalArray[Arrays.asList(digitalNames).indexOf(name)];
+    }
+
+    public AnalogInput getAnalogByName(String name) {
+        return analogArray[Arrays.asList(analogNames).indexOf(name)];
+    }
+
+    public void initOptionsStart() {
         hubOrientation = new RevHubOrientationOnRobot(
             RevHubOrientationOnRobot.LogoFacingDirection.UP,
             RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
         );
+        // could customize motorNames, etc., arrays here if needed
     }
 
-    public void initOptions() {
+    public void initOptionsEnd() {
         /* Following left as examples for subclass @override method */
 
         //        ultraSensor = hardwareMap.get(DFR304Range.class, "uSensor");

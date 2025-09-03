@@ -39,7 +39,7 @@ public class ZZ_Servos extends LinearOpMode {
         buttonMgr = new ButtonMgr(this);
         robot.init();
 
-        numServos = robot.servoName.length;
+        numServos = robot.servoNames.length;
         binding = new char[numServos];
         reverse = new boolean[numServos];
         live = new boolean[numServos];
@@ -120,7 +120,7 @@ public class ZZ_Servos extends LinearOpMode {
             // modify the new position by left and right stick for all bound servos
             boolean anyChange = false;
             for (int i = 0; i < numServos; i++) {
-                if (binding[i] != 0 && buttonMgr.getState(1, String.valueOf(binding[i]), ButtonMgr.State.isHeld)) {
+                if (binding[i] != 0 && buttonMgr.getState(1, String.valueOf(binding[i]), ButtonMgr.State.isPressed)) {
                     newPos[i] += gamepad1.left_stick_y * -largeChange;
                     newPos[i] += gamepad1.right_stick_y * -smallChange;
                     newPos[i] = Math.max(0, Math.min(1, newPos[i]));
@@ -162,7 +162,7 @@ public class ZZ_Servos extends LinearOpMode {
             for (int i = 0; i < numServos; i++) {
                 String telString;
                 telString = (i == active) ? "=>  " : "      ";
-                telString += (robot.servoName[i] + "               ").substring(0, 10);
+                telString += (robot.servoNames[i] + "               ").substring(0, 10);
                 telString += ((binding[i] != 0) ? String.valueOf(binding[i]) : " ") + "    ";
                 telString += (live[i] ? "L" : "_"); // + " ";
                 telString += (enabled[i] ? "E" : "_"); // + " ";
