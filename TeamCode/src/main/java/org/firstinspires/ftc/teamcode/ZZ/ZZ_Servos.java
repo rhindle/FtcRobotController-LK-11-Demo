@@ -77,11 +77,11 @@ public class ZZ_Servos extends LinearOpMode {
             buttonMgr.updateAll();
 
             // move the active selection up and down
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.isRepeating)) {
                 active--;
                 if (active < 0) active = numServos - 1;
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.isRepeating)) {
                 active++;
                 if (active > numServos - 1) active = 0;
             }
@@ -169,6 +169,7 @@ public class ZZ_Servos extends LinearOpMode {
                 telString += (reverse[i] ? "R" : "F") + "    ";
                 telString += String.format("%.3f", oldPos[i]) + "    ";
                 telString += String.format("%.3f", newPos[i]);
+                telString += (i == active) ? "  <=" : "      ";
                 telemetry.addLine(telString);
             }
 

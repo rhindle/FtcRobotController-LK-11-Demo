@@ -240,6 +240,7 @@ public class ButtonMgr {
                 }
                 lastTime = currentTime;          // reset the time
                 nextRepeat = tapTime;
+                isRepeating = true;
             }
             if (lastStatus && !currentState) {   // change from pressed to not pressed
                 wasReleased = true;              // this will last for one loop!
