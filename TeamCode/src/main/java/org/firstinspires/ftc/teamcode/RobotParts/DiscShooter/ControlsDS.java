@@ -214,8 +214,8 @@ public class ControlsDS extends Controls {
    }
 
    public boolean teamOrTeamAndGuestShoot(Buttons button, State state) {
-      // requires either team or team+guest (additional lockout for shooting functions)
-      boolean team = teamOK && buttonMgr.getState(1, button, state);
+      // requires either team or team+guest (additional lockout for shooting functions) (change to either 20250912)
+      boolean team = eitherOK && buttonMgr.getState(1, button, state);
       boolean guest = guestOK && teamOK && buttonMgr.getState(2, button, state);
       return team || guest;
    }
