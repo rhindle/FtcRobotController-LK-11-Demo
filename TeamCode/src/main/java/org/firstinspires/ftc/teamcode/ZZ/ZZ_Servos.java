@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.RobotV2;
 
-
 @TeleOp (name="ZZ_Servos", group="Test")
 //@Disabled
 public class ZZ_Servos extends LinearOpMode {
@@ -37,7 +36,42 @@ public class ZZ_Servos extends LinearOpMode {
     public void runOpMode() {
         robot = new RobotV2(this);
         buttonMgr = new ButtonMgr(this);
-        robot.init();
+        boolean dualHub = true;
+
+        // Wait for the opMode to be "started" and allow configuration changes
+        while (!isStarted()) {
+            buttonMgr.updateAll();
+            telemetry.addLine("===========  ZZ Servo Tester (init) ============");
+            telemetry.addLine();
+            telemetry.addLine("Press X for Single Hub, Y for Dual Hubs");
+            telemetry.addLine();
+            telemetry.addLine("Current Selection: " + (dualHub ? "Dual Hubs" : "Single Hub"));
+            telemetry.update();
+            if (buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed)) {
+                dualHub = false;
+            }
+            if (buttonMgr.getState(1, ButtonMgr.Buttons.y, ButtonMgr.State.wasPressed)) {
+                dualHub = true;
+            }
+            sleep(10);
+        }
+
+        // Set up the robot and related variables; this is done after init so changes can be made.
+        if (dualHub) {
+            robot.servoNames = new String[] {
+                    "servo0", "servo1", "servo2", "servo3", "servo4", "servo5",
+                    "servo0B", "servo1B", "servo2B", "servo3B", "servo4B", "servo5B"
+            };
+        } else {
+            robot.servoNames = new String[] {
+                    "servo0", "servo1", "servo2", "servo3", "servo4", "servo5"
+            };
+        }
+        robot.motorNames = new String[] { };
+        robot.digitalNames = new String[] { };
+        robot.analogNames = new String[] { };
+
+        robot.initialize();
 
         numServos = robot.servoNames.length;
         binding = new char[numServos];
@@ -60,15 +94,6 @@ public class ZZ_Servos extends LinearOpMode {
         }
 
         binderKeys = new char[] {'a', 'b', 'x', 'y'};
-
-        telemetry.addData(">", "Robot Ready.");    //
-        telemetry.update();
-
-        // Wait for the game to start (Display Gyro value), and reset gyro before we move..
-        while (!isStarted()) {
-            telemetry.update();
-            sleep(100);
-        }
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
