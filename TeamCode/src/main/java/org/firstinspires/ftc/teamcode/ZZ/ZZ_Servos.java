@@ -115,12 +115,13 @@ public class ZZ_Servos extends LinearOpMode {
             if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_left, ButtonMgr.State.wasPressed)) {
                 reverse[active] = !reverse[active];
                 robot.servoArray[active].setDirection(reverse[active] ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
+                if (live[active]) oldPos[active] += 0.000001;    // force it to set
             }
 
             // set selected servo to live or not (right)
             if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_right, ButtonMgr.State.wasPressed)) {
                 live[active] = !live[active];
-                if (live[active]) oldPos[active] += 0.000001;    // for the initial go live
+                if (live[active]) oldPos[active] += 0.000001;    // force it to set
             }
 
             // disable the selected servo (back)
