@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  * Displays the first pattern upon init.
  */
 @TeleOp(name="ZZ_DS_Blinkin", group="Test")
-
+@Disabled
 public class ZZ_Blinkin extends OpMode {
 
    /*
