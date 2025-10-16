@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.RobotV2;
@@ -37,6 +38,9 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
     int numMotors;
     int tgtMotor;
 
+    int numDigital;
+    int numAnalog;
+
     String[] motorNicks;
     String[] encoderNicks;
     String[] servoNicks;
@@ -48,6 +52,7 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
     public void runOpMode() {
         robot = new RobotV2(this);
         buttonMgr = new ButtonMgr(this);
+        ElapsedTime loopElapsedTime = new ElapsedTime();
         boolean dualHub = true;
 
         // Wait for the opMode to be "started" and allow configuration changes
@@ -147,6 +152,11 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             robot.motorArray[i].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         }
 
+        numDigital = robot.digitalNames.length;
+        numAnalog = robot.analogNames.length;
+
+        // Wait for the start button to be pressed
+
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
@@ -155,22 +165,23 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
 
             // *** Part 1 - Servos *** //
 
-            // increment the tgtServo selection
+            // increment the tgtServo selection (right bumper)
             if (buttonMgr.getState(1, ButtonMgr.Buttons.right_bumper, ButtonMgr.State.isRepeating)) {
                 tgtServo++;
                 if (tgtServo > numServos - 1) tgtServo = 0;
             }
 
-            // set selected servo forward/srvReverse (X)
+            // set selected servo forward/reverse (X)
             if (buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed)) {
                 srvReverse[tgtServo] = !srvReverse[tgtServo];
                 robot.servoArray[tgtServo].setDirection(srvReverse[tgtServo] ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
+                if (srvLive[tgtServo]) srvOldPos[tgtServo] += 0.000001;    // force it to set
             }
 
             // set selected servo to Live or not (A)
             if (buttonMgr.getState(1, ButtonMgr.Buttons.a, ButtonMgr.State.wasPressed)) {
                 srvLive[tgtServo] = !srvLive[tgtServo];
-                if (srvLive[tgtServo]) srvOldPos[tgtServo] += 0.000001;    // for the initial go srvLive
+                if (srvLive[tgtServo]) srvOldPos[tgtServo] += 0.000001;    // force it to set
             }
 
             // disable the selected servo (B)
@@ -199,7 +210,7 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
 
             // *** Part 2 - Motors *** //
 
-            // increment the tgtMotor selection
+            // increment the tgtMotor selection (left bumper)
             if (buttonMgr.getState(1, ButtonMgr.Buttons.left_bumper, ButtonMgr.State.isRepeating)) {
                 stopAllMotors();
                 tgtMotor++;
@@ -210,6 +221,7 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_left, ButtonMgr.State.wasPressed)) {
                 mtrReverse[tgtMotor] = !mtrReverse[tgtMotor];
                 robot.motorArray[tgtMotor].setDirection(mtrReverse[tgtMotor] ? DcMotorEx.Direction.REVERSE : DcMotorEx.Direction.FORWARD);
+                mtrOldPow[tgtMotor] += 0.000001;    // force it to set
             }
 
             // set selected motor to brake or not (right)
@@ -268,34 +280,124 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
 
             // *** Part 4 - Telemetry *** //
 
+            String telString;
+            int count;
+
             telemetry.addLine("==============  ZZ TestBot 2025  ==============");
-            telemetry.addLine();
-            telemetry.addLine("up/down to select servo   |  doubletap a/b/x/y to bind");
-            telemetry.addLine("left for forward/srvReverse    |  right for srvLive/not");
-            telemetry.addLine("back for disable                 |  start for neutral (0.5)");
-            telemetry.addLine();
-            telemetry.addLine("hold a/b/x/y to change position for bound servos");
-            telemetry.addLine("otherwise tgtServo servo only will change");
-            telemetry.addLine("  left stick for large changes");
-            telemetry.addLine("  right stick for small changes");
-            telemetry.addLine();
-            telemetry.addLine("[sel] [name] [bind] [srvLive][srvEnabled][dir] [current] [new]");
+            //telemetry.addLine();
+            telemetry.addLine("E-Stop: back");
+            telemetry.addLine("Motors (left side of controller) ---");
+            telemetry.addLine("     bumper: select | L: direction | R: brake");
+            telemetry.addLine("     U: reset enc | D: use enc | trig: full pow");
+            //telemetry.addLine();
+            telemetry.addLine("Servos (right side of controller) ---");
+            telemetry.addLine("     bumper: select | A: live | B: disable");
+            telemetry.addLine("     X: direction | Y: center");
             telemetry.addLine();
 
-            // Build telemetry strings
-            for (int i = 0; i < numServos; i++) {
-                String telString;
-                telString = (i == tgtServo) ? "=>  " : "      ";
-                telString += (robot.servoNames[i] + "               ").substring(0, 10);
-//                telString += ((binding[i] != 0) ? String.valueOf(binding[i]) : " ") + "    ";
-                telString += (srvLive[i] ? "L" : "_"); // + " ";
-                telString += (srvEnabled[i] ? "E" : "_"); // + " ";
-                telString += (srvReverse[i] ? "R" : "F") + "    ";
-                telString += String.format("%.3f", srvOldPos[i]) + "    ";
-                telString += String.format("%.3f", srvNewPos[i]);
-                telString += (i == tgtServo) ? "  <=" : "      ";
-                telemetry.addLine(telString);
+//            // Top line
+//            telString = "";
+//            telString += "Motor: " + motorNicks[tgtMotor] + " @ ";
+//            telString += String.format("%+.2f", mtrNewPow[tgtMotor]) + "   |   ";
+//            telString += "Servo: " + servoNicks[tgtServo] + " @ ";
+//            telString += String.format("%.3f", srvNewPos[tgtServo]) + " ";
+//            telString += srvLive[tgtServo] ? "LIVE" : "not live";
+//            telemetry.addLine(telString);
+//            telemetry.addLine();
+
+            // Top lines
+            telString  = "Motor: " + motorNicks[tgtMotor] + " @ ";
+            telString += String.format("%+.2f", mtrNewPow[tgtMotor]) + " | ";
+            telString += (mtrReverse[tgtMotor] ? "Rev" : "For") + "/";
+            telString += (mtrBrake[tgtMotor] ? "Brk" : "Flt") + "/";
+            telString += (mtrEncoder[tgtMotor] ? "Enc" : "NoE") + " | ";
+            telString += (mtrFullSpeed[tgtMotor] ? "100%" : "25%");
+            telemetry.addLine(telString);
+
+            telString  = "Servo: " + servoNicks[tgtServo] + " @ ";
+            telString += String.format("%.3f", srvNewPos[tgtServo]) + " | ";
+            telString += (srvReverse[tgtServo] ? "Rev" : "For") + "/";
+            telString += (srvEnabled[tgtServo] ? "PWM" : "off") + " | ";
+            telString += srvLive[tgtServo] ? "LIVE" : "not live";
+            telemetry.addLine(telString);
+            telemetry.addLine();
+
+            // Motor info
+            count = 0;
+            telString = "";
+            for (int i = 0; i < numMotors; i++) {
+                telString += motorNicks[i] + ": ";
+                telString += (mtrReverse[i] ? "R" : "F");
+                telString += (mtrBrake[i] ? "B" : "F");
+                telString += (mtrEncoder[i] ? "E" : "N");
+                telString += (mtrFullSpeed[i] ? "*" : "-") + " ";
+                telString += String.format("%+.2f", mtrOldPow[i]) + " ";
+                telString += String.format("%+06d", robot.motorArray[i].getCurrentPosition());
+                //telString += String.format("%+.2f", robot.motorArray[i].getVelocity());
+                if (++count >= 2) {
+                    telemetry.addLine(telString);
+                    count = 0;
+                    telString = "";
+                }
+                else telString += " | ";
             }
+            if (!telString.isEmpty()) telemetry.addLine(telString);
+            telemetry.addLine();
+
+            // Servo info
+            count = 0;
+            telString = "";
+            for (int i = 0; i < numServos; i++) {
+                telString += servoNicks[i] + ": ";
+                telString += (srvReverse[i] ? "R" : "F");
+                telString += (srvEnabled[i] ? "E" : "D");
+                telString += (srvLive[i] ? "L" : "_") + " ";
+                telString += String.format("%.3f", srvOldPos[i]);
+                if (++count >= 3) {
+                    telemetry.addLine(telString);
+                    count = 0;
+                    telString = "";
+                }
+                else telString += " | ";
+            }
+            if (!telString.isEmpty()) telemetry.addLine(telString);
+            telemetry.addLine();
+
+            // Digital info
+            count = 0;
+            telString = "";
+            for (int i = 0; i < numDigital; i++) {
+                telString += digitalNicks[i] + ": ";
+                telString += (robot.digitalArray[i].getState() ? "T" : "F");
+                if (++count >= 6) {
+                    telemetry.addLine(telString);
+                    count = 0;
+                    telString = "";
+                }
+                else telString += " | ";
+            }
+            if (!telString.isEmpty()) telemetry.addLine(telString);
+            telemetry.addLine();
+
+            // Analog info
+            count = 0;
+            telString = "";
+            for (int i = 0; i < numAnalog; i++) {
+                telString += analogNicks[i] + ": ";
+                telString += String.format("%.3f", robot.analogArray[i].getVoltage());
+                if (++count >= 4) {
+                    telemetry.addLine(telString);
+                    count = 0;
+                    telString = "";
+                }
+                else telString += " | ";
+            }
+            if (!telString.isEmpty()) telemetry.addLine(telString);
+            telemetry.addLine();
+
+            telemetry.addData("LoopTime(ms)","%.1f",loopElapsedTime.milliseconds());
+            telemetry.addData("LoopSpeed(lps)","%.1f",1/(loopElapsedTime.milliseconds()/1000));
+            loopElapsedTime.reset();
 
             telemetry.update();
 
