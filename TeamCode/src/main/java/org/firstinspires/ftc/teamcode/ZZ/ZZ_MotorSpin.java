@@ -20,17 +20,20 @@ public class ZZ_MotorSpin extends LinearOpMode {
     char[] binderKeys;
     boolean[] reverse;
     boolean[] live;
-//    boolean[] encoder;
     boolean[] brake;
     boolean absolute = false;
     double[] newVel;
-//    static double[] oldPow;
     double[] oldVel;
-    double[] ticksPerRev;
     double[] spinMultiplier;
     double[] maxRPM;
     double[] newRPM;
     int numMotors;
+    static double[] tickOptions = {28.0, 103.8, 145.1, 384.5, 537.7, 751.8, 1425.1, 1993.6, 2786.2, 3895.9, 5281.1};
+    static int[] rpmOptions = {6000, 1620, 1150, 435, 312, 223, 117, 84, 60, 43, 30};
+    static double[] ticksPerRev;
+    static double defaultTicks = tickOptions[0];
+    int tickChoice = 0;
+    boolean changeTicks = false;
 
     int active;
 
@@ -44,20 +47,37 @@ public class ZZ_MotorSpin extends LinearOpMode {
         buttonMgr = new ButtonMgr(this);
         boolean dualHub = true;
 
+        tickChoice = findTickIndex(defaultTicks);
+
         // Wait for the opMode to be "started" and allow configuration changes
         while (!isStarted()) {
             buttonMgr.updateAll();
             telemetry.addLine("===========  ZZ Motor Spinner (init) ============");
             telemetry.addLine();
             telemetry.addLine("Press X for Single Hub, Y for Dual Hubs");
+            telemetry.addLine("Press triggers to cycle motor types");
             telemetry.addLine();
             telemetry.addLine("Current Selection: " + (dualHub ? "Dual Hubs" : "Single Hub"));
+            telemetry.addLine("Default Ticks: " + defaultTicks + " (" +
+                    rpmOptions[tickChoice] + " RPM)" + (changeTicks ? "" : " (no change)"));
             telemetry.update();
             if (buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed)) {
                 dualHub = false;
             }
             if (buttonMgr.getState(1, ButtonMgr.Buttons.y, ButtonMgr.State.wasPressed)) {
                 dualHub = true;
+            }
+            if (buttonMgr.getState(1, ButtonMgr.Buttons.right_trigger, ButtonMgr.State.isRepeating)) {
+                changeTicks = true;
+                tickChoice++;
+                if (tickChoice >= tickOptions.length) tickChoice = 0;
+                defaultTicks = tickOptions[tickChoice];
+            }
+            if (buttonMgr.getState(1, ButtonMgr.Buttons.left_trigger, ButtonMgr.State.isRepeating)) {
+                changeTicks = true;
+                tickChoice--;
+                if (tickChoice < 0) tickChoice = tickOptions.length - 1;
+                defaultTicks = tickOptions[tickChoice];
             }
             sleep(10);
         }
@@ -68,16 +88,9 @@ public class ZZ_MotorSpin extends LinearOpMode {
                     "motor0", "motor1", "motor2", "motor3",
                     "motor0B", "motor1B", "motor2B", "motor3B"
             };
-            ticksPerRev = new double[] {
-                    28, 28, 28, 28,
-                    28, 28, 28, 28
-            };
         } else {
             robot.motorNames = new String []  {
                     "motor0", "motor1", "motor2", "motor3"
-            };
-            ticksPerRev = new double[] {
-                    28, 28, 28, 28
             };
         }
         robot.servoNames = new String[] { };
@@ -90,7 +103,6 @@ public class ZZ_MotorSpin extends LinearOpMode {
         binding = new char[numMotors];
         reverse = new boolean[numMotors];
         live = new boolean[numMotors];
-//        encoder = new boolean[numMotors];
         brake = new boolean[numMotors];
         newVel = new double[numMotors];
         oldVel = new double[numMotors];
@@ -98,26 +110,24 @@ public class ZZ_MotorSpin extends LinearOpMode {
         spinMultiplier = new double[numMotors];
         maxRPM = new double[numMotors];
 
-//        if (oldPow == null || oldPow.length != numMotors) {
-//            oldPow = new double[numMotors];
-//            for (int i = 0; i < numMotors; i++) {
-//                oldPow[i] = 0;
-//            }
-//        }
+        if (ticksPerRev == null || ticksPerRev.length != numMotors || changeTicks) {
+            ticksPerRev = new double[numMotors];
+            for (int i = 0; i < numMotors; i++) {
+                ticksPerRev[i] = defaultTicks;
+            }
+        }
+
         for (int i = 0; i < numMotors; i++) {
             binding[i] = 0;
             reverse[i] = false;
             live[i] = false;
-//            encoder[i] = true;
             brake[i] = false;
             newVel[i] = 0;
             oldVel[i] = 0;
             robot.motorArray[i].setDirection(DcMotorEx.Direction.FORWARD);
             robot.motorArray[i].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
             robot.motorArray[i].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-
-            spinMultiplier[i] = 60.0 / ticksPerRev[i];
-            maxRPM[i] = 170000.0 / ticksPerRev[i];
+            updateTickSettings(i, ticksPerRev[i]);
         }
 
         binderKeys = new char[] {'a', 'b', 'x', 'y'};
@@ -161,16 +171,6 @@ public class ZZ_MotorSpin extends LinearOpMode {
                 }
             }
 
-//            // set selected motor to use encoder or not (right bumper)
-//            if (buttonMgr.getState(1, ButtonMgr.Buttons.right_bumper, ButtonMgr.State.wasPressed)) {
-//                encoder[active] = !encoder[active];
-//                if (encoder[active]) {
-//                    robot.motorArray[active].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-//                } else {
-//                    robot.motorArray[active].setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-//                }
-//            }
-
             // stop all motors (back)
             if (buttonMgr.getState(1, ButtonMgr.Buttons.back, ButtonMgr.State.wasPressed)) {
                 for (int i = 0; i < numMotors; i++) {
@@ -180,16 +180,6 @@ public class ZZ_MotorSpin extends LinearOpMode {
                     newRPM[i] = 0;
                 }
             }
-
-//            // reset the encoder for the selected motor (start)
-//            if (buttonMgr.getState(1, ButtonMgr.Buttons.start, ButtonMgr.State.wasPressed)) {
-//                robot.motorArray[active].setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-//                if (encoder[active]) {
-//                    robot.motorArray[active].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-//                } else {
-//                    robot.motorArray[active].setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-//                }
-//            }
 
             // add, change, or remove key bindings
             for (char binderKey : binderKeys) {
@@ -216,6 +206,16 @@ public class ZZ_MotorSpin extends LinearOpMode {
                     newRPM[i] = Math.max(-maxRPM[i], Math.min(maxRPM[i], newRPM[i]));
                     newVel[i] = newRPM[i] / spinMultiplier[i];
                     anyChange = true;
+                    if (buttonMgr.getState(1, ButtonMgr.Buttons.right_trigger, ButtonMgr.State.isRepeating)) {
+                        int index = findTickIndex(ticksPerRev[i]);
+                        if (++index >= tickOptions.length) index = 0;
+                        updateTickSettings(i, tickOptions[index]);
+                    }
+                    if (buttonMgr.getState(1, ButtonMgr.Buttons.left_trigger, ButtonMgr.State.isRepeating)) {
+                        int index = findTickIndex(ticksPerRev[i]);
+                        if (--index < 0) index = tickOptions.length - 1;
+                        updateTickSettings(i, tickOptions[index]);
+                    }
                 }
             }
 
@@ -225,6 +225,16 @@ public class ZZ_MotorSpin extends LinearOpMode {
                 newRPM[active] += gamepad1.right_stick_y * -smallChange * maxRPM[active];
                 newRPM[active] = Math.max(-maxRPM[active], Math.min(maxRPM[active], newRPM[active]));
                 newVel[active] = newRPM[active] / spinMultiplier[active];
+                if (buttonMgr.getState(1, ButtonMgr.Buttons.right_trigger, ButtonMgr.State.isRepeating)) {
+                    int index = findTickIndex(ticksPerRev[active]);
+                    if (++index >= tickOptions.length) index = 0;
+                    updateTickSettings(active, tickOptions[index]);
+                }
+                if (buttonMgr.getState(1, ButtonMgr.Buttons.left_trigger, ButtonMgr.State.isRepeating)) {
+                    int index = findTickIndex(ticksPerRev[active]);
+                    if (--index < 0) index = tickOptions.length - 1;
+                    updateTickSettings(active, tickOptions[index]);
+                }
             }
 
             // update the motor velocity if live and the position has changed
@@ -241,13 +251,14 @@ public class ZZ_MotorSpin extends LinearOpMode {
             telemetry.addLine("left for forward/reverse   |  right for live/not");
             telemetry.addLine("l_bumper for brake/not    |  ");
             telemetry.addLine("back for stop all                |  ");
+            telemetry.addLine("triggers to cycle motor types");
             telemetry.addLine();
             telemetry.addLine("hold a/b/x/y to change power for bound motors");
             telemetry.addLine("otherwise active motor only will change");
             telemetry.addLine("  left stick for large changes");
             telemetry.addLine("  right stick for small changes");
             telemetry.addLine();
-            telemetry.addLine("[sel] [name] [bind] [live][brake][dir] [setrpm] [rpm]");
+            telemetry.addLine("[sel] [name] [bind] [live][brake][dir] (spec) [setrpm] [rpm]");
             telemetry.addLine();
 
             // Build telemetry strings
@@ -257,15 +268,11 @@ public class ZZ_MotorSpin extends LinearOpMode {
                 telString += (robot.motorNames[i] + "               ").substring(0, 10);
                 telString += ((binding[i] != 0) ? String.valueOf(binding[i]) : " ") + " ";
                 telString += (live[i] ? "L" : "_"); // + " ";
-//                telString += (encoder[i] ? "E" : "_"); // + " ";
                 telString += (brake[i] ? "B" : "_"); // + " ";
                 telString += (reverse[i] ? "R" : "F") + "   ";
-//                telString += String.format("%.2f", oldVel[i]) + " ";
-//                telString += String.format("%.2f", newVel[i]) + " ";
-//                telString += (String.format("%07d", robot.motorArray[i].getCurrentPosition()) + "     ").substring(0, 8);
+                telString += "(" + String.format("%04d", rpmOptions[findTickIndex(ticksPerRev[i])]) + ")   ";
                 telString += String.format("%05d", (int)newRPM[i]) + "   ";
                 telString += String.format("%05d", (int)(robot.motorArray[i].getVelocity() * spinMultiplier[i]));
-                //telString += String.format("%.2f", robot.motorArray[i].getVelocity() * spinMultiplier[i]);
                 telString += (i == active) ? " <=" : "     ";
                 telemetry.addLine(telString);
             }
@@ -274,4 +281,18 @@ public class ZZ_MotorSpin extends LinearOpMode {
 
         }
     }
+
+    public int findTickIndex(double ticks) {
+        for (int i = 0; i < tickOptions.length; i++) {
+            if (ticks == tickOptions[i]) return i;
+        }
+        return 0;
+    }
+
+    public void updateTickSettings(int motorNum, double ticks) {
+        ticksPerRev[motorNum] = ticks;
+        spinMultiplier[motorNum] = 60.0 / ticks;
+        maxRPM[motorNum] = 168200 / ticks;
+    }
+
 }
