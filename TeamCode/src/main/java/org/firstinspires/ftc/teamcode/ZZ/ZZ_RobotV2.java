@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.RobotParts.Common;
+package org.firstinspires.ftc.teamcode.ZZ;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.i2c.DFR304Range;
 import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
@@ -20,7 +21,7 @@ import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
 import java.util.Arrays;
 import java.util.List;
 
-public class RobotV2 implements PartsInterface {
+public class ZZ_RobotV2 implements PartsInterface {
     /* Public OpMode members. */
 
     public String[] motorNames = {
@@ -72,10 +73,10 @@ public class RobotV2 implements PartsInterface {
     public HardwareMap hardwareMap;
 
     /* Constructor */
-    public RobotV2(Parts parts){
+    public ZZ_RobotV2(Parts parts){
         construct(parts);
     }
-    public RobotV2(LinearOpMode opMode){
+    public ZZ_RobotV2(LinearOpMode opMode){
         construct(opMode);
     }
 
