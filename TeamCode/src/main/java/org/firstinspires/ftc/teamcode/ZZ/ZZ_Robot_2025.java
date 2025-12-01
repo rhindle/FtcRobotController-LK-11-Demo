@@ -13,15 +13,10 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
-import org.firstinspires.ftc.teamcode.Tools.i2c.DFR304Range;
-import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
-
 import java.util.Arrays;
 import java.util.List;
 
-public class ZZ_RobotV2 implements PartsInterface {
+public class ZZ_Robot_2025 {
     /* Public OpMode members. */
 
     public String[] motorNames = {
@@ -54,9 +49,10 @@ public class ZZ_RobotV2 implements PartsInterface {
     public DistanceSensor sensor2MLeft = null;
     public DistanceSensor sensor2MMiddle = null;
     public DistanceSensor sensor2MRight = null;
-    public DFR304Range ultraSensor = null;
-    public QwiicLEDStickLK qled = null;
-    public static boolean dualHub = true;   // for ZZ opmodes
+//    public DFR304Range ultraSensor = null;
+//    public QwiicLEDStickLK qled = null;
+    public static boolean zz_dualHub = true;   // for ZZ opmodes
+    public static boolean zz_spinPID = false;
 
     public IMU sensorIMU        = null;
     public RevHubOrientationOnRobot hubOrientation = new RevHubOrientationOnRobot(
@@ -73,17 +69,17 @@ public class ZZ_RobotV2 implements PartsInterface {
     public HardwareMap hardwareMap;
 
     /* Constructor */
-    public ZZ_RobotV2(Parts parts){
-        construct(parts);
-    }
-    public ZZ_RobotV2(LinearOpMode opMode){
+//    public ZZ_Robot_2025(Parts parts){
+//        construct(parts);
+//    }
+    public ZZ_Robot_2025(LinearOpMode opMode){
         construct(opMode);
     }
 
-    void construct(Parts parts){
-        this.opMode = parts.opMode;
-        this.hardwareMap = parts.opMode.hardwareMap;
-    }
+//    void construct(Parts parts){
+//        this.opMode = parts.opMode;
+//        this.hardwareMap = parts.opMode.hardwareMap;
+//    }
     void construct(LinearOpMode opMode){
         this.opMode = opMode;
         this.hardwareMap = opMode.hardwareMap;

@@ -2,20 +2,18 @@ package org.firstinspires.ftc.teamcode.ZZ;
 
 import android.annotation.SuppressLint;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.RobotV2;
-
 @TeleOp (name="ZZ_MotorSpin_PID", group="Test")
-//@Disabled
+@Disabled
 public class ZZ_MotorSpin_PID extends LinearOpMode {
 
-    RobotV2 robot;
-    ButtonMgr buttonMgr;
+    ZZ_Robot_2025 robot;
+    ZZ_ButtonMgr buttonMgr;
 
     char[] binding;
     char[] binderKeys;
@@ -41,14 +39,14 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
     final double smallChange = .0001;
     final double largeChange = .005;
 
-    public static PIDFCoefficients customPID = new PIDFCoefficients(100,0,0,12.4);
+    public static PIDFCoefficients launchSpinPID = new PIDFCoefficients(100,0,0,12.4);
 
     @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode() {
-        robot = new RobotV2(this);
-        buttonMgr = new ButtonMgr(this);
-        //boolean dualHub = true;
+        robot = new ZZ_Robot_2025(this);
+        buttonMgr = new ZZ_ButtonMgr(this);
+        //boolean zz_dualHub = true;
 
         tickChoice = findTickIndex(defaultTicks);
 
@@ -60,23 +58,23 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             telemetry.addLine("Press X for Single Hub, Y for Dual Hubs");
             telemetry.addLine("Press triggers to cycle motor types");
             telemetry.addLine();
-            telemetry.addLine("Current Selection: " + (robot.dualHub ? "Dual Hubs" : "Single Hub"));
+            telemetry.addLine("Current Selection: " + (robot.zz_dualHub ? "Dual Hubs" : "Single Hub"));
             telemetry.addLine("Default Ticks: " + defaultTicks + " (" +
                     rpmOptions[tickChoice] + " RPM)" + (changeTicks ? "" : " (no change)"));
             telemetry.update();
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed)) {
-                robot.dualHub = false;
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
+                robot.zz_dualHub = false;
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.y, ButtonMgr.State.wasPressed)) {
-                robot.dualHub = true;
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
+                robot.zz_dualHub = true;
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.right_trigger, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_trigger, ZZ_ButtonMgr.State.isRepeating)) {
                 changeTicks = true;
                 tickChoice++;
                 if (tickChoice >= tickOptions.length) tickChoice = 0;
                 defaultTicks = tickOptions[tickChoice];
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.left_trigger, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_trigger, ZZ_ButtonMgr.State.isRepeating)) {
                 changeTicks = true;
                 tickChoice--;
                 if (tickChoice < 0) tickChoice = tickOptions.length - 1;
@@ -86,7 +84,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
         }
 
         // Set up the robot and related variables; this is done after init so changes can be made.
-        if (robot.dualHub) {
+        if (robot.zz_dualHub) {
             robot.motorNames = new String []  {
                     "motor0", "motor1", "motor2", "motor3",
                     "motor0B", "motor1B", "motor2B", "motor3B"
@@ -132,7 +130,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             robot.motorArray[i].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             updateTickSettings(i, ticksPerRev[i]);
 
-            robot.motorArray[i].setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, customPID);
+            robot.motorArray[i].setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, launchSpinPID);
         }
 
         binderKeys = new char[] {'a', 'b', 'x', 'y'};
@@ -144,30 +142,30 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             buttonMgr.updateAll();
 
             // move the active selection up and down
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_up, ZZ_ButtonMgr.State.isRepeating)) {
                 active--;
                 if (active < 0) active = numMotors - 1;
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_down, ZZ_ButtonMgr.State.isRepeating)) {
                 active++;
                 if (active > numMotors - 1) active = 0;
             }
 
             // set selected motor forward/reverse (left)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_left, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_left, ZZ_ButtonMgr.State.wasPressed)) {
                 reverse[active] = !reverse[active];
                 robot.motorArray[active].setDirection(reverse[active] ? DcMotorEx.Direction.REVERSE : DcMotorEx.Direction.FORWARD);
                 if (live[active]) oldVel[active] += 0.000001;    // to force a direction change if running
             }
 
             // set selected motor to live or not (right)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_right, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_right, ZZ_ButtonMgr.State.wasPressed)) {
                 live[active] = !live[active];
                 if (live[active]) oldVel[active] += 0.000001;    // for the initial go live
             }
 
             // set selected motor to brake or not (left bumper)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.left_bumper, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_bumper, ZZ_ButtonMgr.State.wasPressed)) {
                 brake[active] = !brake[active];
                 if (brake[active]) {
                     robot.motorArray[active].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -177,7 +175,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             }
 
             // stop all motors (back)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.back, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.back, ZZ_ButtonMgr.State.wasPressed)) {
                 for (int i = 0; i < numMotors; i++) {
                     robot.motorArray[i].setPower(0);
                     oldVel[i] = 0;
@@ -188,7 +186,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
 
             // add, change, or remove key bindings
             for (char binderKey : binderKeys) {
-                if (buttonMgr.getState(1, String.valueOf(binderKey), ButtonMgr.State.wasDoubleTapped)) {
+                if (buttonMgr.getState(1, String.valueOf(binderKey), ZZ_ButtonMgr.State.wasDoubleTapped)) {
                     if (binding[active] != binderKey) binding[active] = binderKey;
                     else binding[active] = 0;
                 }
@@ -205,18 +203,18 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             // modify the new position by left and right stick for all bound motors
             boolean anyChange = false;
             for (int i = 0; i < numMotors; i++) {
-                if (binding[i] != 0 && buttonMgr.getState(1, String.valueOf(binding[i]), ButtonMgr.State.isPressed)) {
+                if (binding[i] != 0 && buttonMgr.getState(1, String.valueOf(binding[i]), ZZ_ButtonMgr.State.isPressed)) {
                     newRPM[i] += gamepad1.left_stick_y * -largeChange * maxRPM[i];
                     newRPM[i] += gamepad1.right_stick_y * -smallChange * maxRPM[i];
                     newRPM[i] = Math.max(-maxRPM[i], Math.min(maxRPM[i], newRPM[i]));
                     newVel[i] = newRPM[i] / spinMultiplier[i];
                     anyChange = true;
-                    if (buttonMgr.getState(1, ButtonMgr.Buttons.right_trigger, ButtonMgr.State.isRepeating)) {
+                    if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_trigger, ZZ_ButtonMgr.State.isRepeating)) {
                         int index = findTickIndex(ticksPerRev[i]);
                         if (++index >= tickOptions.length) index = 0;
                         updateTickSettings(i, tickOptions[index]);
                     }
-                    if (buttonMgr.getState(1, ButtonMgr.Buttons.left_trigger, ButtonMgr.State.isRepeating)) {
+                    if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_trigger, ZZ_ButtonMgr.State.isRepeating)) {
                         int index = findTickIndex(ticksPerRev[i]);
                         if (--index < 0) index = tickOptions.length - 1;
                         updateTickSettings(i, tickOptions[index]);
@@ -230,12 +228,12 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
                 newRPM[active] += gamepad1.right_stick_y * -smallChange * maxRPM[active];
                 newRPM[active] = Math.max(-maxRPM[active], Math.min(maxRPM[active], newRPM[active]));
                 newVel[active] = newRPM[active] / spinMultiplier[active];
-                if (buttonMgr.getState(1, ButtonMgr.Buttons.right_trigger, ButtonMgr.State.isRepeating)) {
+                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_trigger, ZZ_ButtonMgr.State.isRepeating)) {
                     int index = findTickIndex(ticksPerRev[active]);
                     if (++index >= tickOptions.length) index = 0;
                     updateTickSettings(active, tickOptions[index]);
                 }
-                if (buttonMgr.getState(1, ButtonMgr.Buttons.left_trigger, ButtonMgr.State.isRepeating)) {
+                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_trigger, ZZ_ButtonMgr.State.isRepeating)) {
                     int index = findTickIndex(ticksPerRev[active]);
                     if (--index < 0) index = tickOptions.length - 1;
                     updateTickSettings(active, tickOptions[index]);

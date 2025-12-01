@@ -9,15 +9,12 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.RobotV2;
-
 @TeleOp (name="ZZ_TestBot_2025", group="Test")
 //@Disabled
 public class ZZ_TestBot_2025 extends LinearOpMode {
 
-    RobotV2 robot;
-    ButtonMgr buttonMgr;
+    ZZ_Robot_2025 robot;
+    ZZ_ButtonMgr buttonMgr;
 
     boolean[] srvReverse;
     boolean[] srvLive;
@@ -50,10 +47,9 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode() {
-        robot = new RobotV2(this);
-        buttonMgr = new ButtonMgr(this);
+        robot = new ZZ_Robot_2025(this);
+        buttonMgr = new ZZ_ButtonMgr(this);
         ElapsedTime loopElapsedTime = new ElapsedTime();
-        boolean dualHub = true;
 
         // Wait for the opMode to be "started" and allow configuration changes
         while (!isStarted()) {
@@ -62,19 +58,19 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             telemetry.addLine();
             telemetry.addLine("Press X for Single Hub, Y for Dual Hubs");
             telemetry.addLine();
-            telemetry.addLine("Current Selection: " + (dualHub ? "Dual Hubs" : "Single Hub"));
+            telemetry.addLine("Current Selection: " + (robot.zz_dualHub ? "Dual Hubs" : "Single Hub"));
             telemetry.update();
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed)) {
-                dualHub = false;
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
+                robot.zz_dualHub = false;
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.y, ButtonMgr.State.wasPressed)) {
-                dualHub = true;
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
+                robot.zz_dualHub = true;
             }
             sleep(10);
         }
 
         // Set up the robot and related variables; this is done after init so changes can be made.
-        if (dualHub) {
+        if (robot.zz_dualHub) {
             robot.motorNames = new String []  {
                     "motor0", "motor1", "motor2", "motor3",
                     "motor0B", "motor1B", "motor2B", "motor3B"
@@ -166,32 +162,32 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             // *** Part 1 - Servos *** //
 
             // increment the tgtServo selection (right bumper)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.right_bumper, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_bumper, ZZ_ButtonMgr.State.isRepeating)) {
                 tgtServo++;
                 if (tgtServo > numServos - 1) tgtServo = 0;
             }
 
             // set selected servo forward/reverse (X)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
                 srvReverse[tgtServo] = !srvReverse[tgtServo];
                 robot.servoArray[tgtServo].setDirection(srvReverse[tgtServo] ? Servo.Direction.REVERSE : Servo.Direction.FORWARD);
                 if (srvLive[tgtServo]) srvOldPos[tgtServo] += 0.000001;    // force it to set
             }
 
             // set selected servo to Live or not (A)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.a, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.a, ZZ_ButtonMgr.State.wasPressed)) {
                 srvLive[tgtServo] = !srvLive[tgtServo];
                 if (srvLive[tgtServo]) srvOldPos[tgtServo] += 0.000001;    // force it to set
             }
 
             // disable the selected servo (B)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.b, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.b, ZZ_ButtonMgr.State.wasPressed)) {
                 srvEnabled[tgtServo] = false;
                 ((ServoImplEx)robot.servoArray[tgtServo]).setPwmDisable();
             }
 
             // neutral-ize the selected servo (Y)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.y, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
                 srvNewPos[tgtServo] = 0.5;
             }
 
@@ -211,21 +207,21 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             // *** Part 2 - Motors *** //
 
             // increment the tgtMotor selection (left bumper)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.left_bumper, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_bumper, ZZ_ButtonMgr.State.isRepeating)) {
                 stopAllMotors();
                 tgtMotor++;
                 if (tgtMotor > numMotors - 1) tgtMotor = 0;
             }
 
             // set selected motor forward/reverse (left)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_left, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_left, ZZ_ButtonMgr.State.wasPressed)) {
                 mtrReverse[tgtMotor] = !mtrReverse[tgtMotor];
                 robot.motorArray[tgtMotor].setDirection(mtrReverse[tgtMotor] ? DcMotorEx.Direction.REVERSE : DcMotorEx.Direction.FORWARD);
                 mtrOldPow[tgtMotor] += 0.000001;    // force it to set
             }
 
             // set selected motor to brake or not (right)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_right, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_right, ZZ_ButtonMgr.State.wasPressed)) {
                 mtrBrake[tgtMotor] = !mtrBrake[tgtMotor];
                 if (mtrBrake[tgtMotor]) {
                     robot.motorArray[tgtMotor].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -235,7 +231,7 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             }
 
             // set selected motor to use encoder or not (down)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_down, ZZ_ButtonMgr.State.wasPressed)) {
                 mtrEncoder[tgtMotor] = !mtrEncoder[tgtMotor];
                 if (mtrEncoder[tgtMotor]) {
                     robot.motorArray[tgtMotor].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -245,7 +241,7 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             }
 
             // reset the encoder for the selected motor (up)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_up, ZZ_ButtonMgr.State.wasPressed)) {
                 robot.motorArray[tgtMotor].setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 if (mtrEncoder[tgtMotor]) {
                     robot.motorArray[tgtMotor].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -255,7 +251,7 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
             }
 
             // set the motor to full power or not (trigger)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.left_trigger, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_trigger, ZZ_ButtonMgr.State.wasPressed)) {
                 mtrFullSpeed[tgtMotor] = !mtrFullSpeed[tgtMotor];
             }
 
@@ -274,7 +270,7 @@ public class ZZ_TestBot_2025 extends LinearOpMode {
 
             // *** Part 3 - Other *** //
 
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.back, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.back, ZZ_ButtonMgr.State.wasPressed)) {
                 stopEverything();
             }
 

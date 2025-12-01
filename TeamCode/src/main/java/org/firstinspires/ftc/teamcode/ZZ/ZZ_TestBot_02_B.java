@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import java.util.List;
 
 @TeleOp (name="ZZ_TestBot_02B(J)", group="Test")
-//@Disabled
+@Disabled
 public class ZZ_TestBot_02_B extends LinearOpMode {
 
     ZZ_Hardware_TestBot_B robot   = new ZZ_Hardware_TestBot_B();

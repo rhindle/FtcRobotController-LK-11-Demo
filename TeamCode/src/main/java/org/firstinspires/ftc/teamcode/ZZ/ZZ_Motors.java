@@ -6,15 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
-import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.RobotV2;
-
 @TeleOp (name="ZZ_Motors", group="Test")
 //@Disabled
 public class ZZ_Motors extends LinearOpMode {
 
-    RobotV2 robot;
-    ButtonMgr buttonMgr;
+    ZZ_Robot_2025 robot;
+    ZZ_ButtonMgr buttonMgr;
 
     char[] binding;
     char[] binderKeys;
@@ -24,11 +21,15 @@ public class ZZ_Motors extends LinearOpMode {
     boolean[] brake;
     boolean absolute = false;
     double[] newPow;
-//    static double[] oldPow;
+    //    static double[] oldPow;
     double[] oldPow;
     int numMotors;
 
     int active;
+
+    long[] motorTimeout;
+    final long timeout = 30000; //30000
+    boolean[] paused;
 
     final double smallChange = .0001;
     final double largeChange = .005;
@@ -36,9 +37,8 @@ public class ZZ_Motors extends LinearOpMode {
     @SuppressLint("DefaultLocale")
     @Override
     public void runOpMode() {
-        robot = new RobotV2(this);
-        buttonMgr = new ButtonMgr(this);
-        boolean dualHub = true;
+        robot = new ZZ_Robot_2025(this);
+        buttonMgr = new ZZ_ButtonMgr(this);
 
         // Wait for the opMode to be "started" and allow configuration changes
         while (!isStarted()) {
@@ -47,31 +47,31 @@ public class ZZ_Motors extends LinearOpMode {
             telemetry.addLine();
             telemetry.addLine("Press X for Single Hub, Y for Dual Hubs");
             telemetry.addLine();
-            telemetry.addLine("Current Selection: " + (dualHub ? "Dual Hubs" : "Single Hub"));
+            telemetry.addLine("Current Selection: " + (robot.zz_dualHub ? "Dual Hubs" : "Single Hub"));
             telemetry.update();
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed)) {
-                dualHub = false;
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
+                robot.zz_dualHub = false;
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.y, ButtonMgr.State.wasPressed)) {
-                dualHub = true;
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
+                robot.zz_dualHub = true;
             }
             sleep(10);
         }
 
         // Set up the robot and related variables; this is done after init so changes can be made.
-        if (dualHub) {
-            robot.motorNames = new String []  {
+        if (robot.zz_dualHub) {
+            robot.motorNames = new String[]{
                     "motor0", "motor1", "motor2", "motor3",
                     "motor0B", "motor1B", "motor2B", "motor3B"
             };
         } else {
-            robot.motorNames = new String []  {
+            robot.motorNames = new String[]{
                     "motor0", "motor1", "motor2", "motor3"
             };
         }
-        robot.servoNames = new String[] { };
-        robot.digitalNames = new String[] { };
-        robot.analogNames = new String[] { };
+        robot.servoNames = new String[]{};
+        robot.digitalNames = new String[]{};
+        robot.analogNames = new String[]{};
 
         robot.initialize();
 
@@ -83,6 +83,10 @@ public class ZZ_Motors extends LinearOpMode {
         brake = new boolean[numMotors];
         newPow = new double[numMotors];
         oldPow = new double[numMotors];
+        motorTimeout = new long[numMotors];
+        paused = new boolean[numMotors];
+
+
 //        if (oldPow == null || oldPow.length != numMotors) {
 //            oldPow = new double[numMotors];
 //            for (int i = 0; i < numMotors; i++) {
@@ -100,10 +104,10 @@ public class ZZ_Motors extends LinearOpMode {
             robot.motorArray[i].setDirection(DcMotorEx.Direction.FORWARD);
             robot.motorArray[i].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
             robot.motorArray[i].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-
+            motorTimeout[i] = System.currentTimeMillis() + timeout;
         }
 
-        binderKeys = new char[] {'a', 'b', 'x', 'y'};
+        binderKeys = new char[]{'a', 'b', 'x', 'y'};
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -112,30 +116,39 @@ public class ZZ_Motors extends LinearOpMode {
             buttonMgr.updateAll();
 
             // move the active selection up and down
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_up, ZZ_ButtonMgr.State.isRepeating)) {
                 active--;
                 if (active < 0) active = numMotors - 1;
             }
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.isRepeating)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_down, ZZ_ButtonMgr.State.isRepeating)) {
                 active++;
                 if (active > numMotors - 1) active = 0;
             }
 
             // set selected motor forward/reverse (left)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_left, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_left, ZZ_ButtonMgr.State.wasPressed)) {
+                updateTimeout(active);
                 reverse[active] = !reverse[active];
                 robot.motorArray[active].setDirection(reverse[active] ? DcMotorEx.Direction.REVERSE : DcMotorEx.Direction.FORWARD);
-                if (live[active]) oldPow[active] += 0.000001;    // to force a direction change if running
+                if (live[active])
+                    oldPow[active] += 0.000001;    // to force a direction change if running
             }
 
             // set selected motor to live or not (right)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.dpad_right, ButtonMgr.State.wasPressed)) {
-                live[active] = !live[active];
-                if (live[active]) oldPow[active] += 0.000001;    // for the initial go live
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_right, ZZ_ButtonMgr.State.wasPressed)) {
+                if (paused[active]) {
+                    updateTimeout(active);
+                }
+                else {
+                    updateTimeout(active);
+                    live[active] = !live[active];
+                    if (live[active]) oldPow[active] += 0.000001;    // for the initial go live
+                }
             }
 
             // set selected motor to brake or not (left bumper)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.left_bumper, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_bumper, ZZ_ButtonMgr.State.wasPressed)) {
+                updateTimeout(active);
                 brake[active] = !brake[active];
                 if (brake[active]) {
                     robot.motorArray[active].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -145,7 +158,8 @@ public class ZZ_Motors extends LinearOpMode {
             }
 
             // set selected motor to use encoder or not (right bumper)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.right_bumper, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_bumper, ZZ_ButtonMgr.State.wasPressed)) {
+                updateTimeout(active);
                 encoder[active] = !encoder[active];
                 if (encoder[active]) {
                     robot.motorArray[active].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -155,7 +169,7 @@ public class ZZ_Motors extends LinearOpMode {
             }
 
             // stop all motors (back)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.back, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.back, ZZ_ButtonMgr.State.wasPressed)) {
                 for (int i = 0; i < numMotors; i++) {
                     robot.motorArray[i].setPower(0);
                     oldPow[i] = 0;
@@ -164,7 +178,8 @@ public class ZZ_Motors extends LinearOpMode {
             }
 
             // reset the encoder for the selected motor (start)
-            if (buttonMgr.getState(1, ButtonMgr.Buttons.start, ButtonMgr.State.wasPressed)) {
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
+                updateTimeout(active);
                 robot.motorArray[active].setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
                 if (encoder[active]) {
                     robot.motorArray[active].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
@@ -175,7 +190,7 @@ public class ZZ_Motors extends LinearOpMode {
 
             // add, change, or remove key bindings
             for (char binderKey : binderKeys) {
-                if (buttonMgr.getState(1, String.valueOf(binderKey), ButtonMgr.State.wasDoubleTapped)) {
+                if (buttonMgr.getState(1, String.valueOf(binderKey), ZZ_ButtonMgr.State.wasDoubleTapped)) {
                     if (binding[active] != binderKey) binding[active] = binderKey;
                     else binding[active] = 0;
                 }
@@ -192,7 +207,7 @@ public class ZZ_Motors extends LinearOpMode {
             // modify the new position by left and right stick for all bound motors
             boolean anyChange = false;
             for (int i = 0; i < numMotors; i++) {
-                if (binding[i] != 0 && buttonMgr.getState(1, String.valueOf(binding[i]), ButtonMgr.State.isPressed)) {
+                if (binding[i] != 0 && buttonMgr.getState(1, String.valueOf(binding[i]), ZZ_ButtonMgr.State.isPressed)) {
                     if (absolute) {
                         newPow[i] = -gamepad1.left_stick_y;
                     } else {
@@ -216,10 +231,24 @@ public class ZZ_Motors extends LinearOpMode {
             // update the motor power if live and the position has changed
             for (int i = 0; i < numMotors; i++) {
                 if (live[i] && newPow[i] != oldPow[i]) {
+                    //updateTimeout(active);  I think this is wrong 20251130?
+                    updateTimeout(i);
                     robot.motorArray[i].setPower(newPow[i]);
                     oldPow[i] = newPow[i];
                 }
             }
+
+            // timeout the motor if not interacted with (trying to avoid lightly stalled motors)
+            for (int i = 0; i < numMotors; i++) {
+                if (motorTimeout[i] < System.currentTimeMillis()) {
+                    if (robot.motorArray[i].getPower() != 0) {
+                        paused[i] = true;
+                        robot.motorArray[i].setPower(0);
+                        // leaving oldPow[i] alone intentionally
+                    }
+                }
+            }
+
 
             telemetry.addLine("==============  ZZ Motor Tester  ==============");
             telemetry.addLine();
@@ -242,7 +271,8 @@ public class ZZ_Motors extends LinearOpMode {
                 telString = (i == active) ? "=> " : "     ";
                 telString += (robot.motorNames[i] + "               ").substring(0, 10);
                 telString += ((binding[i] != 0) ? String.valueOf(binding[i]) : " ") + " ";
-                telString += (live[i] ? "L" : "_"); // + " ";
+                telString += (paused[i] ? "P" : (live[i] ? "L" : "_")); // + " ";
+                //telString += (live[i] ? "L" : "_"); // + " ";
                 telString += (encoder[i] ? "E" : "_"); // + " ";
                 telString += (brake[i] ? "B" : "_"); // + " ";
                 telString += (reverse[i] ? "R" : "F") + " ";
@@ -256,6 +286,14 @@ public class ZZ_Motors extends LinearOpMode {
 
             telemetry.update();
 
+        }
+    }
+
+    void updateTimeout(int motor) {
+        motorTimeout[motor] = System.currentTimeMillis() + timeout;
+        if (paused[motor]) {
+            paused[motor] = false;
+            robot.motorArray[motor].setPower(oldPow[motor]);
         }
     }
 }
