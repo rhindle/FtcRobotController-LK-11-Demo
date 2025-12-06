@@ -5,8 +5,7 @@ import android.annotation.SuppressLint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
-
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 @TeleOp (name="ZZ_3Shooter", group="Test")
 //@Disabled
@@ -47,36 +46,52 @@ public class ZZ_3Shooter extends LinearOpMode {
     final double servoWhiteDock             = 0.471;
     final double servoWhiteLaunch           = servoWhiteMax;
 
-    final int motorSpinSpeed                = 3500;
+    static double motorSpinSpeed                = 3500;
     final boolean motor1reverse             = false;
     final boolean motor2reverse             = false;
 
-    char[] binding;
-    char[] binderKeys;
     boolean[] reverse;
     boolean[] live;
-    boolean[] encoder;
     boolean[] brake;
-    double[] newPow;
-    double[] oldPow;
+//    boolean absolute = false;
+//    double[] newVel;
+//    double[] oldVel;
+//    double[] spinMultiplier;
+//    double[] maxRPM;
+//    double[] newRPM;
     int numMotors;
+    double spinTicks = 28.0;
+    int spinRPM = 6000;
+
+//    static double[] tickOptions = {28.0, 103.8, 145.1, 384.5, 537.7, 751.8, 1425.1, 1993.6, 2786.2, 3895.9, 5281.1};
+//    static int[] rpmOptions = {6000, 1620, 1150, 435, 312, 223, 117, 84, 60, 43, 30};
+//    static double[] ticksPerRev;
+//    static double defaultTicks = tickOptions[0];
+//    int tickChoice = 0;
+//    boolean changeTicks = false;
+
     int numServos;
 
-    int selected;
+//    int selected;
+//
+//    long[] motorTimeout;
+//    final long timeout = 30000; //30000
+//    boolean[] paused;
 
-    long[] motorTimeout;
-    final long timeout = 30000; //30000
-    boolean[] paused;
+//    final double servoDisengage = 0.5;
+//    final double servoEngage = 0.410;
+//    boolean servoEnabled = false;
+//    double servoPos = -1;
 
-    final double servoDisengage = 0.5;
-    final double servoEngage = 0.410;
-    boolean servoEnabled = false;
-    double servoPos = -1;
+//    static int motor1 = 0;
+//    static int motor2 = 1;
+//    static int servo1 = 0;
+//    static boolean engaged = false;
 
-    static int motor1 = 0;
-    static int motor2 = 1;
-    static int servo1 = 0;
-    static boolean engaged = false;
+    final double smallChange = .0001;
+    final double largeChange = .005;
+
+    public static PIDFCoefficients launchSpinPID = new PIDFCoefficients(100,0,0,12.4);
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -88,7 +103,7 @@ public class ZZ_3Shooter extends LinearOpMode {
         // Wait for the opMode to be "started" and allow configuration changes
         while (!isStarted()) {
             buttonMgr.updateAll();
-            telemetry.addLine("===========  ZZ PTO Tester (init) ============");
+            telemetry.addLine("==========  ZZ Shoot Tester (init) ===========");
             telemetry.addLine();
             telemetry.addLine("Press X for Single Hub, Y for Dual Hubs");
             telemetry.addLine();
@@ -127,31 +142,37 @@ public class ZZ_3Shooter extends LinearOpMode {
         robot.initialize();
 
         numMotors = robot.motorNames.length;
-        binding = new char[numMotors];
         reverse = new boolean[numMotors];
         live = new boolean[numMotors];
-        encoder = new boolean[numMotors];
         brake = new boolean[numMotors];
-        newPow = new double[numMotors];
-        oldPow = new double[numMotors];
-        motorTimeout = new long[numMotors];
-        paused = new boolean[numMotors];
+//        newVel = new double[numMotors];
+//        oldVel = new double[numMotors];
+//        newRPM = new double[numMotors];
+//        spinMultiplier = new double[numMotors];
+//        maxRPM = new double[numMotors];
+
+//        if (ticksPerRev == null || ticksPerRev.length != numMotors || changeTicks) {
+//            ticksPerRev = new double[numMotors];
+//            for (int i = 0; i < numMotors; i++) {
+//                ticksPerRev[i] = defaultTicks;
+//            }
+//        }
 
         numServos = robot.servoNames.length;
 
         // set all motors to default
         for (int i = 0; i < numMotors; i++) {
-            binding[i] = 0;
             reverse[i] = false;
             live[i] = false;
-            encoder[i] = true;
-            brake[i] = true;
-            newPow[i] = 0;
-            oldPow[i] = 0;
+            brake[i] = false;
+//            newVel[i] = 0;
+//            oldVel[i] = 0;
             robot.motorArray[i].setDirection(DcMotorEx.Direction.FORWARD);
-            robot.motorArray[i].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+            robot.motorArray[i].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
             robot.motorArray[i].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-            motorTimeout[i] = System.currentTimeMillis() + timeout;
+//            updateTickSettings(i, ticksPerRev[i]);
+
+            robot.motorArray[i].setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, launchSpinPID);
         }
 
         servoBlue = new ZZ_ServoSSR(robot.getServoByName(launchServoBlue));
@@ -164,247 +185,338 @@ public class ZZ_3Shooter extends LinearOpMode {
         if (motor1reverse) spinMotor1.setDirection(DcMotorEx.Direction.REVERSE);
         if (motor2reverse) spinMotor2.setDirection(DcMotorEx.Direction.REVERSE);
 
+
         buildStateMachines();
         resetAll.restart();
 
-        binderKeys = new char[]{'a', 'b', 'x', 'y'};
-
-        // Second level setup
-        while (opModeIsActive()) {
-            buttonMgr.updateAll();
-            telemetry.addLine("===========  ZZ PTO Tester (setup) ============");
-            telemetry.addLine();
-            telemetry.addLine("Press X to pick motor 1");
-            telemetry.addLine("Press Y to pick motor 2");
-            telemetry.addLine("Press B to pick servo");
-            telemetry.addLine();
-            telemetry.addLine("Current Selections: " + (robot.zz_dualHub ? "Dual Hubs" : "Single Hub"));
-            telemetry.addLine("  Motor 1 = " + robot.motorNames[motor1]);
-            telemetry.addLine("  Motor 2 = " + robot.motorNames[motor2]);
-            telemetry.addLine("  Servo    = " + robot.servoNames[servo1]);
-            telemetry.addLine();
-            telemetry.addLine("Press Start to accept and continue");
-            telemetry.update();
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
-                motor1++;
-                if (motor1==motor2) motor1++;
-                if (motor1 > numMotors - 1) motor1 = 0;
-                if (motor1==motor2) motor1++;
-            }
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
-                motor2++;
-                if (motor2==motor1) motor2++;
-                if (motor2 > numMotors - 1) motor2 = 0;
-                if (motor2==motor1) motor2++;
-            }
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.b, ZZ_ButtonMgr.State.wasPressed)) {
-                servo1++;
-                if (servo1 > numServos - 1) servo1 = 0;
-            }
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
-                break;
-            }
-            sleep(10);
-        }
-
-        live[motor1] = true;
-        live[motor2] = true;
-
-        int selections = 3;
+//        // Second level setup
+//        while (opModeIsActive()) {
+//            buttonMgr.updateAll();
+//            telemetry.addLine("===========  ZZ PTO Tester (setup) ============");
+//            telemetry.addLine();
+//            telemetry.addLine("Press X to pick motor 1");
+//            telemetry.addLine("Press Y to pick motor 2");
+//            telemetry.addLine("Press B to pick servo");
+//            telemetry.addLine();
+//            telemetry.addLine("Current Selections: " + (robot.zz_dualHub ? "Dual Hubs" : "Single Hub"));
+//            telemetry.addLine("  Motor 1 = " + robot.motorNames[motor1]);
+//            telemetry.addLine("  Motor 2 = " + robot.motorNames[motor2]);
+//            telemetry.addLine("  Servo    = " + robot.servoNames[servo1]);
+//            telemetry.addLine();
+//            telemetry.addLine("Press Start to accept and continue");
+//            telemetry.update();
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
+//                motor1++;
+//                if (motor1==motor2) motor1++;
+//                if (motor1 > numMotors - 1) motor1 = 0;
+//                if (motor1==motor2) motor1++;
+//            }
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
+//                motor2++;
+//                if (motor2==motor1) motor2++;
+//                if (motor2 > numMotors - 1) motor2 = 0;
+//                if (motor2==motor1) motor2++;
+//            }
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.b, ZZ_ButtonMgr.State.wasPressed)) {
+//                servo1++;
+//                if (servo1 > numServos - 1) servo1 = 0;
+//            }
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
+//                break;
+//            }
+//            sleep(10);
+//        }
+//
+//        live[motor1] = true;
+//        live[motor2] = true;
+//
+//        int selections = 3;
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
             robot.runLoop();  // this will take care of clearing out the bulk reads
             buttonMgr.updateAll();
+            ZZ_StateMachine.runLoop();
 
-            // engage or disengage the servo
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.a, ZZ_ButtonMgr.State.wasPressed)) {
-                engaged = true;
-                robot.servoArray[servo1].setPosition(servoEngage);
-                servoPos = servoEngage;
-                servoEnabled = true;
-            }
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.b, ZZ_ButtonMgr.State.wasPressed)) {
-                engaged = false;
-                robot.servoArray[servo1].setPosition(servoDisengage);
-                servoPos = servoDisengage;
-                servoEnabled = true;
+            //run the launchers
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
+                launchPink.restart();
             }
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
-                // engaged will be left as is
-                servoEnabled = false;
-                ((ServoImplEx) robot.servoArray[servo1]).setPwmDisable();
+                launchBlue.restart();
+            }
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.b, ZZ_ButtonMgr.State.wasPressed)) {
+                launchGreen.restart();
+            }
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.a, ZZ_ButtonMgr.State.wasPressed)) {
+                launchAll.restart();
+            }
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
+                resetAll.restart();
             }
 
-            // move the active selection up and down
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_up, ZZ_ButtonMgr.State.isRepeating)) {
-                selected--;
-                if (selected < 0) selected = selections - 1;
+            // run the motors
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_up, ZZ_ButtonMgr.State.wasPressed)) {
+                spinMotor1.setVelocity(motorSpinSpeed / (60.0 / spinTicks));
+                spinMotor2.setVelocity(motorSpinSpeed / (60.0 / spinTicks));
             }
-            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_down, ZZ_ButtonMgr.State.isRepeating)) {
-                selected++;
-                if (selected > selections - 1) selected = 0;
-            }
-
-            int selMotor = 0;
-            if (selected == 0) selMotor = motor1;
-            if (selected == 1) selMotor = motor2;
-
-            if (selected == 0 || selected == 1) {  // a motor is selected
-
-                // set selected motor forward/reverse (left)
-                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_left, ZZ_ButtonMgr.State.wasPressed)) {
-                    updateTimeout(selMotor);
-                    reverse[selMotor] = !reverse[selMotor];
-                    robot.motorArray[selMotor].setDirection(reverse[selMotor] ? DcMotorEx.Direction.REVERSE : DcMotorEx.Direction.FORWARD);
-                    if (live[selMotor])
-                        oldPow[selMotor] += 0.000001;    // to force a direction change if running
-                }
-
-                // set selected motor to live or not (right)
-                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_right, ZZ_ButtonMgr.State.wasPressed)) {
-                    if (paused[selMotor]) {
-                        updateTimeout(selMotor);
-                    } else {
-                        updateTimeout(selMotor);
-                        live[selMotor] = !live[selMotor];
-                        if (live[selMotor])
-                            oldPow[selMotor] += 0.000001;    // for the initial go live
-                    }
-                }
-
-                // set selected motor to brake or not (left bumper)
-                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_bumper, ZZ_ButtonMgr.State.wasPressed)) {
-                    updateTimeout(selMotor);
-                    brake[selMotor] = !brake[selMotor];
-                    if (brake[selMotor]) {
-                        robot.motorArray[selMotor].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-                    } else {
-                        robot.motorArray[selMotor].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-                    }
-                }
-
-                // set selected motor to use encoder or not (right bumper)
-                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_bumper, ZZ_ButtonMgr.State.wasPressed)) {
-                    updateTimeout(selMotor);
-                    encoder[selMotor] = !encoder[selMotor];
-                    if (encoder[selMotor]) {
-                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-                    } else {
-                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-                    }
-                }
-
-                // reset the encoder for the selected motor (start)
-                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
-                    updateTimeout(selMotor);
-                    robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-                    if (encoder[selMotor]) {
-                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-                    } else {
-                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-                    }
-                }
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_down, ZZ_ButtonMgr.State.wasPressed)) {
+                spinMotor1.setPower(0);
+                spinMotor2.setPower(0);
             }
 
-            // stop all motors (back)
+            // stop all
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.back, ZZ_ButtonMgr.State.wasPressed)) {
-                for (int i = 0; i < numMotors; i++) {
-                    robot.motorArray[i].setPower(0);
-                    oldPow[i] = 0;
-                    newPow[i] = 0;
-                }
+                spinMotor1.setPower(0);
+                spinMotor2.setPower(0);
+                servoBlue.disable();
+                servoPink.disable();
+                servoGreen.disable();
+                servoWhite.disable();
             }
 
-            // decide if power is driven by left or right stick
-            if (engaged) {
-                newPow[motor1] = -gamepad1.left_stick_y;
-                newPow[motor2] = -gamepad1.left_stick_y;
-            }
-            else {
-                newPow[motor1] = -gamepad1.left_stick_y;
-                newPow[motor2] = -gamepad1.right_stick_y;
-            }
+            // modify spin speed
+            motorSpinSpeed += gamepad1.left_stick_y * -largeChange * spinRPM;
+            motorSpinSpeed += gamepad1.right_stick_y * -smallChange * spinRPM;
+            motorSpinSpeed = Math.max(-spinRPM, Math.min(spinRPM, motorSpinSpeed));
+            // rely on user to use the up button?  or flag and set here
 
-            // update the motor power if live and the position has changed
-            for (int i = 0; i < numMotors; i++) {
-                if (live[i] && newPow[i] != oldPow[i]) {
-                    updateTimeout(i);
-                    robot.motorArray[i].setPower(newPow[i]);
-                    oldPow[i] = newPow[i];
-                }
-            }
 
-            // timeout the motor if not interacted with (trying to avoid lightly stalled motors)
-            for (int i = 0; i < numMotors; i++) {
-                if (motorTimeout[i] < System.currentTimeMillis()) {
-                    if (robot.motorArray[i].getPower() != 0) {
-                        paused[i] = true;
-                        robot.motorArray[i].setPower(0);
-                        // leaving oldPow[i] alone intentionally
-                    }
-                }
-            }
+//            // engage or disengage the servo
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.a, ZZ_ButtonMgr.State.wasPressed)) {
+//                engaged = true;
+//                robot.servoArray[servo1].setPosition(servoEngage);
+//                servoPos = servoEngage;
+//                servoEnabled = true;
+//            }
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.b, ZZ_ButtonMgr.State.wasPressed)) {
+//                engaged = false;
+//                robot.servoArray[servo1].setPosition(servoDisengage);
+//                servoPos = servoDisengage;
+//                servoEnabled = true;
+//            }
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
+//                // engaged will be left as is
+//                servoEnabled = false;
+//                ((ServoImplEx) robot.servoArray[servo1]).setPwmDisable();
+//            }
 
-            telemetry.addLine("==============  ZZ PTO Tester  ==============");
+//            // move the active selection up and down
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_up, ZZ_ButtonMgr.State.isRepeating)) {
+//                selected--;
+//                if (selected < 0) selected = selections - 1;
+//            }
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_down, ZZ_ButtonMgr.State.isRepeating)) {
+//                selected++;
+//                if (selected > selections - 1) selected = 0;
+//            }
+//
+//            int selMotor = 0;
+//            if (selected == 0) selMotor = motor1;
+//            if (selected == 1) selMotor = motor2;
+//
+//            if (selected == 0 || selected == 1) {  // a motor is selected
+//
+//                // set selected motor forward/reverse (left)
+//                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_left, ZZ_ButtonMgr.State.wasPressed)) {
+//                    updateTimeout(selMotor);
+//                    reverse[selMotor] = !reverse[selMotor];
+//                    robot.motorArray[selMotor].setDirection(reverse[selMotor] ? DcMotorEx.Direction.REVERSE : DcMotorEx.Direction.FORWARD);
+//                    if (live[selMotor])
+//                        oldPow[selMotor] += 0.000001;    // to force a direction change if running
+//                }
+//
+//                // set selected motor to live or not (right)
+//                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_right, ZZ_ButtonMgr.State.wasPressed)) {
+//                    if (paused[selMotor]) {
+//                        updateTimeout(selMotor);
+//                    } else {
+//                        updateTimeout(selMotor);
+//                        live[selMotor] = !live[selMotor];
+//                        if (live[selMotor])
+//                            oldPow[selMotor] += 0.000001;    // for the initial go live
+//                    }
+//                }
+//
+//                // set selected motor to brake or not (left bumper)
+//                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.left_bumper, ZZ_ButtonMgr.State.wasPressed)) {
+//                    updateTimeout(selMotor);
+//                    brake[selMotor] = !brake[selMotor];
+//                    if (brake[selMotor]) {
+//                        robot.motorArray[selMotor].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//                    } else {
+//                        robot.motorArray[selMotor].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+//                    }
+//                }
+//
+//                // set selected motor to use encoder or not (right bumper)
+//                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_bumper, ZZ_ButtonMgr.State.wasPressed)) {
+//                    updateTimeout(selMotor);
+//                    encoder[selMotor] = !encoder[selMotor];
+//                    if (encoder[selMotor]) {
+//                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+//                    } else {
+//                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+//                    }
+//                }
+//
+//                // reset the encoder for the selected motor (start)
+//                if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
+//                    updateTimeout(selMotor);
+//                    robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+//                    if (encoder[selMotor]) {
+//                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+//                    } else {
+//                        robot.motorArray[selMotor].setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+//                    }
+//                }
+//            }
+
+//            // stop all motors (back)
+//            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.back, ZZ_ButtonMgr.State.wasPressed)) {
+//                for (int i = 0; i < numMotors; i++) {
+//                    robot.motorArray[i].setPower(0);
+//                    oldPow[i] = 0;
+//                    newPow[i] = 0;
+//                }
+//            }
+
+//            // decide if power is driven by left or right stick
+//            if (engaged) {
+//                newPow[motor1] = -gamepad1.left_stick_y;
+//                newPow[motor2] = -gamepad1.left_stick_y;
+//            }
+//            else {
+//                newPow[motor1] = -gamepad1.left_stick_y;
+//                newPow[motor2] = -gamepad1.right_stick_y;
+//            }
+//
+//            // update the motor power if live and the position has changed
+//            for (int i = 0; i < numMotors; i++) {
+//                if (live[i] && newPow[i] != oldPow[i]) {
+//                    updateTimeout(i);
+//                    robot.motorArray[i].setPower(newPow[i]);
+//                    oldPow[i] = newPow[i];
+//                }
+//            }
+//
+//            // timeout the motor if not interacted with (trying to avoid lightly stalled motors)
+//            for (int i = 0; i < numMotors; i++) {
+//                if (motorTimeout[i] < System.currentTimeMillis()) {
+//                    if (robot.motorArray[i].getPower() != 0) {
+//                        paused[i] = true;
+//                        robot.motorArray[i].setPower(0);
+//                        // leaving oldPow[i] alone intentionally
+//                    }
+//                }
+//            }
+
+            telemetry.addLine("=============  ZZ Shoot Tester  =============");
             telemetry.addLine();
-            telemetry.addLine("up/down to select actuator");
+            telemetry.addLine("X to launch Pink");
+            telemetry.addLine("Y to launch Blue");
+            telemetry.addLine("B to launch Green");
+            telemetry.addLine("A to launch ALL");
+            telemetry.addLine("Start to reset ALL");
             telemetry.addLine();
-            telemetry.addLine("Motors:");
-            telemetry.addLine("  left for forward/reverse |  right for live/not");
-            telemetry.addLine("  l_bumper for brake/not  |  r_bumper for encoder/not");
-            telemetry.addLine("  back for stop all              |  start for reset encoder");
+            telemetry.addLine("UP to spin motors");
+            telemetry.addLine("DOWN to stop motors");
             telemetry.addLine();
-            telemetry.addLine("Servo:");
-            telemetry.addLine("  a for engage  |  b for disengage  |  y for disable");
+            telemetry.addLine("Back to stop all");
             telemetry.addLine();
-            telemetry.addLine("When PTO is disengaged:");
-            telemetry.addLine("  LEFT STICK for motor1   | RIGHT STICK for motor2");
-            telemetry.addLine("When PTO is engaged:");
-            telemetry.addLine("  LEFT STICK for both motors");
+            telemetry.addLine("~~~~~~");
             telemetry.addLine();
-            telemetry.addLine("[sel] [name] [live][encoder][brake][dir] [current] [new] [encoder] [vel]");
-            telemetry.addLine();
+
+//            telemetry.addLine("up/down to select actuator");
+//            telemetry.addLine();
+//            telemetry.addLine("Motors:");
+//            telemetry.addLine("  left for forward/reverse |  right for live/not");
+//            telemetry.addLine("  l_bumper for brake/not  |  r_bumper for encoder/not");
+//            telemetry.addLine("  back for stop all              |  start for reset encoder");
+//            telemetry.addLine();
+//            telemetry.addLine("Servo:");
+//            telemetry.addLine("  a for engage  |  b for disengage  |  y for disable");
+//            telemetry.addLine();
+//            telemetry.addLine("When PTO is disengaged:");
+//            telemetry.addLine("  LEFT STICK for motor1   | RIGHT STICK for motor2");
+//            telemetry.addLine("When PTO is engaged:");
+//            telemetry.addLine("  LEFT STICK for both motors");
+//            telemetry.addLine();
+//            telemetry.addLine("[sel] [name] [live][encoder][brake][dir] [current] [new] [encoder] [vel]");
+//            telemetry.addLine();
 
             // Build telemetry strings
             //motors
-            for (int j = 0; j < 2; j++) {
-                int i = (j==0) ? motor1 : motor2;
-                String telString;
-                telString = (j == selected) ? "=> " : "     ";
-                telString += (robot.motorNames[i] + "               ").substring(0, 10);
-                telString += (paused[i] ? "P" : (live[i] ? "L" : "_")); // + " ";
-                telString += (encoder[i] ? "E" : "_"); // + " ";
-                telString += (brake[i] ? "B" : "_"); // + " ";
-                telString += (reverse[i] ? "R" : "F") + " ";
-                telString += String.format("%.2f", oldPow[i]) + " ";
-                telString += String.format("%.2f", newPow[i]) + " ";
-                telString += (String.format("%07d", robot.motorArray[i].getCurrentPosition()) + "     ").substring(0, 8);
-                telString += String.format("%.2f", robot.motorArray[i].getVelocity());
-                telString += (i == selected) ? " <=" : "     ";
+//            for (int i = 0; i < numMotors; i++) {
+//                String telString;
+//                telString = (i == active) ? "=> " : "     ";
+//                telString += (robot.motorNames[i] + "               ").substring(0, 10);
+//                telString += ((binding[i] != 0) ? String.valueOf(binding[i]) : " ") + " ";
+//                telString += (live[i] ? "L" : "_"); // + " ";
+//                telString += (brake[i] ? "B" : "_"); // + " ";
+//                telString += (reverse[i] ? "R" : "F") + "   ";
+//                telString += "(" + String.format("%04d", rpmOptions[findTickIndex(ticksPerRev[i])]) + ")   ";
+//                telString += String.format("%05d", (int)newRPM[i]) + "   ";
+//                telString += String.format("%05d", (int)(robot.motorArray[i].getVelocity() * spinMultiplier[i]));
+//                telString += (i == active) ? " <=" : "     ";
+//                telemetry.addLine(telString);
+//            }
+            String telString;
+            telString = "Set Speed:   " + String.format("%05d", (int)motorSpinSpeed);
+            telemetry.addLine(telString);
+            telString = "SpinMotor 1: " + String.format("%05d", getMotorSpinSpeed(spinMotor1));
+            telemetry.addLine(telString);
+            telString = "SpinMotor 2: " + String.format("%05d", getMotorSpinSpeed(spinMotor2));
+            telemetry.addLine(telString);
+
+            telemetry.addLine();
+
+            //servo
+//            int i = servo1;
+//            String telString;
+//            telString = (i == -1) ? "=>  " : "      ";
+//            telString += (robot.servoNames[i] + "               ").substring(0, 10);
+//            telString += (servoEnabled ? "E" : "_") + "    ";
+//            telString += String.format("%.3f", servoPos);
+//            telString += (engaged ? "  engaged" : "  disengaged");
+//            telemetry.addLine(telString);
+
+            for (int i = 0; i < numServos; i++) {
+//                String telString;
+                telString = (i == -1) ? "=>  " : "      ";
+                telString += (robot.servoNames[i] + "               ").substring(0, 10);
+//                telString += ((binding[i] != 0) ? String.valueOf(binding[i]) : " ") + "    ";
+//                telString += (live[i] ? "L" : "_"); // + " ";
+//                telString += (enabled[i] ? "E" : "_"); // + " ";
+//                telString += (reverse[i] ? "R" : "F") + "    ";
+                telString += String.format("%.3f", robot.servoArray[i].getPosition()) + "    ";
+//                telString += String.format("%.3f", newPos[i]);
+                telString += (i == -1) ? "  <=" : "      ";
                 telemetry.addLine(telString);
             }
-            //servo
-            int i = servo1;
-            String telString;
-            telString = (i == -1) ? "=>  " : "      ";
-            telString += (robot.servoNames[i] + "               ").substring(0, 10);
-            telString += (servoEnabled ? "E" : "_") + "    ";
-            telString += String.format("%.3f", servoPos);
-            telString += (engaged ? "  engaged" : "  disengaged");
-            telemetry.addLine(telString);
+
+            ZZ_StateMachine.addTelemetry(telemetry);
 
             telemetry.update();
         }
     }
 
-    void updateTimeout(int motor) {
-        motorTimeout[motor] = System.currentTimeMillis() + timeout;
-        if (paused[motor]) {
-            paused[motor] = false;
-            robot.motorArray[motor].setPower(oldPow[motor]);
-        }
+//    public int findTickIndex(double ticks) {
+//        for (int i = 0; i < tickOptions.length; i++) {
+//            if (ticks == tickOptions[i]) return i;
+//        }
+//        return 0;
+//    }
+//
+//    public void updateTickSettings(int motorNum, double ticks) {
+//        ticksPerRev[motorNum] = ticks;
+//        spinMultiplier[motorNum] = 60.0 / ticks;
+//        maxRPM[motorNum] = 168200 / ticks;
+//    }
+
+    public int getMotorSpinSpeed(DcMotorEx m) {
+        return (int) (m.getVelocity() * 60.0 / spinTicks);
     }
 
     void buildStateMachines() {
