@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+
 @TeleOp (name="ZZ_3Shooter", group="Test")
 //@Disabled
 public class ZZ_3Shooter extends LinearOpMode {
@@ -25,12 +26,30 @@ public class ZZ_3Shooter extends LinearOpMode {
     ZZ_StateMachine launchAll;
     ZZ_StateMachine resetAll;
 
-    static String spinMotor1 = "motor2B";
-    static String spinMotor2 = "motor3B";
+    static String spinMotor1Name = "motor2B";
+    static String spinMotor2Name = "motor3B";
     static String launchServoGreen = "servo0B";
     static String launchServoPink = "servo1B";
     static String launchServoBlue = "servo2B";
     static String launchServoWhite = "servo3B";
+
+    DcMotorEx spinMotor1;
+    DcMotorEx spinMotor2;
+
+    final double servoGreenDock             = 0.485;
+    final double servoGreenLaunch           = 0.220;
+    final double servoPinkDock              = 0.490;
+    final double servoPinkLaunch            = 0.753;
+    final double servoBlueDock              = 0.461;
+    final double servoBlueLaunch            = 0.718;
+    final double servoWhiteClearance        = 0.541;
+    final double servoWhiteMax              = 0.587;
+    final double servoWhiteDock             = 0.471;
+    final double servoWhiteLaunch           = servoWhiteMax;
+
+    final int motorSpinSpeed                = 3500;
+    final boolean motor1reverse             = false;
+    final boolean motor2reverse             = false;
 
     char[] binding;
     char[] binderKeys;
@@ -64,6 +83,7 @@ public class ZZ_3Shooter extends LinearOpMode {
     public void runOpMode() {
         robot = new ZZ_Robot_2025(this);
         buttonMgr = new ZZ_ButtonMgr(this);
+        ZZ_StateMachine.reset();
 
         // Wait for the opMode to be "started" and allow configuration changes
         while (!isStarted()) {
@@ -119,6 +139,7 @@ public class ZZ_3Shooter extends LinearOpMode {
 
         numServos = robot.servoNames.length;
 
+        // set all motors to default
         for (int i = 0; i < numMotors; i++) {
             binding[i] = 0;
             reverse[i] = false;
@@ -132,6 +153,19 @@ public class ZZ_3Shooter extends LinearOpMode {
             robot.motorArray[i].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             motorTimeout[i] = System.currentTimeMillis() + timeout;
         }
+
+        servoBlue = new ZZ_ServoSSR(robot.getServoByName(launchServoBlue));
+        servoPink = new ZZ_ServoSSR(robot.getServoByName(launchServoPink));
+        servoGreen = new ZZ_ServoSSR(robot.getServoByName(launchServoGreen));
+        servoWhite = new ZZ_ServoSSR(robot.getServoByName(launchServoWhite));
+        spinMotor1 = robot.getMotorByName(spinMotor1Name);
+        spinMotor2 = robot.getMotorByName(spinMotor2Name);
+
+        if (motor1reverse) spinMotor1.setDirection(DcMotorEx.Direction.REVERSE);
+        if (motor2reverse) spinMotor2.setDirection(DcMotorEx.Direction.REVERSE);
+
+        buildStateMachines();
+        resetAll.restart();
 
         binderKeys = new char[]{'a', 'b', 'x', 'y'};
 
@@ -372,4 +406,72 @@ public class ZZ_3Shooter extends LinearOpMode {
             robot.motorArray[motor].setPower(oldPow[motor]);
         }
     }
+
+    void buildStateMachines() {
+        ZZ_StateMachine task;
+
+        launchGreen = new ZZ_StateMachine("green");
+        task = launchGreen;
+        //task.setGroups("launcher", "green");
+        //task.setStopGroups("launcher", "green");    // groups to kill
+        task.setMemberGroups("all", "green");  // will be killed by
+        task.setAutoRestart(false);
+        //task.setStopRunnable( () -> {} );
+        //task.setTimeLimit(5000);
+        //task.setTimeoutRunnable( () -> {} );
+        //task.setEndCriteria( () -> false );
+        //task.setEndCriteriaRunnable( () -> {} );
+        task.addRunOnce(() -> servoGreen.setPosition(servoGreenLaunch));
+        task.addWaitFor(() -> servoGreen.isDone());
+        task.addDelayOf(500);
+        task.addRunOnce(() -> servoGreen.setPosition(servoGreenDock));
+
+        launchPink = new ZZ_StateMachine("pink");
+        task = launchPink;
+        task.setMemberGroups("all", "pink");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce(() -> servoPink.setPosition(servoPinkLaunch));
+        task.addWaitFor(() -> servoPink.isDone());
+        task.addDelayOf(500);
+        task.addRunOnce(() -> servoPink.setPosition(servoPinkDock));
+
+        launchBlue = new ZZ_StateMachine("blue");
+        task = launchBlue;
+        task.setMemberGroups("all", "blue");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce( () -> servoBlue.setPosition(servoBlueLaunch) );
+        task.addRunOnce( () -> servoWhite.setPosition(servoWhiteLaunch) );
+        task.addWaitFor( () -> servoBlue.isDone());
+        task.addRunOnce( () -> servoWhite.setPosition(servoWhiteClearance) );
+        task.addDelayOf( 500);
+        task.addRunOnce( () -> servoBlue.setPosition(servoBlueDock) );
+        task.addDelayOf( 150);
+        task.addRunOnce( () -> servoWhite.setPosition(servoWhiteDock) );
+
+        launchAll = new ZZ_StateMachine("all");
+        task = launchAll;
+        task.setStopGroups("green", "blue", "pink");    // groups to kill
+        task.setMemberGroups("reset");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce(launchBlue::restartNoStop);
+        task.addRunOnce(launchGreen::restartNoStop);
+        task.addRunOnce(launchPink::restartNoStop);
+        task.addWaitFor(launchPink::isDone);
+        task.addWaitFor(launchGreen::isDone);
+        task.addWaitFor(launchBlue::isDone);
+
+        resetAll = new ZZ_StateMachine("reset");
+        task = resetAll;
+        task.setStopGroups("green", "blue", "pink");    // groups to kill
+        //task.setMemberGroups("blue");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce( ()-> {
+            servoPink.setPosition(servoPinkDock);
+            servoGreen.setPosition(servoGreenDock);
+            servoBlue.setPosition(servoBlueDock); // potential for jamming?
+            servoWhite.setPosition(servoWhiteDock);
+        });
+
+    }
+
 }
