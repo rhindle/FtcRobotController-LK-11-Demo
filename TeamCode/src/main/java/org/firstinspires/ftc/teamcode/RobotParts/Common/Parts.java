@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.Common;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.robotcore.internal.system.Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.EncoderTracker;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.ImuMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Odometry;
@@ -22,6 +23,9 @@ import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.SB_Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.Intake.T24MultiGrabber;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.T24Grabber;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2024.T24Misc;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2025.T25_Auto;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2025.T25_Effector;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2025.T25_Misc;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
@@ -30,6 +34,7 @@ public class Parts implements PartsInterface {
    /* Public OpMode members. */
    public LinearOpMode opMode;
    public Robot robot;
+   public RobotV2 robotV2;
    public ButtonMgr buttonMgr;
    public Controls controls;
    public Drivetrain drivetrain;
@@ -90,6 +95,12 @@ public class Parts implements PartsInterface {
    //---SMTTest Unique
    public SMT_Misc smt_Misc;
    public SMT_LED smt_LED;
+   //---
+
+   //---Test25 Unique
+   public T25_Misc t25_Misc;
+   public T25_Auto t25_Auto;
+   public T25_Effector t25_Effector;
    //---
 
    /* Constructor */
