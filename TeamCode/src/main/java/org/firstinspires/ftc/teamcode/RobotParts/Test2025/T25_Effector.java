@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
@@ -17,10 +18,43 @@ import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smSafePark;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smSpecimenHang;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smStartFishing;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smTransfer;
+import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 
 public class T25_Effector implements PartsInterface {
+
+   /*
+   Notes to self.
+
+   Actuators:
+
+      Servo: Hood Angle
+      Servo: Turret Direction
+      Motor: Launch Spinner
+
+      Servo x3: Kickers
+      Motor: Intake Spinner
+
+   Sensors?
+
+      Color Sensor V2
+      Color Sensor V3
+      Break Beam??
+
+   Hood angle to be varied by distance to target area
+   Launch spinner to be varied by distance to target area
+   Turret direction to be vector angle from robot position to target
+      (target direction - (minus) robot angle)
+      could use a single vector? TargetX - RobotX, Target Y - Robot Y, Target R - Robot R
+         (where Target R is first calculated from the Robot XY position to the target XY position)
+
+
+   Is there enough latency that we need to calculate based on predicted future position of robot based on velocity vector?
+   Robot rotation might be an even bigger issue!
+
+   */
+
 
    /* Settings */
 
@@ -37,6 +71,31 @@ public class T25_Effector implements PartsInterface {
    static final double spintakeBalanced         = 0.468;
    static final double spintakeParked           = 0.275;
    static final int spintakeSweepTime           = 1500;   // spec is 1250
+
+
+   static final double hoodNeutral              = 0.5;
+   static final double hoodNearest              = 0.4;
+   static final double hoodMiddle               = 0.5;
+   static final double hoodFar                  = 0.6;
+   static final int hoodSweepTime               = 1500;   // spec is 1250
+
+   static final double turretNeutral            = 0.5;
+   static final double turretZeroOffset         = 0.0;
+   static final double turretRangeDegrees       = 400.00;
+   static final int turretSweepTime             = 1500;   // spec is 1250
+
+   static final double kick1Docked              = 0.5;
+   static final double kick1Launch              = 0.8;
+   static final int kick1SweepTime              = 1500;   // spec is 1250
+
+   static final double kick2Docked              = 0.5;
+   static final double kick2Launch              = 0.8;
+   static final int kick2SweepTime              = 1500;   // spec is 1250
+
+   static final double kick3Docked              = 0.5;
+   static final double kick3Launch              = 0.8;
+   static final int kick3SweepTime              = 1500;   // spec is 1250
+
 
    static final double chuteParked              = 0.689;
    static final double chuteReady               = 0.535;
@@ -73,17 +132,29 @@ public class T25_Effector implements PartsInterface {
    public static boolean slideOverride          = false;
 
    /* Internal use */
-   private static ServoSSR servoSpinner;
-   private static ServoSSR servoSpintake;
-   private static ServoSSR servoChute;
-   private static ServoSSR servoPinch;
-   private static DcMotorEx motorSlide;
-   private static DcMotorEx motorLift;
-   private static DcMotorEx motorHang;
-   public static DigitalChannel slideLimitSwitchNO = null;
-   public static DigitalChannel slideLimitSwitchNC = null;
-   public static DigitalChannel liftLimitSwitchNO = null;
-   public static DigitalChannel liftLimitSwitchNC = null;
+   private static double spinRPMset;
+   private static final double spinMultiplier = 60.0 / 28.0 * 1.0;  // seconds / ticksPerRev * gearRatio;
+
+//   private static ServoSSR servoSpinner;
+//   private static ServoSSR servoSpintake;
+//   private static ServoSSR servoChute;
+//   private static ServoSSR servoPinch;
+
+   private static ServoSSR servoHood;
+   private static ServoSSR servoTurret;
+   private static ServoSSR servoKick1;
+   private static ServoSSR servoKick2;
+   private static ServoSSR servoKick3;
+
+   private static DcMotorEx motorSpinner;
+   private static DcMotorEx motorIntake;
+//   private static DcMotorEx motorSlide;
+//   private static DcMotorEx motorLift;
+//   private static DcMotorEx motorHang;
+//   public static DigitalChannel slideLimitSwitchNO = null;
+//   public static DigitalChannel slideLimitSwitchNC = null;
+//   public static DigitalChannel liftLimitSwitchNO = null;
+//   public static DigitalChannel liftLimitSwitchNC = null;
    public static NormalizedColorSensor sensorColor = null;
    private static byte slideLimit = -1;
    private static byte liftLimit = -1;
@@ -118,18 +189,27 @@ public class T25_Effector implements PartsInterface {
    }
 
    public void initialize(){
-      servoSpinner = new ServoSSR(parts.robotV2.getServoByName("servo0"));
-      servoSpintake = new ServoSSR(parts.robotV2.getServoByName("servo2"));
-      servoChute = new ServoSSR(parts.robotV2.getServoByName("servo4"));
-      servoPinch = new ServoSSR(parts.robotV2.getServoByName("servo1"));
-      motorSlide = parts.robotV2.getMotorByName("motor0B");
-      motorLift = parts.robotV2.getMotorByName("motor1B");
-      motorHang = parts.robotV2.getMotorByName("motor2B");
-      slideLimitSwitchNO = parts.robotV2.getDigitalByName("digital1");
-      slideLimitSwitchNC = parts.robotV2.getDigitalByName("digital0");
-      liftLimitSwitchNO = parts.robotV2.getDigitalByName("digital3");
-      liftLimitSwitchNC = parts.robotV2.getDigitalByName("digital2");
-      sensorColor = parts.opMode.hardwareMap.get(NormalizedColorSensor.class, "color");
+//      servoSpinner = new ServoSSR(parts.robotV2.getServoByName("servo0"));
+//      servoSpintake = new ServoSSR(parts.robotV2.getServoByName("servo2"));
+//      servoChute = new ServoSSR(parts.robotV2.getServoByName("servo4"));
+//      servoPinch = new ServoSSR(parts.robotV2.getServoByName("servo1"));
+
+      servoHood = new ServoSSR(parts.robotV2.getServoByName("servo0"));
+      servoTurret = new ServoSSR(parts.robotV2.getServoByName("servo1"));
+      servoKick1 = new ServoSSR(parts.robotV2.getServoByName("servo2"));
+      servoKick2 = new ServoSSR(parts.robotV2.getServoByName("servo3"));
+      servoKick3 = new ServoSSR(parts.robotV2.getServoByName("servo4"));
+
+      motorSpinner = parts.robotV2.getMotorByName("motor3B");
+      motorIntake = parts.robotV2.getMotorByName("motor2B");
+//      motorSlide = parts.robotV2.getMotorByName("motor0B");
+//      motorLift = parts.robotV2.getMotorByName("motor1B");
+//      motorHang = parts.robotV2.getMotorByName("motor2B");
+//      slideLimitSwitchNO = parts.robotV2.getDigitalByName("digital1");
+//      slideLimitSwitchNC = parts.robotV2.getDigitalByName("digital0");
+//      liftLimitSwitchNO = parts.robotV2.getDigitalByName("digital3");
+//      liftLimitSwitchNC = parts.robotV2.getDigitalByName("digital2");
+//      sensorColor = parts.opMode.hardwareMap.get(NormalizedColorSensor.class, "color");
       initServos();
       initMotors();
    }
@@ -252,10 +332,15 @@ public class T25_Effector implements PartsInterface {
 
    public static void disableServos() {
       //SB_Intake.action(IntakeActions.SPINNER_OFF);  // this servo reacts poorly to to the stop?
-      servoSpintake.stop();
-      servoChute.stop();
-      servoPinch.stop();
-      servoSpinner.stop();
+//      servoSpintake.stop();
+//      servoChute.stop();
+//      servoPinch.stop();
+//      servoSpinner.stop();
+      servoHood.stop();
+      servoTurret.stop();
+      servoKick1.stop();
+      servoKick2.stop();
+      servoKick3.stop();
    }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -313,55 +398,84 @@ public class T25_Effector implements PartsInterface {
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
    public static void initServos () {
-      servoSpinner.setDirection(Servo.Direction.FORWARD);
-      servoSpintake.setDirection(Servo.Direction.FORWARD);
-      servoChute.setDirection(Servo.Direction.FORWARD);
-      servoPinch.setDirection(Servo.Direction.FORWARD);
+//      servoSpinner.setDirection(Servo.Direction.FORWARD);
+//      servoSpintake.setDirection(Servo.Direction.FORWARD);
+//      servoChute.setDirection(Servo.Direction.FORWARD);
+//      servoPinch.setDirection(Servo.Direction.FORWARD);
+//
+//      servoSpinner.setSweepTime(spinnerSweepTime);//  .setFullPwmRange(); <== no good for CR Axon
+//      servoSpintake.setSweepTime(spintakeSweepTime);
+//      servoChute.setSweepTime(chuteSweepTime);
+//      servoPinch.setSweepTime(pinchSweepTime);
+//
+//      servoSpinner.setPosition(spinnerOff);
+//      servoSpintake.setPosition(spintakeParked);
+//      servoChute.setPosition(chuteParked);
+//      servoPinch.setPosition(pinchFullOpen);
 
-      servoSpinner.setSweepTime(spinnerSweepTime);//  .setFullPwmRange(); <== no good for CR Axon
-      servoSpintake.setSweepTime(spintakeSweepTime);
-      servoChute.setSweepTime(chuteSweepTime);
-      servoPinch.setSweepTime(pinchSweepTime);
+      servoHood.setDirection(Servo.Direction.FORWARD);
+      servoTurret.setDirection(Servo.Direction.FORWARD);
+      servoKick1.setDirection(Servo.Direction.FORWARD);
+      servoKick2.setDirection(Servo.Direction.FORWARD);
+      servoKick3.setDirection(Servo.Direction.FORWARD);
 
-      servoSpinner.setPosition(spinnerOff);
-      servoSpintake.setPosition(spintakeParked);
-      servoChute.setPosition(chuteParked);
-      servoPinch.setPosition(pinchFullOpen);
+      servoHood.setSweepTime(hoodSweepTime);;
+      servoTurret.setSweepTime(turretSweepTime);
+      servoKick1.setSweepTime(kick1SweepTime);
+      servoKick2.setSweepTime(kick2SweepTime);
+      servoKick3.setSweepTime(kick3SweepTime);
+
+      servoHood.setPosition(hoodNeutral);
+      servoTurret.setPosition(turretNeutral);
+      servoKick1.setPosition(kick1Docked);
+      servoKick2.setPosition(kick2Docked);
+      servoKick3.setPosition(kick3Docked);
    }
 
    public static void initMotors () {
       stopMotors();
-      motorSlide.setDirection(DcMotorEx.Direction.FORWARD);
-      motorLift.setDirection(DcMotorEx.Direction.REVERSE);
-      motorHang.setDirection(DcMotorEx.Direction.FORWARD);
-      motorSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-      motorLift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-      motorHang.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-      slideTargetPosition = 0;
-      liftTargetPosition = 0;
-      hangTargetPosition = 0;
-      motorSlide.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-      motorLift.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-      motorHang.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-      motorSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-      motorLift.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-      motorHang.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+      motorIntake.setDirection(DcMotorEx.Direction.REVERSE);
+      motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorIntake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+
+      motorSpinner.setDirection(DcMotorEx.Direction.REVERSE);
+      motorSpinner.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, spinnerPID);
+      motorSpinner.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+      motorSpinner.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorSpinner.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+
+//      motorSlide.setDirection(DcMotorEx.Direction.FORWARD);
+//      motorLift.setDirection(DcMotorEx.Direction.REVERSE);
+//      motorHang.setDirection(DcMotorEx.Direction.FORWARD);
+//      motorSlide.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+//      motorLift.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+//      motorHang.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+//      slideTargetPosition = 0;
+//      liftTargetPosition = 0;
+//      hangTargetPosition = 0;
+//      motorSlide.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+//      motorLift.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+//      motorHang.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+//      motorSlide.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//      motorLift.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+//      motorHang.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
    }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    //       Status Responders
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   public static boolean isSpinnerDone() {return servoSpinner.isDone();}
-   public static boolean isSpintakeDone() {return servoSpintake.isDone();}
-   public static boolean isChuteDone() {return servoChute.isDone();}
-   public static boolean isPinchDone() {return servoPinch.isDone();}
+//   public static boolean isSpinnerDone() {return servoSpinner.isDone();}
+//   public static boolean isSpintakeDone() {return servoSpintake.isDone();}
+//   public static boolean isChuteDone() {return servoChute.isDone();}
+//   public static boolean isPinchDone() {return servoPinch.isDone();}
 
-   public static boolean isSlideInTolerance(int pos) {return Math.abs(motorSlide.getCurrentPosition() - pos) < toleranceSlide;}
-   public static boolean isSlideInTolerance() {return isSlideInTolerance(slideTargetPosition);}
-   public static boolean isSlideInsidePit() {return (motorSlide.getCurrentPosition() > positionSlidePitMin);}
-   public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
-   public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
+//   public static boolean isSlideInTolerance(int pos) {return Math.abs(motorSlide.getCurrentPosition() - pos) < toleranceSlide;}
+//   public static boolean isSlideInTolerance() {return isSlideInTolerance(slideTargetPosition);}
+//   public static boolean isSlideInsidePit() {return (motorSlide.getCurrentPosition() > positionSlidePitMin);}
+//   public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
+//   public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
 
 //   public static boolean isSamplingInProcess() {
 ////      return motorSlide.getCurrentPosition()>=positionSlidePitMin && shoulderNominalPosition<shoulderSafeIn;
@@ -583,5 +697,43 @@ public class T25_Effector implements PartsInterface {
          default:
             break;
       }
+   }
+
+/* example code for angle from UserDrive */
+   public Position directionTarget;
+
+   public double targetAngle() {
+      if (directionTarget==null || parts.positionMgr.noPosition()) return 0;
+      double x = directionTarget.X - parts.positionMgr.robotPosition.X;
+      double y = directionTarget.Y - parts.positionMgr.robotPosition.Y;
+      return Math.toDegrees(Math.atan2(y,x));
+   }
+
+   static double spinnerRPM                      = 3600;
+   static double spinnerTolerance                = 150;
+   public static PIDFCoefficients spinnerPID           = new PIDFCoefficients(100,0,0,12.4);
+
+   static boolean isSpinnerInTolerance() {
+      //return true;  // for testing without spin motor
+      return isSpinnerInTolerance(spinRPMset, spinnerTolerance);
+   }
+   static boolean isSpinnerInTolerance(double targetRPM, double tolerance) {
+      return Math.abs(getSpinnerRPM() - targetRPM) <= tolerance;
+   }
+
+   static double getSpinnerRPM() {
+      return motorSpinner.getVelocity() * spinMultiplier;
+   }
+
+   public static void spinnerOn(double rpm) {
+      spinRPMset = rpm;
+      motorSpinner.setVelocity(rpm / spinMultiplier);
+   }
+   public static void spinnerOn() {
+      spinnerOn(spinnerRPM);
+   }
+   public static void spinnerOff() {
+      motorSpinner.setPower(0);
+//      isArmed = false;
    }
 }
