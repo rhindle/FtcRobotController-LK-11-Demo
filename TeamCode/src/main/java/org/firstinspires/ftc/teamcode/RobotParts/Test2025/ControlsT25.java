@@ -144,6 +144,25 @@ public class ControlsT25 extends Controls {
 //         parts.userDrive.setLockFront(!parts.userDrive.getLockFront());
 //      }
 
+
+      // turret test stuff
+      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
+         parts.t25_Effector.armTurret(false);
+      }
+      if (buttonMgr.getState(1, Buttons.x, State.wasDoubleTapped)) {
+         parts.t25_Effector.armTurret(true);
+      }
+      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
+         parts.t25_Effector.armSpinner(false);
+      }
+      if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
+         parts.t25_Effector.armSpinner(true);
+      }
+
+
+
+
+
       // Toggle FCD
       if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
          parts.userDrive.toggleFieldCentricDrive();

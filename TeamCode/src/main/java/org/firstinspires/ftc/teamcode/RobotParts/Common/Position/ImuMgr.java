@@ -28,6 +28,8 @@ public class ImuMgr implements PartsInterface {
    YawPitchRollAngles orientation;
    AngularVelocity angularVelocity;
 
+   public boolean robotV2 = false;
+
    /* Constructor */
    public ImuMgr(Parts parts){
       construct(parts);
@@ -85,9 +87,20 @@ public class ImuMgr implements PartsInterface {
    private double imuHeading(boolean readme) {
 
       if (readme) {
-         if (!useNewIMUmethod) angles = parts.robot.sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-         if (useNewIMUmethod) orientation = parts.robot.sensorIMU.getRobotYawPitchRollAngles();
-         if (useNewIMUmethod && getAngularVelocity) angularVelocity = parts.robot.sensorIMU.getRobotAngularVelocity(AngleUnit.DEGREES);
+         if (robotV2) {
+            if (!useNewIMUmethod)
+               angles = parts.robotV2.sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if (useNewIMUmethod) orientation = parts.robotV2.sensorIMU.getRobotYawPitchRollAngles();
+            if (useNewIMUmethod && getAngularVelocity)
+               angularVelocity = parts.robotV2.sensorIMU.getRobotAngularVelocity(AngleUnit.DEGREES);
+         }
+         else {
+            if (!useNewIMUmethod)
+               angles = parts.robot.sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            if (useNewIMUmethod) orientation = parts.robot.sensorIMU.getRobotYawPitchRollAngles();
+            if (useNewIMUmethod && getAngularVelocity)
+               angularVelocity = parts.robot.sensorIMU.getRobotAngularVelocity(AngleUnit.DEGREES);
+         }
       }
       return !useNewIMUmethod ? angles.firstAngle : orientation.getYaw(AngleUnit.DEGREES);
 

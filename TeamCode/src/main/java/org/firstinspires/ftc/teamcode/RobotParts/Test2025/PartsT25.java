@@ -88,7 +88,10 @@ public class PartsT25 extends Parts {
     @Override
     public void initLoop() {
         buttonMgr.initLoop();
-        if (useIMU) imuMgr.initLoop();
+        if (useIMU) {
+            imuMgr.robotV2 = true;
+            imuMgr.initLoop();
+        }
         if (usePinpoint) pinpoint.initLoop();
         if (useSlamra) slamra.initLoop();
         positionMgr.initLoop();

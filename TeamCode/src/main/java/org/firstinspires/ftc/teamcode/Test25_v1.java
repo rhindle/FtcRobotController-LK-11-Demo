@@ -10,10 +10,11 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
 import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.PartsSB;
+import org.firstinspires.ftc.teamcode.RobotParts.Test2025.PartsT25;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "Test25_v1", group = "")
-@Disabled
+//@Disabled
 public class Test25_v1 extends LinearOpMode {
 
     public Parts parts;
@@ -23,7 +24,7 @@ public class Test25_v1 extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        parts = new PartsSB(this);
+        parts = new PartsT25(this);
 
         parts.useODO = true;
         parts.usePinpoint = false;
