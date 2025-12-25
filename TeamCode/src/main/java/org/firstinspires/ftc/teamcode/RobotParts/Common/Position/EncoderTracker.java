@@ -114,8 +114,8 @@ public class EncoderTracker implements PartsInterface {
       ticksPerInchForward = 45.68 * 96/100 * 312/435*2;  //62.9
       ticksPerInchSideways = 52.38 * 96/100 * 312/435*2; //72.1
       //measured...
-      ticksPerInchForward = (1462+1435+1457+1464)/4/23.5;  //61.9
-      ticksPerInchSideways = ((1865+1699+1590+1545)+(1730+1702+1742+1753)+(1560+1524+1532+1545)+(1772+1650+1602+1613))/16/23.5;   //70.3
+      ticksPerInchForward = (1462+1435+1457+1464)/4.0/23.5;  //61.9
+      ticksPerInchSideways = ((1865+1699+1590+1545)+(1730+1702+1742+1753)+(1560+1524+1532+1545)+(1772+1650+1602+1613))/16.0/23.5;   //70.3
    }
 
 }

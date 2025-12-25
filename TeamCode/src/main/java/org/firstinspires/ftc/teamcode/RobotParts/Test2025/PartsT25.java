@@ -29,6 +29,7 @@ public class PartsT25 extends Parts {
             //throw new RuntimeException("Parts can only be setup once");
             return;
         }
+        useRobotV2 = true;
         isSetup = true;
         pinpointRobotOffset = new Position(-56.0,52.0,0);  // In mm, Refer to User Guide, Y offset of X, X offset of Y, R will be ignored
         odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
@@ -89,7 +90,7 @@ public class PartsT25 extends Parts {
     public void initLoop() {
         buttonMgr.initLoop();
         if (useIMU) {
-            imuMgr.robotV2 = true;
+//            imuMgr.robotV2 = true;
             imuMgr.initLoop();
         }
         if (usePinpoint) pinpoint.initLoop();

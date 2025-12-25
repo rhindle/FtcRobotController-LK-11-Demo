@@ -11,7 +11,7 @@ public class Drivetrain {
     /* Public OpMode members. */
     public Parts parts;
 
-    private DcMotorEx motorLF, motorRF, motorLR, motorRR;
+    protected DcMotorEx motorLF, motorRF, motorLR, motorRR;
     DrivePowers drivePowers, drivePowersLast;
     public boolean minimizeCycleTime = true;   // skip small power changes to improve cycle time (each motor power transaction degrades cycle time)
     public double ignoreDiff = .025;            // absolute power difference to ignore
@@ -134,10 +134,7 @@ public class Drivetrain {
     }
 
     public void initMotors() {
-        motorLF = parts.robot.motor0;
-        motorRF = parts.robot.motor1;
-        motorLR = parts.robot.motor2;
-        motorRR = parts.robot.motor3;
+        setDriveMotors();
 
         if (!parts.reverseDrive) {
             motorLF.setDirection(DcMotorEx.Direction.REVERSE);
@@ -186,5 +183,13 @@ public class Drivetrain {
             motorLR.getCurrentPosition(),
             motorRR.getCurrentPosition()
         };
+    }
+
+    public void setDriveMotors() {
+        // intent is for this to be overridden by subclasses as necessary
+        motorLF = parts.robot.motor0;
+        motorRF = parts.robot.motor1;
+        motorLR = parts.robot.motor2;
+        motorRR = parts.robot.motor3;
     }
 }

@@ -50,6 +50,7 @@ public class Parts implements PartsInterface {
    public TelemetryMgr telemetryHandler;
    public NeoMatrix neo;
 
+   public boolean useRobotV2 = false;
    public boolean useODO = false;
    public boolean usePinpoint = false;
    public boolean reverseDrive = false;
