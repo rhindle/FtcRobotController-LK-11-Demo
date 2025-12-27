@@ -26,15 +26,24 @@ public class Test25_v1 extends LinearOpMode {
 
         parts = new PartsT25(this);
 
-        parts.useODO = true;
-        parts.usePinpoint = false;
-        parts.useIMU = true;
+        parts.useODO = false;
+        parts.usePinpoint = true;
+        parts.useIMU = false;
         parts.useSlamra = false;
         parts.useNeoMatrix = false;
         parts.useAprilTag = false;
         parts.useDrivetrainEncoders = true;
-        parts.reverseDrive = false;
+        parts.reverseDrive = false; //true; //false;
         parts.useDistanceSensors = false;
+//        parts.useODO = true;
+//        parts.usePinpoint = false;
+//        parts.useIMU = true;
+//        parts.useSlamra = false;
+//        parts.useNeoMatrix = false;
+//        parts.useAprilTag = false;
+//        parts.useDrivetrainEncoders = true;
+//        parts.reverseDrive = false;
+//        parts.useDistanceSensors = false;
 //        parts.fieldStartPosition = new Position(36,-63,90);  // red side, to the right, facing forward
         parts.fieldStartPosition = new Position(0,0,180);  // center, facing the scoring walls
             // reminder: Y goes away from red.
