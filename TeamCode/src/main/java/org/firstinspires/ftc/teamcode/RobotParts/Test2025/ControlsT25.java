@@ -146,13 +146,13 @@ public class ControlsT25 extends Controls {
 
 
       // turret test stuff
-      if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
+      if (buttonMgr.getState(2, Buttons.x, State.wasSingleTapped)) {
          parts.t25_Effector.armTurret(false);
       }
       if (buttonMgr.getState(2, Buttons.x, State.wasDoubleTapped)) {
          parts.t25_Effector.armTurret(true);
       }
-      if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
+      if (buttonMgr.getState(2, Buttons.y, State.wasSingleTapped)) {
          parts.t25_Effector.armSpinner(false);
       }
       if (buttonMgr.getState(2, Buttons.y, State.wasDoubleTapped)) {
@@ -177,6 +177,12 @@ public class ControlsT25 extends Controls {
       }
       if (buttonMgr.getState(1, Buttons.a, State.wasHeld)) {
          parts.t25_Effector.launchAll.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
+         parts.t25_Effector.spinnerSlowTest();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasTapped)) {
+         parts.t25_Effector.spinnerOff();
       }
 
 

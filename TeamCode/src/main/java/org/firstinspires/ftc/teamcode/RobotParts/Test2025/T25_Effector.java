@@ -53,7 +53,7 @@ public class T25_Effector implements PartsInterface {
    /* Settings */
 
    static final double hoodNeutral              = 0.5;
-   static final double hoodNearest              = 0.4;
+   static final double hoodNearest              = 0.0;
    static final double hoodMiddle               = 0.5;
    static final double hoodFar                  = 0.6;
    static final int hoodSweepTime               = 1500;   // spec is 1250
@@ -66,16 +66,18 @@ public class T25_Effector implements PartsInterface {
    //kick1 is front, kick2 is center, kick3 is rear
    static final double kick1Docked              = 0.496;
    static final double kick1Launch              = 0.914; //0.846;
+   static final double kick1Horizontal          = 0.846;
    static final int kick1SweepTime              = 1500;   // spec is 1250
 
    static final double kick2Docked              = 0.482;
    static final double kick2Launch              = 0.060; //0.137;
+   static final double kick2Horizontal          = 0.137;
    static final double kick2Help                = 0.137;
    static final int kick2SweepTime              = 1500;   // spec is 1250
 
-   // no data yet
-   static final double kick3Docked              = 0.5;
-   static final double kick3Launch              = 0.8;
+   static final double kick3Docked              = 0.526;
+   static final double kick3Launch              = 0.108;
+   static final double kick3Horizontal          = 0.196;
    static final int kick3SweepTime              = 1500;   // spec is 1250
 
    static final double spinNear                 = 2500;
@@ -140,11 +142,11 @@ public class T25_Effector implements PartsInterface {
 
    public void initialize(){
 
-      servoHood = new ServoSSR(parts.robotV2.getServoByName("servo1"));
-      servoTurret = new ServoSSR(parts.robotV2.getServoByName("servo2"));
+      servoHood = new ServoSSR(parts.robotV2.getServoByName("servo2B"));
+      servoTurret = new ServoSSR(parts.robotV2.getServoByName("servo4"));
       servoKick1 = new ServoSSR(parts.robotV2.getServoByName("servo0"));  // kick1 is left front
       servoKick2 = new ServoSSR(parts.robotV2.getServoByName("servo0B"));  // kick2 is center
-      servoKick3 = new ServoSSR(parts.robotV2.getServoByName("servo4"));  // kick3 is left rear
+      servoKick3 = new ServoSSR(parts.robotV2.getServoByName("servo2"));  // kick3 is left rear
       servoLED = new ServoSSR(parts.robotV2.getServoByName("servo5"));
 
       motorSpinner = parts.robotV2.getMotorByName("motor3B");
@@ -210,7 +212,8 @@ public class T25_Effector implements PartsInterface {
 //      updateLimits();
 //      delayedActions();
 
-      TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Target Vector: ", targetVector.toString());
+      TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Target Vector", targetVector.toString());
+      TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Spin", getSpinnerRPM());
 
    }
 
@@ -391,11 +394,16 @@ public class T25_Effector implements PartsInterface {
    }
    public static void spinnerOn() {
       spinnerOn(spinnerRPM);
-      spinnerArmed = true;
+//      spinnerArmed = true;
    }
    public static void spinnerOff() {
       motorSpinner.setPower(0);
       spinnerArmed = false;
+   }
+
+   public static void spinnerSlowTest() {
+      spinnerOn(1500);
+      spinnerArmed = false;  // so it won't auto adjust for distance
    }
 
    public static void intakeToggle() {
@@ -500,7 +508,7 @@ public class T25_Effector implements PartsInterface {
 
       launchAll = new StateMachine("all");
       task = launchAll;
-      task.setStopGroups("green", "blue", "pink");    // groups to kill
+      task.setStopGroups("kick1", "kick2", "kick3");    // groups to kill
       task.setMemberGroups("reset");  // will be killed by
       task.setAutoRestart(false);
       task.addRunOnce(T25_Effector::intakeOff);
