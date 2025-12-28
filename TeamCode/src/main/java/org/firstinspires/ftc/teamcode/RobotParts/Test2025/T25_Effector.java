@@ -53,9 +53,9 @@ public class T25_Effector implements PartsInterface {
    /* Settings */
 
    static final double hoodNeutral              = 0.5;
-   static final double hoodNearest              = 0.0;
-   static final double hoodMiddle               = 0.5;
-   static final double hoodFar                  = 0.6;
+   static final double hoodNearest              = 0.129;  // 1 tile diagonally
+   static final double hoodMiddle               = 0.348;
+   static final double hoodFar                  = 0.501;
    static final int hoodSweepTime               = 1500;   // spec is 1250
 
    static final double turretNeutral            = 0.5;
@@ -80,9 +80,9 @@ public class T25_Effector implements PartsInterface {
    static final double kick3Horizontal          = 0.196;
    static final int kick3SweepTime              = 1500;   // spec is 1250
 
-   static final double spinNear                 = 2500;
-   static final double spinMiddle               = 3500;
-   static final double spinFar                  = 4300;
+   static final double spinNear                 = 3300;
+   static final double spinMiddle               = 3900;
+   static final double spinFar                  = 4500;
    static double spinnerRPM                     = 0;  //move this
    static double spinnerTolerance               = 100;
    public static PIDFCoefficients spinnerPID    = new PIDFCoefficients(100,0,0,12.4);
@@ -94,8 +94,9 @@ public class T25_Effector implements PartsInterface {
    private static double spinRPMset;
    private static final double spinMultiplier = 60.0 / 28.0 * 1.0;  // seconds / ticksPerRev * gearRatio;
 
-   private static final double nearTest      = 35;
-   private static final double farTest       = 137;
+   private static final double nearTest      = 48;  // 1 tile diagonally
+   private static final double midTest       = 98;
+   private static final double farTest       = 140;
 
    private static ServoSSR servoHood;
    private static ServoSSR servoTurret;
