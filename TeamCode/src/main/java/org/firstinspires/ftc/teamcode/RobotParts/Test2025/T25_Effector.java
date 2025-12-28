@@ -3,19 +3,13 @@ package org.firstinspires.ftc.teamcode.RobotParts.Test2025;
 import android.annotation.SuppressLint;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smAutoIntake;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smDeposit;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smPrepareDeposit;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smSafePark;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smStartFishing;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smTransfer;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Vector2D;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
@@ -69,14 +63,17 @@ public class T25_Effector implements PartsInterface {
    static final double turretRangeDegrees       = 400.00;
    static final int turretSweepTime             = 1500;   // spec is 1250
 
-   static final double kick1Docked              = 0.5;
-   static final double kick1Launch              = 0.8;
+   //kick1 is front, kick2 is center, kick3 is rear
+   static final double kick1Docked              = 0.496;
+   static final double kick1Launch              = 0.914; //0.846;
    static final int kick1SweepTime              = 1500;   // spec is 1250
 
-   static final double kick2Docked              = 0.5;
-   static final double kick2Launch              = 0.8;
+   static final double kick2Docked              = 0.482;
+   static final double kick2Launch              = 0.060; //0.137;
+   static final double kick2Help                = 0.137;
    static final int kick2SweepTime              = 1500;   // spec is 1250
 
+   // no data yet
    static final double kick3Docked              = 0.5;
    static final double kick3Launch              = 0.8;
    static final int kick3SweepTime              = 1500;   // spec is 1250
@@ -108,6 +105,13 @@ public class T25_Effector implements PartsInterface {
    private static DcMotorEx motorSpinner;
    private static DcMotorEx motorIntake;
 
+   public static StateMachine launchKick1;
+   public static StateMachine launchKick1a;
+   public static StateMachine launchKick2;
+   public static StateMachine launchKick3;
+   public static StateMachine launchAll;
+   public static StateMachine resetAll;
+
    public static NormalizedColorSensor sensorColor = null;
 
    public static Vector2D targetVector;
@@ -136,18 +140,20 @@ public class T25_Effector implements PartsInterface {
 
    public void initialize(){
 
-      servoHood = new ServoSSR(parts.robotV2.getServoByName("servo0"));
-      servoTurret = new ServoSSR(parts.robotV2.getServoByName("servo1"));
-      servoKick1 = new ServoSSR(parts.robotV2.getServoByName("servo2"));
-      servoKick2 = new ServoSSR(parts.robotV2.getServoByName("servo3"));
-      servoKick3 = new ServoSSR(parts.robotV2.getServoByName("servo4"));
+      servoHood = new ServoSSR(parts.robotV2.getServoByName("servo1"));
+      servoTurret = new ServoSSR(parts.robotV2.getServoByName("servo2"));
+      servoKick1 = new ServoSSR(parts.robotV2.getServoByName("servo0"));  // kick1 is left front
+      servoKick2 = new ServoSSR(parts.robotV2.getServoByName("servo0B"));  // kick2 is center
+      servoKick3 = new ServoSSR(parts.robotV2.getServoByName("servo4"));  // kick3 is left rear
       servoLED = new ServoSSR(parts.robotV2.getServoByName("servo5"));
 
       motorSpinner = parts.robotV2.getMotorByName("motor3B");
-      motorIntake = parts.robotV2.getMotorByName("motor2B");
+      motorIntake = parts.robotV2.getMotorByName("motor3");
 
       initServos();
       initMotors();
+
+      buildStateMachines();
 
    }
 
@@ -284,7 +290,7 @@ public class T25_Effector implements PartsInterface {
    public static void initMotors () {
       stopMotors();
 
-      motorIntake.setDirection(DcMotorEx.Direction.REVERSE);
+      motorIntake.setDirection(DcMotorEx.Direction.FORWARD);
       motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
       motorIntake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
@@ -320,21 +326,21 @@ public class T25_Effector implements PartsInterface {
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-   public void armTurret(boolean arm) {
+   public static void armTurret(boolean arm) {
       turretArmed = arm;
 //      if (!turretArmed) {
 //         servoHood.setPosition(hoodNeutral);
 //         servoTurret.setPosition(turretNeutral+turretZeroOffset);
 //      }
    }
-   public void armSpinner(boolean arm) {
+   public static void armSpinner(boolean arm) {
       spinnerArmed = arm;
       if (!spinnerArmed) {
          stopSpinner();
       }
    }
 
-   public double getTurretValueFromAngle(double angle) {
+   public static double getTurretValueFromAngle(double angle) {
       // turret geared so 300° range = 400°
       // 0.5 = 0, 0.1 = 180, 0.9 = -180 ???
       // let's calculate with an offset of -0.5 to make calculation easier.
@@ -348,20 +354,20 @@ public class T25_Effector implements PartsInterface {
       // note a value of 0 or 1 indicates beyond range!
    }
 
-   public double getHoodValueFromDistance(double distance) {
+   public static double getHoodValueFromDistance(double distance) {
       return Functions.interpolate(distance, nearTest, farTest, hoodNearest, hoodFar);
    }
 
-   public double getSpinnerRPMfromDistance(double distance) {
+   public static double getSpinnerRPMfromDistance(double distance) {
       return Functions.interpolate(distance, nearTest, farTest, spinNear, spinFar);
    }
 
-   public Vector2D getTargetVector(Position target) {
+   public static Vector2D getTargetVector(Position target) {
       if (target==null || parts.positionMgr.noPosition()) return new Vector2D();
       return new Vector2D(parts.positionMgr.robotPosition, target);
    }
 
-   public double getTurretAngle(Position target) {
+   public static double getTurretAngle(Position target) {
       if (target==null || parts.positionMgr.noPosition()) return 0;
       return Functions.normalizeAngle(getTargetVector(target).angle - parts.positionMgr.robotPosition.R);
    }
@@ -392,6 +398,24 @@ public class T25_Effector implements PartsInterface {
       spinnerArmed = false;
    }
 
+   public static void intakeToggle() {
+      intakeArmed = !intakeArmed;
+      if (intakeArmed) intakeOn();
+      else intakeOff();
+   }
+
+   public static void intakeOn() {
+      intakeArmed = true;
+      //dock all servos!
+      resetAll.restart();
+      motorIntake.setPower(1);
+   }
+
+   public static void intakeOff() {
+      intakeArmed = false;
+      motorIntake.setPower(0);
+   }
+
    public enum rgbIndicatorColor {
       Off (0.0),
       Red (0.279),
@@ -410,5 +434,93 @@ public class T25_Effector implements PartsInterface {
       rgbIndicatorColor(double color) {
          this.color = color;
       }
+   }
+
+   /* State Machines */
+
+   static void buildStateMachines() {
+      StateMachine task;
+
+      launchKick1 = new StateMachine("kick1");
+      task = launchKick1;
+      //task.setGroups("launcher", "green");
+      //task.setStopGroups("launcher", "green");    // groups to kill
+      task.setMemberGroups("all", "kick1");  // will be killed by
+      task.setAutoRestart(false);
+      //task.setStopRunnable( () -> {} );
+      //task.setTimeLimit(5000);
+      //task.setTimeoutRunnable( () -> {} );
+      //task.setEndCriteria( () -> false );
+      //task.setEndCriteriaRunnable( () -> {} );
+      task.addRunOnce(T25_Effector::intakeOff);
+      task.addRunOnce(() -> servoKick1.setPosition(kick1Launch));
+      task.addWaitFor(() -> servoKick1.isDone());
+//      task.addDelayOf(500);
+      task.addRunOnce(() -> servoKick1.setPosition(kick1Docked));
+      task.addWaitFor(() -> servoKick1.isDone());
+
+      // special test for no ball in center position
+      launchKick1a = new StateMachine("kick1a");
+      task = launchKick1a;
+      task.setMemberGroups("all", "kick1");  // will be killed by
+      task.setAutoRestart(false);
+      task.addRunOnce(T25_Effector::intakeOff);
+      task.addRunOnce(() -> servoKick1.setPosition(kick1Launch));
+      task.addDelayOf(50);
+      task.addRunOnce(() -> servoKick2.setPosition(kick2Help));
+      task.addWaitFor(() -> servoKick1.isDone());
+      task.addWaitFor(() -> servoKick2.isDone());
+      task.addRunOnce(() -> servoKick2.setPosition(kick2Docked));
+      task.addDelayOf(50);
+      task.addRunOnce(() -> servoKick1.setPosition(kick1Docked));
+      task.addWaitFor(() -> servoKick2.isDone());
+      task.addWaitFor(() -> servoKick1.isDone());
+
+      launchKick2 = new StateMachine("kick2");
+      task = launchKick2;
+      task.setMemberGroups("all", "kick2");  // will be killed by
+      task.setAutoRestart(false);
+      task.addRunOnce(T25_Effector::intakeOff);
+      task.addRunOnce(() -> servoKick2.setPosition(kick2Launch));
+      task.addWaitFor(() -> servoKick2.isDone());
+//      task.addDelayOf(500);
+      task.addRunOnce(() -> servoKick2.setPosition(kick2Docked));
+      task.addWaitFor(() -> servoKick2.isDone());
+
+      launchKick3 = new StateMachine("kick3");
+      task = launchKick3;
+      task.setMemberGroups("all", "kick3");  // will be killed by
+      task.setAutoRestart(false);
+      task.addRunOnce(T25_Effector::intakeOff);
+      task.addRunOnce( () -> servoKick3.setPosition(kick3Launch));
+      task.addWaitFor( () -> servoKick3.isDone());
+//      task.addDelayOf( 500);
+      task.addRunOnce( () -> servoKick3.setPosition(kick3Docked));
+      task.addWaitFor( () -> servoKick3.isDone());
+
+      launchAll = new StateMachine("all");
+      task = launchAll;
+      task.setStopGroups("green", "blue", "pink");    // groups to kill
+      task.setMemberGroups("reset");  // will be killed by
+      task.setAutoRestart(false);
+      task.addRunOnce(T25_Effector::intakeOff);
+      task.addRunOnce(launchKick3::restartNoStop);
+      task.addWaitFor(launchKick3::isDone);
+      task.addRunOnce(launchKick1::restartNoStop);
+      task.addWaitFor(launchKick1::isDone);
+      task.addRunOnce(launchKick2::restartNoStop);
+      task.addWaitFor(launchKick2::isDone);
+
+      resetAll = new StateMachine("reset");
+      task = resetAll;
+      task.setStopGroups("kick1", "kick2", "kick3");    // groups to kill
+      //task.setMemberGroups("blue");  // will be killed by
+      task.setAutoRestart(false);
+      task.addRunOnce( ()-> {
+         servoKick1.setPosition(kick1Docked);
+         servoKick2.setPosition(kick2Docked);
+         servoKick3.setPosition(kick3Docked);
+      });
+
    }
 }

@@ -146,21 +146,38 @@ public class ControlsT25 extends Controls {
 
 
       // turret test stuff
-      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
+      if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
          parts.t25_Effector.armTurret(false);
       }
-      if (buttonMgr.getState(1, Buttons.x, State.wasDoubleTapped)) {
+      if (buttonMgr.getState(2, Buttons.x, State.wasDoubleTapped)) {
          parts.t25_Effector.armTurret(true);
       }
-      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
+      if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
          parts.t25_Effector.armSpinner(false);
       }
-      if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
+      if (buttonMgr.getState(2, Buttons.y, State.wasDoubleTapped)) {
          parts.t25_Effector.armSpinner(true);
       }
 
-
-
+      // kicker test stuff
+      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
+         parts.t25_Effector.intakeToggle();
+      }
+      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
+         parts.t25_Effector.launchKick1.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.x, State.wasHeld)) {
+         parts.t25_Effector.launchKick1a.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
+         parts.t25_Effector.launchKick2.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
+         parts.t25_Effector.launchKick3.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.a, State.wasHeld)) {
+         parts.t25_Effector.launchAll.restart();
+      }
 
 
       // Toggle FCD

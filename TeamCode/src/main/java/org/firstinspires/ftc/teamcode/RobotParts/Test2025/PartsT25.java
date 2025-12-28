@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.ImuMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Odometry;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.PositionMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Slamra;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.Functions;
@@ -74,6 +75,8 @@ public class PartsT25 extends Parts {
         drivetrain.minimizeCycleTime = false;
         userDrive.useHeadingHold = false;
 
+        StateMachine.reset();
+
     }
 
     @Override
@@ -133,8 +136,10 @@ public class PartsT25 extends Parts {
         drivetrain.runLoop();
 //        t24Grabber.runLoop();
         t25_Effector.runLoop();
+        StateMachine.runLoop();
 
         addTelemetryLoopEnd();
+        StateMachine.addTelemetry();
         TelemetryMgr.Update();
     }
 
@@ -154,8 +159,11 @@ public class PartsT25 extends Parts {
 ////        userDrive.runLoop();
 //        autoDrive.runLoop();
         drivetrain.runLoop();
+        t25_Effector.runLoop();
+        StateMachine.runLoop();
 
         addTelemetryLoopEnd();
+        StateMachine.addTelemetry();
         TelemetryMgr.Update();
     }
 
