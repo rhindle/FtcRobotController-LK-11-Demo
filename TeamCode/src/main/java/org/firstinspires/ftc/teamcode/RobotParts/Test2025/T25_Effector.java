@@ -124,11 +124,6 @@ public class T25_Effector implements PartsInterface {
 
    public static boolean turretOutOfRange = false;
 
-   /* State machines */
-
-
-   /* Internal use (Needs access by state machines in package) */
-
    /* Public OpMode members. */
    public static Parts parts;
 
@@ -209,12 +204,10 @@ public class T25_Effector implements PartsInterface {
          servoLED.setPosition(rgbIndicatorColor.Yellow.color);
       }
 
-
-//      updateLimits();
 //      delayedActions();
 
       TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Target Vector", targetVector.toString());
-      TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Spin", getSpinnerRPM());
+      TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Spinner Speed", getSpinnerRPM());
 
    }
 
@@ -309,21 +302,6 @@ public class T25_Effector implements PartsInterface {
    //       Status Responders
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-//   public static boolean isSpinnerDone() {return servoSpinner.isDone();}
-//   public static boolean isSpintakeDone() {return servoSpintake.isDone();}
-//   public static boolean isChuteDone() {return servoChute.isDone();}
-//   public static boolean isPinchDone() {return servoPinch.isDone();}
-
-//   public static boolean isSlideInTolerance(int pos) {return Math.abs(motorSlide.getCurrentPosition() - pos) < toleranceSlide;}
-//   public static boolean isSlideInTolerance() {return isSlideInTolerance(slideTargetPosition);}
-//   public static boolean isSlideInsidePit() {return (motorSlide.getCurrentPosition() > positionSlidePitMin);}
-//   public static boolean isLiftInTolerance(int pos) {return Math.abs(motorLift.getCurrentPosition() - pos) < toleranceLift;}
-//   public static boolean isLiftInTolerance() {return isLiftInTolerance(liftTargetPosition);}
-
-//   public static boolean isSamplingInProcess() {
-////      return motorSlide.getCurrentPosition()>=positionSlidePitMin && shoulderNominalPosition<shoulderSafeIn;
-//      return motorSlide.getCurrentPosition()>=positionSlidePitMin && isServoAtPosition(servoSpintake, spintakeFloor, timerSpintake);
-//   }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
    //     Manual User Controls
@@ -395,7 +373,6 @@ public class T25_Effector implements PartsInterface {
    }
    public static void spinnerOn() {
       spinnerOn(spinnerRPM);
-//      spinnerArmed = true;
    }
    public static void spinnerOff() {
       motorSpinner.setPower(0);
