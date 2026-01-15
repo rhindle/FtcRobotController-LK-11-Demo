@@ -150,6 +150,8 @@ public class TelemetryMgr {
         TASK_EXT("TSX"),
         SB_INTAKE("SBI"),
         T25_EFF("EFF"),
+        LL("LL3"),
+        LL_EXT("LLX"),
         PINPOINT ("PPT"),
         PINPOINT_EXT ("PPX"),
         NAVIGATOR("NAV");   //navigator is deprecated

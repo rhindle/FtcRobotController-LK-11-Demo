@@ -26,6 +26,9 @@ import org.firstinspires.ftc.teamcode.RobotParts.Test2024.T24Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2025.T25_Auto;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2025.T25_Effector;
 import org.firstinspires.ftc.teamcode.RobotParts.Test2025.T25_Misc;
+import org.firstinspires.ftc.teamcode.RobotParts.TestLL.TLL_Auto;
+import org.firstinspires.ftc.teamcode.RobotParts.TestLL.TLL_Limelight;
+import org.firstinspires.ftc.teamcode.RobotParts.TestLL.TLL_Misc;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
@@ -102,6 +105,13 @@ public class Parts implements PartsInterface {
    public T25_Misc t25_Misc;
    public T25_Auto t25_Auto;
    public T25_Effector t25_Effector;
+   //---
+
+   //---TestLL Unique
+   public TLL_Misc tLL_Misc;
+   public TLL_Auto tLL_Auto;
+   public TLL_Limelight tLL_Limelight;
+
    //---
 
    /* Constructor */
