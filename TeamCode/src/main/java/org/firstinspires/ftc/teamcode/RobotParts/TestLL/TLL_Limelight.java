@@ -30,7 +30,7 @@ public class TLL_Limelight implements PartsInterface {
 
       //see:  https://docs.limelightvision.io/docs/docs-limelight/apis/ftc-programming
 
-      limelight = parts.robot.hardwareMap.get(Limelight3A.class, "limelight");
+      limelight = parts.robotV2.hardwareMap.get(Limelight3A.class, "limelight");
       limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
       limelight.start(); // This tells Limelight to start looking!
 

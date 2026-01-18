@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.RobotParts.TestLL.PartsTLL;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
-@TeleOp(name = "Test25_v1", group = "")
+@TeleOp(name = "TestLL_v1", group = "")
 //@Disabled
 public class TestLL_v1 extends LinearOpMode {
 
@@ -34,9 +34,6 @@ public class TestLL_v1 extends LinearOpMode {
         parts.useDistanceSensors = false;
         parts.fieldStartPosition = new Position(0,0,180);  // center, facing the scoring walls
             // reminder: Y goes away from red.
-//        parts.odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
-//        parts.slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
-//        parts.pinpointRobotOffset = new Position (-56.0,52.0,0);  // In mm, Refer to User Guide, Y offset of X, X offset of Y, R will be ignored
         parts.speedMaximum = 1;
 //        DSAprilTag.USE_WEBCAM = true;
 

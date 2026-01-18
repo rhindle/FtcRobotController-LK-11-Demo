@@ -36,7 +36,7 @@ public class PartsTLL extends Parts {
         pinpointRobotOffset = new Position(123,-165,0);  // team3
 //        pinpointRobotOffset = new Position(104.55,140,0);  //jas
         //pinpointRobotOffset = new Position(-165,123,0);
-        odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
+        odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in Parts?
         slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
 
         robotV2 = new RobotTLL(this);
