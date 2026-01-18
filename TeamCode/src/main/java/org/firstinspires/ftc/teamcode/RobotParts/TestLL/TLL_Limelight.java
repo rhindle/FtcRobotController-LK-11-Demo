@@ -1,9 +1,12 @@
 package org.firstinspires.ftc.teamcode.RobotParts.TestLL;
 
+import android.annotation.SuppressLint;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
@@ -63,20 +66,26 @@ public class TLL_Limelight implements PartsInterface {
       if (result != null && result.isValid()) {
          Pose3D botpose = result.getBotpose();
          if (botpose != null) {
-            double x = botpose.getPosition().x;
-            double y = botpose.getPosition().y;
-            double z = botpose.getPosition().z;
+            double x = botpose.getPosition().toUnit(DistanceUnit.INCH).x;
+            double y = botpose.getPosition().toUnit(DistanceUnit.INCH).y;
+            double z = botpose.getPosition().toUnit(DistanceUnit.INCH).z;
             double r = botpose.getOrientation().getYaw(AngleUnit.DEGREES);
 
 
 //            parts.opMode.telemetry.addData("MT1 Location", "(" + x + ", " + y + ")");
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "MT1 Location","(" + x + ", " + y + ", " + z + ", " + r + ")");
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "MT1 Location","("
+                    + roundIt(x) + ", "
+                    + roundIt(y) + ", "
+                    + roundIt(z) + ", "
+                    + roundIt(r) + ")");
 
-            Position position = new Position(result.getBotpose().getPosition().x, result.getBotpose().getPosition().y, result.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES));
-            Position transform = position.getOffset(parts.positionMgr.robotPosition);
+            Position llPosition = new Position(
+                    result.getBotpose().getPosition().toUnit(DistanceUnit.INCH).x,
+                    result.getBotpose().getPosition().toUnit(DistanceUnit.INCH).y,
+                    result.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES));
+            Position llTransform = llPosition.getOffset(parts.positionMgr.robotPosition);
 
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "Offset", transform.toString());
-
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "Offset", llTransform.toString());
 
          }
       }
@@ -85,6 +94,11 @@ public class TLL_Limelight implements PartsInterface {
    }
 
    public void stop() {
+   }
+
+   @SuppressLint("DefaultLocale")
+   public String roundIt(double d) {
+      return String.format("%.2f", d);
    }
 
 }

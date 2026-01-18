@@ -50,6 +50,7 @@ public class ImuMgr implements PartsInterface {
 
    public void preRun() {
       runLoop();
+      setupFieldOffset(parts.fieldStartPosition);  // LK 20260118 I think the IMU should match the field start position?
    }
 
    public void runLoop() {

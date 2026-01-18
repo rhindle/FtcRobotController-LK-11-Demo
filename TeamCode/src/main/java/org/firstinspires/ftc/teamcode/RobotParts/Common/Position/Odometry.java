@@ -92,6 +92,8 @@ public class Odometry implements PartsInterface {
       if (parts.positionMgr.hasImusHeading()) {
          odoData.imuHeading = parts.positionMgr.imusHeadingOnly.R;                  // todo: This isn't raw... Now what?
          odoFieldOffset.R = 0;  // if using final IMU heading, no need for offset?  // todo: OK?  this will mess up odoHeading absolute
+            // LK 20260118 at this time, field offset is being set to zero because the IMU heading appears to be raw not final
+            // (or at least not set to match field start) ... added a line in ImuMgr preRun() to set offset
       }
       if (use3encoders) odoData.odoHeading = getOdoHeading();
       odoData.globalHeading = fusedHeading();
@@ -205,11 +207,11 @@ public class Odometry implements PartsInterface {
    }
 
    public void setupFieldOffset(Position fieldPosition) {
-      odoFieldOffset = zeroPos;    // clear any existing offset
+      odoFieldOffset = zeroPos.clone();    // clear any existing offset
       odoFieldOffset = getOdoFieldOffset(odoRobotPose, fieldPosition);
    }
    public void setupFieldOffset() {
-      odoFieldOffset = zeroPos;    // clear any existing offset
+      odoFieldOffset = zeroPos.clone();    // clear any existing offset
       if (odoFieldStart!=null) odoFieldOffset = getOdoFieldOffset(odoRobotPose, odoFieldStart);
       // if the field offset is 0,0,0, it can be known that it was not properly offset
    }
