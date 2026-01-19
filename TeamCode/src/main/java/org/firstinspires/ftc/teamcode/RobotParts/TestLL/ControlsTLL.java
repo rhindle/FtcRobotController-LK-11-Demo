@@ -4,6 +4,8 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.Buttons;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.PositionMgr;
+import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 
 public class ControlsTLL extends Controls {
@@ -52,45 +54,52 @@ public class ControlsTLL extends Controls {
 //         SB_Intake.eStop();
       }
 
-      // turret test stuff
-      if (buttonMgr.getState(2, Buttons.x, State.wasSingleTapped)) {
-         parts.t25_Effector.armTurret(false);
-      }
-      if (buttonMgr.getState(2, Buttons.x, State.wasDoubleTapped)) {
-         parts.t25_Effector.armTurret(true);
-      }
-      if (buttonMgr.getState(2, Buttons.y, State.wasSingleTapped)) {
-         parts.t25_Effector.armSpinner(false);
-      }
-      if (buttonMgr.getState(2, Buttons.y, State.wasDoubleTapped)) {
-         parts.t25_Effector.armSpinner(true);
-      }
-
-      // kicker test stuff
       if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
-         parts.t25_Effector.intakeToggle();
-      }
-      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
-         parts.t25_Effector.launchKick1.restart();
-      }
-      if (buttonMgr.getState(1, Buttons.x, State.wasHeld)) {
-         parts.t25_Effector.launchKick1a.restart();
-      }
-      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
-         parts.t25_Effector.launchKick2.restart();
+         parts.positionMgr.overrideTransform = parts.tLL_Limelight.llSmoothTransform;
       }
       if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
-         parts.t25_Effector.launchKick3.restart();
+         parts.positionMgr.overrideTransform = null;
       }
-      if (buttonMgr.getState(1, Buttons.a, State.wasHeld)) {
-         parts.t25_Effector.launchAll.restart();
-      }
-      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
-         parts.t25_Effector.spinnerSlowTest();
-      }
-      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasTapped)) {
-         parts.t25_Effector.spinnerOff();
-      }
+
+//      // turret test stuff
+//      if (buttonMgr.getState(2, Buttons.x, State.wasSingleTapped)) {
+//         parts.t25_Effector.armTurret(false);
+//      }
+//      if (buttonMgr.getState(2, Buttons.x, State.wasDoubleTapped)) {
+//         parts.t25_Effector.armTurret(true);
+//      }
+//      if (buttonMgr.getState(2, Buttons.y, State.wasSingleTapped)) {
+//         parts.t25_Effector.armSpinner(false);
+//      }
+//      if (buttonMgr.getState(2, Buttons.y, State.wasDoubleTapped)) {
+//         parts.t25_Effector.armSpinner(true);
+//      }
+//
+//      // kicker test stuff
+//      if (buttonMgr.getState(1, Buttons.y, State.wasTapped)) {
+//         parts.t25_Effector.intakeToggle();
+//      }
+//      if (buttonMgr.getState(1, Buttons.x, State.wasTapped)) {
+//         parts.t25_Effector.launchKick1.restart();
+//      }
+//      if (buttonMgr.getState(1, Buttons.x, State.wasHeld)) {
+//         parts.t25_Effector.launchKick1a.restart();
+//      }
+//      if (buttonMgr.getState(1, Buttons.a, State.wasTapped)) {
+//         parts.t25_Effector.launchKick2.restart();
+//      }
+//      if (buttonMgr.getState(1, Buttons.b, State.wasTapped)) {
+//         parts.t25_Effector.launchKick3.restart();
+//      }
+//      if (buttonMgr.getState(1, Buttons.a, State.wasHeld)) {
+//         parts.t25_Effector.launchAll.restart();
+//      }
+//      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasTapped)) {
+//         parts.t25_Effector.spinnerSlowTest();
+//      }
+//      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasTapped)) {
+//         parts.t25_Effector.spinnerOff();
+//      }
 
 
       // Toggle FCD

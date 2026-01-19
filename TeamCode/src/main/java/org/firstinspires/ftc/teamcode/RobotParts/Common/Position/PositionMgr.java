@@ -22,6 +22,8 @@ public class PositionMgr implements PartsInterface {
    public Position imusHeadingOnly;
    public Position slamraHeading;
    public Position pinpointHeading;
+   public Position overrideTransform;
+   public Position beforeOverride;
 
    public PosSource[] priorityList = {PosSource.PINPOINT, PosSource.ODO, PosSource.SLAMRA, PosSource.ENCODER, PosSource.TAG};
    public PosSource[] headingOnlyPriority = {PosSource.PINPOINT_R, PosSource.IMU, PosSource.SLAMRA_R, PosSource.ODO, PosSource.TAG};
@@ -80,6 +82,11 @@ public class PositionMgr implements PartsInterface {
       imusHeadingOnly = headingOnlyUpdate(imusOnlyPriority);
       headingOnly = headingOnlyUpdate(headingOnlyPriority);
       robotPosition = normalUpdate();
+      beforeOverride = robotPosition==null ? null : robotPosition.clone();
+
+      if (overrideTransform!=null) {
+         robotPosition = overrideTransform.transformPosition(robotPosition);
+      }
 
       TelemetryMgr.message(Category.POSITION, "odo__", (odoPosition==null) ? "(null)" : odoPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "pinpt", (pinpointPosition==null) ? "(null)" : pinpointPosition.toString(2));
@@ -88,6 +95,8 @@ public class PositionMgr implements PartsInterface {
       TelemetryMgr.message(Category.POSITION, "enc_a", (encoderAbsPosition==null) ? "(null)" : encoderAbsPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "tag__", (tagPosition==null) ? "(null)" : tagPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "imu__", (imuHeading==null) ? "(null)" : imuHeading.toString(2));
+      TelemetryMgr.message(Category.POSITION, "b4ovr", (beforeOverride==null) ? "(null)" : beforeOverride.toString(2));
+      TelemetryMgr.message(Category.POSITION, "overr", (overrideTransform==null) ? "(null)" : overrideTransform.toString(2));
       TelemetryMgr.message(Category.POSITION, "final", (robotPosition==null) ? "(null)" : robotPosition.toString(2));
       TelemetryMgr.message(Category.POSITION, "imus_", (imusHeadingOnly==null) ? "(null)" : imusHeadingOnly.toString(2));
       TelemetryMgr.message(Category.POSITION, "head_", (headingOnly==null) ? "(null)" : headingOnly.toString(2));
