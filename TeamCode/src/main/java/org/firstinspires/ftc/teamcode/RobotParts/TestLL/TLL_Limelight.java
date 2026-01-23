@@ -44,6 +44,9 @@ public class TLL_Limelight implements PartsInterface {
    boolean stdevValidLat = false;
    Position odoPosition;
 
+   Position llTransform ;
+   Position llTransformLat;
+
    /* Constructor */
    public TLL_Limelight(Parts parts){
       construct(parts);
@@ -137,40 +140,45 @@ public class TLL_Limelight implements PartsInterface {
 
             TelemetryMgr.message(TelemetryMgr.Category.LL, "LLPOS", llPosition.toString());
 
-//            Position llTransform = llPosition.getOffset(parts.positionMgr.beforeOverride);
-            Position llTransform = odoPosition.getOffset(llPosition);
-            Position llTransformLat = latentPosition.getOffset(llPosition);
 
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "Transform", llTransform.toString());
+
+//            Position llTransform = llPosition.getOffset(parts.positionMgr.beforeOverride);
+            llTransform = odoPosition.getOffset(llPosition);
+            llTransformLat = latentPosition.getOffset(llPosition);
 
             // if we consider data good, send it to the smoother
 
             if (Math.abs(llOffset.X) <= acceptableTx) {  // don't use the position if it's too far off center
-               llSmoothTransform = transformSmoother(llTransform, transformBuffer);
-               llSmoothTransformLat = transformSmoother(llTransform, transformBufferLat);
-
+//               llSmoothTransform = transformSmoother(llTransform, transformBuffer);
+//               llSmoothTransformLat = transformSmoother(llTransformLat, transformBufferLat);
+               doSmoothing();
                setColor = rgbIndicatorColor.Yellow;
             }
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "Pointer", Integer.toString(transformPointer));
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "Smoothed", llSmoothTransform==null ? "null" : llSmoothTransform.toString());
 
-            llStandardDeviation = getSmootherSTDEV(transformBuffer);
-            llStandardDeviationLat = getSmootherSTDEV(transformBufferLat);
+            llStandardDeviation = getSmootherSTDEV(llSmoothTransform, transformBuffer);
+            llStandardDeviationLat = getSmootherSTDEV(llSmoothTransformLat, transformBufferLat);
             if (llStandardDeviation != null) stdevValid = isStdevValid(llStandardDeviation);
             if (llStandardDeviationLat != null) stdevValidLat = isStdevValid(llStandardDeviationLat);
 
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "odoPosition", odoPosition.toString());
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "_Position", latentPosition.toString());
+
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "Transform", llTransform.toString());
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "_Transform", llTransformLat.toString());
+
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "Smoothed", llSmoothTransform==null ? "null" : llSmoothTransform.toString());
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "_Smoothed", llSmoothTransformLat==null ? "null" : llSmoothTransformLat.toString());
+
             TelemetryMgr.message(TelemetryMgr.Category.LL, "StdDev", llStandardDeviation==null ? "null" : llStandardDeviation.toString());
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "_StdDev", llStandardDeviationLat==null ? "null" : llStandardDeviationLat.toString());
 
             //Position effectivePosition = llSmoothTransform==null ? parts.positionMgr.beforeOverride : parts.positionMgr.beforeOverride.transformPosition(llSmoothTransform);
             Position effectivePosition = llSmoothTransform==null ? odoPosition : llSmoothTransform.transformPosition(odoPosition);
             TelemetryMgr.message(TelemetryMgr.Category.LL, "Effective", effectivePosition.toString());
-
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "_Latent", latentPosition.toString());
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "_Transform", llTransformLat.toString());
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "_Smoothed", llSmoothTransformLat==null ? "null" : llSmoothTransformLat.toString());
-            TelemetryMgr.message(TelemetryMgr.Category.LL, "_StdDev", llStandardDeviationLat==null ? "null" : llStandardDeviationLat.toString());
             Position effectivePositionLat = llSmoothTransformLat==null ? odoPosition : llSmoothTransformLat.transformPosition(odoPosition);
             TelemetryMgr.message(TelemetryMgr.Category.LL, "_Effective", effectivePositionLat.toString());
+
+            TelemetryMgr.message(TelemetryMgr.Category.LL, "Pointer", Integer.toString(transformPointer));
 
             telDone = true;
          }
@@ -181,24 +189,33 @@ public class TLL_Limelight implements PartsInterface {
          TelemetryMgr.message(TelemetryMgr.Category.LL, "MT1 StdDev", "n/a");
          TelemetryMgr.message(TelemetryMgr.Category.LL, "Offset", "n/a");
          TelemetryMgr.message(TelemetryMgr.Category.LL, "LLPOS", "n/a");
+
+         TelemetryMgr.message(TelemetryMgr.Category.LL, "odoPosition", odoPosition.toString());
+         TelemetryMgr.message(TelemetryMgr.Category.LL, "_Position", latentPosition.toString());
+
          TelemetryMgr.message(TelemetryMgr.Category.LL, "Transform", "n/a");
-         TelemetryMgr.message(TelemetryMgr.Category.LL, "Pointer", Integer.toString(transformPointer));
+         TelemetryMgr.message(TelemetryMgr.Category.LL, "_Transform", "n/a");
+
          TelemetryMgr.message(TelemetryMgr.Category.LL, "Smoothed", llSmoothTransform==null ? "null" : llSmoothTransform.toString());
+         TelemetryMgr.message(TelemetryMgr.Category.LL, "_Smoothed", llSmoothTransformLat==null ? "null" : llSmoothTransformLat.toString());
+
          TelemetryMgr.message(TelemetryMgr.Category.LL, "StdDev", llStandardDeviation==null ? "null" : llStandardDeviation.toString());
+         TelemetryMgr.message(TelemetryMgr.Category.LL, "_StdDev", llStandardDeviationLat==null ? "null" : llStandardDeviationLat.toString());
+
 //         Position effectivePosition = llSmoothTransform==null ? parts.positionMgr.beforeOverride : parts.positionMgr.beforeOverride.transformPosition(llSmoothTransform);
          Position effectivePosition = llSmoothTransform==null ? odoPosition : llSmoothTransform.transformPosition(odoPosition);
          TelemetryMgr.message(TelemetryMgr.Category.LL, "Effective", effectivePosition.toString());
 
-         TelemetryMgr.message(TelemetryMgr.Category.LL, "_Latent", latentPosition.toString());
-         TelemetryMgr.message(TelemetryMgr.Category.LL, "_Transform", "n/a");
-         TelemetryMgr.message(TelemetryMgr.Category.LL, "_Smoothed", llSmoothTransformLat==null ? "null" : llSmoothTransformLat.toString());
-         TelemetryMgr.message(TelemetryMgr.Category.LL, "_StdDev", llStandardDeviationLat==null ? "null" : llStandardDeviationLat.toString());
          Position effectivePositionLat = llSmoothTransformLat==null ? odoPosition : llSmoothTransformLat.transformPosition(odoPosition);
          TelemetryMgr.message(TelemetryMgr.Category.LL, "_Effective", effectivePositionLat.toString());
+
+         TelemetryMgr.message(TelemetryMgr.Category.LL, "Pointer", Integer.toString(transformPointer));
       }
 
       if (stdevValid) {
          setColor = rgbIndicatorColor.Green;
+      } else if (stdevValidLat) {
+         setColor = rgbIndicatorColor.Blue;
       }
       rgb.setPosition(setColor.color);
 
@@ -226,9 +243,9 @@ public class TLL_Limelight implements PartsInterface {
             break;
          }
       }
-      if (index==positionHistory.length) {
-         index--;
-      }
+//      if (index==positionHistory.length) {
+//         index--;
+//      }
       latentPosition = new Position(
               Functions.interpolate(
                       timeTarget,
@@ -254,16 +271,28 @@ public class TLL_Limelight implements PartsInterface {
       );
    }
 
-   // add a new transform to the array for smoothing
-   public Position transformSmoother(Position transform, Position[] buffer) {
-      if (transform != null) {  // don't add null values to the buffer array
-         buffer[transformPointer] = transform;
+   public void doSmoothing() {
+      if (llTransform != null) {
+         llSmoothTransform = transformSmoother(llTransform, transformBuffer);
+         llSmoothTransformLat = transformSmoother(llTransformLat, transformBufferLat);
          transformPointer++;
          if (transformPointer >= transformNumber) {
             transformPointer = 0;
             transformValid = true;  // valid once the buffer has been filled
          }
       }
+   }
+
+   // add a new transform to the array for smoothing
+   public Position transformSmoother(Position transform, Position[] buffer) {
+//      if (transform != null) {  // don't add null values to the buffer array
+         buffer[transformPointer] = transform;
+//         transformPointer++;
+//         if (transformPointer >= transformNumber) {
+//            transformPointer = 0;
+//            transformValid = true;  // valid once the buffer has been filled
+//         }
+//      }
       if (!transformValid) {
          return null;
       }
@@ -276,8 +305,8 @@ public class TLL_Limelight implements PartsInterface {
       return transformSum;
    }
 
-   public Position getSmootherSTDEV (Position[] buffer) {
-      if (!transformValid) {
+   public Position getSmootherSTDEV (Position transform, Position[] buffer) {
+      if (!transformValid || transform == null) {
          return null;
       }
       // calculate the standard deviation
@@ -285,9 +314,9 @@ public class TLL_Limelight implements PartsInterface {
       for (Position i : buffer) {
          if (i == null)
             i = new Position();   // in a previous class, got a null reference after running for a while; never tracked down
-         stdevPosition.X += Math.pow(i.X - llSmoothTransform.X, 2);
-         stdevPosition.Y += Math.pow(i.Y - llSmoothTransform.Y, 2);
-         stdevPosition.R += Math.pow(i.R - llSmoothTransform.R, 2);
+         stdevPosition.X += Math.pow(i.X - transform.X, 2);
+         stdevPosition.Y += Math.pow(i.Y - transform.Y, 2);
+         stdevPosition.R += Math.pow(i.R - transform.R, 2);
       }
       stdevPosition.X = Math.sqrt(stdevPosition.X / transformNumber);
       stdevPosition.Y = Math.sqrt(stdevPosition.Y / transformNumber);
