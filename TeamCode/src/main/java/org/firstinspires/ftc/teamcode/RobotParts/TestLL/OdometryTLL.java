@@ -21,9 +21,12 @@ public class OdometryTLL extends Odometry {
         odoEncXL = new EncoderSetting(parts.robotV2.getMotorByName("motor2B"), 1, TPI);
         odoEncXR = new EncoderSetting(parts.robotV2.getMotorByName("motor1B"), 1, TPI);
         odoEncY  = new EncoderSetting(parts.robotV2.getMotorByName("motor0B"), 1, TPI);
-        odoEncXL.encoderPort.setDirection(DcMotorEx.Direction.REVERSE);
-        odoEncXR.encoderPort.setDirection(DcMotorEx.Direction.REVERSE);
-        odoEncY.encoderPort.setDirection(DcMotorEx.Direction.FORWARD);
+//        odoEncXL.encoderPort.setDirection(DcMotorEx.Direction.REVERSE);
+//        odoEncXR.encoderPort.setDirection(DcMotorEx.Direction.REVERSE);
+//        odoEncY.encoderPort.setDirection(DcMotorEx.Direction.FORWARD);
+        odoEncXL.encoderPort.setDirection(DcMotorEx.Direction.FORWARD);  // I think a different motor type is in the control hub config I'm using?
+        odoEncXR.encoderPort.setDirection(DcMotorEx.Direction.FORWARD);
+        odoEncY.encoderPort.setDirection(DcMotorEx.Direction.REVERSE);
         odoEncXL.encoderPort.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         odoEncXR.encoderPort.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         odoEncY.encoderPort.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);

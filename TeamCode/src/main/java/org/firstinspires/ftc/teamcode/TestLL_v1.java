@@ -33,7 +33,9 @@ public class TestLL_v1 extends LinearOpMode {
         parts.reverseDrive = false; //true; //false;
         parts.useDistanceSensors = false;
         parts.fieldStartPosition = new Position(0,0,180);  // center, facing the scoring walls
-            // reminder: Y goes away from red.
+//        parts.fieldStartPosition = new Position(0,0,0);  // center, facing the human wall (x+)
+
+        // reminder: Y goes away from red.
         parts.speedMaximum = 1;
 //        DSAprilTag.USE_WEBCAM = true;
 
