@@ -23,7 +23,6 @@ public class ZZ_TestBot_LEDStick3 extends LinearOpMode {
     int[] bufferTest = {0,0,0};
     int[] bufferDesired = {0,0,0};
     int[] bufferActual = {0,0,0};
-    int[] bufferColors = {0,0,0};
     int pointer = 0;
     boolean updateLED = false;
 
@@ -75,19 +74,19 @@ public class ZZ_TestBot_LEDStick3 extends LinearOpMode {
             if (buttonMgr.wasPressed(1, ZZ_ButtonMgr.Buttons.x)) {
                 updateLED = true;
                 if (++bufferTest[0] > 3) bufferTest[0] = 0;
-                sendLedInfo(bufferTest);
+                setLedBuffer(bufferTest);
             }
 
             if (buttonMgr.wasPressed(1, ZZ_ButtonMgr.Buttons.y)) {
                 updateLED = true;
                 if (++bufferTest[1] > 3) bufferTest[1] = 0;
-                sendLedInfo(bufferTest);
+                setLedBuffer(bufferTest);
             }
 
             if (buttonMgr.wasPressed(1, ZZ_ButtonMgr.Buttons.b)) {
                 updateLED = true;
                 if (++bufferTest[2] > 3) bufferTest[2] = 0;
-                sendLedInfo(bufferTest);
+                setLedBuffer(bufferTest);
             }
 
             updateLed();
@@ -111,11 +110,11 @@ public class ZZ_TestBot_LEDStick3 extends LinearOpMode {
         qled.turnAllOff();
     }
 
-    public void sendLedInfo (int a, int b, int c) {
+    public void setLedBuffer(int a, int b, int c) {
         bufferDesired = new int[] {a,b,c};
     }
 
-    public void sendLedInfo (int[] a) {
+    public void setLedBuffer(int[] a) {
         bufferDesired = new int[] {a[0], a[1], a[2]};
     }
 
@@ -124,55 +123,48 @@ public class ZZ_TestBot_LEDStick3 extends LinearOpMode {
         // just exit if not needed
         if (!updateLED) return;
 
-        // this is the round robin pointer...  loops around for updating two led patches
+        // this is the round robin pointer...  loops around for updating two led groups
         if (++pointer > 2) pointer = 0;
 
         // if the current round robin candidate is already set properly, just exit
         if (bufferDesired[pointer] == bufferActual[pointer]) return;
 
-        // update different patches depending on the pointer
+        // update different groups depending on the pointer
         switch (pointer) {
             case 0:
                 bufferActual[0] = bufferDesired[0];
                 bufferActual[1] = bufferDesired[1];
-                updateColorValues();
-                qled.setColorGroupX2(0,2,bufferColors[0],4,2,bufferColors[1]);
+                qled.setColorGroupX2(0,2,getColorValue(bufferActual[0]),
+                        4,2,getColorValue(bufferActual[1]));
                 break;
             case 1:
                 bufferActual[1] = bufferDesired[1];
                 bufferActual[2] = bufferDesired[2];
-                updateColorValues();
-                qled.setColorGroupX2(4,2,bufferColors[1],8,2,bufferColors[2]);
+                qled.setColorGroupX2(4,2,getColorValue(bufferActual[1]),
+                        8,2,getColorValue(bufferActual[2]));
                 break;
             case 2:
                 bufferActual[0] = bufferDesired[0];
                 bufferActual[2] = bufferDesired[2];
-                updateColorValues();
-                qled.setColorGroupX2(0,2,bufferColors[0],8,2,bufferColors[2]);
+                qled.setColorGroupX2(0,2,getColorValue(bufferActual[0]),
+                        8,2,getColorValue(bufferActual[2]));
                 break;
             default:
                 break;
         }
     }
 
-    public void updateColorValues () {
-        for (int i=0; i<3; i++) {
-            switch (bufferActual[i]) {
-                case 0:
-                    bufferColors[i] = Color.rgb(0, 0, 0);
-                    break;
-                case 1:
-                    bufferColors[i] = Color.rgb(0, 255, 0);
-                    break;
-                case 2:
-                    bufferColors[i] = Color.rgb(127, 0, 127);
-                    break;
-                case 3:
-                    bufferColors[i] = Color.rgb(32, 0, 0);
-                    break;
-                default:
-                    break;
-            }
+    public int getColorValue (int a) {
+        switch (a) {
+            case 1:
+                return Color.rgb(0, 255, 0);
+            case 2:
+                return Color.rgb(127, 0, 127);
+            case 3:
+                return Color.rgb(32, 0, 0);
+            case 0:
+            default:
+                return Color.rgb(0, 0, 0);
         }
     }
 
