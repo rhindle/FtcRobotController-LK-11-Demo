@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.RobotParts.LegacyBots;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.ColorSensor;
@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -88,7 +89,8 @@ public class Robot {
     public AnalogInput  analog3 = null;
     // Add B here as needed
 
-    public BNO055IMU sensorIMU      = null;
+    //public BNO055IMU sensorIMU      = null;
+    public IMU sensorIMU        = null;
 
     // Bulk Reads - Important Step 2: Get access to a list of Expansion Hub Modules to enable changing caching methods.
     List<LynxModule> allHubs = null;
@@ -154,7 +156,8 @@ public class Robot {
     }
 
     private double imuHeading(boolean readme) {
-        if (readme) angles = sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+//        if (readme) angles = sensorIMU.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        if (readme) angles = sensorIMU.getRobotOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         return angles.firstAngle;
     }
 
@@ -269,10 +272,20 @@ public class Robot {
         // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
         // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
         // and named "sensorIMU".
-        sensorIMU = hardwareMap.get(BNO055IMU.class, "imu");
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit            = BNO055IMU.AngleUnit.DEGREES;
-        sensorIMU.initialize(parameters);
+//        sensorIMU = hardwareMap.get(BNO055IMU.class, "imu");
+//        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+//        parameters.angleUnit            = BNO055IMU.AngleUnit.DEGREES;
+//        sensorIMU.initialize(parameters);
+        RevHubOrientationOnRobot hubOrientation = new RevHubOrientationOnRobot(
+                RevHubOrientationOnRobot.LogoFacingDirection.UP,
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+        );
+        sensorIMU = hardwareMap.get(IMU.class, "imu");
+        sensorIMU.initialize(
+                new IMU.Parameters(
+                        hubOrientation
+                )
+        );
 
 //        sensorColor = hwMap.get(ColorSensor.class, "sensorColorRange");
 //        sensorDistance = hwMap.get(DistanceSensor.class, "sensorColorRange");
@@ -280,6 +293,6 @@ public class Robot {
 //        sensor2MLeft = hardwareMap.get(DistanceSensor.class, "2MdistL");
 //        sensor2MMiddle = hardwareMap.get(DistanceSensor.class, "2MdistM");
 //        sensor2MRight = hardwareMap.get(DistanceSensor.class, "2MdistR");
-        qled = hardwareMap.get(QwiicLEDStickLK.class, "led");
+        qled = hardwareMap.get(QwiicLEDStickLK.class, "ledstick");
     }
 }

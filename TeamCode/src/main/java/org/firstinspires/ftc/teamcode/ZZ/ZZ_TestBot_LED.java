@@ -38,15 +38,15 @@ public class ZZ_TestBot_LED extends LinearOpMode {
         robot.motor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.motor3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        // Send telemetry message to alert driver that we are calibrating;
-        telemetry.addData(">", "Calibrating Gyro");    //
-        telemetry.update();
-
-        // make sure the gyro is calibrated before continuing
-        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
-            sleep(50);
-            idle();
-        }
+//        // Send telemetry message to alert driver that we are calibrating;
+//        telemetry.addData(">", "Calibrating Gyro");    //
+//        telemetry.update();
+//
+//        // make sure the gyro is calibrated before continuing
+//        while (!isStopRequested() && !robot.sensorIMU.isGyroCalibrated())  {
+//            sleep(50);
+//            idle();
+//        }
 
         telemetry.addData(">", "Robot Ready.");    //
         telemetry.update();
