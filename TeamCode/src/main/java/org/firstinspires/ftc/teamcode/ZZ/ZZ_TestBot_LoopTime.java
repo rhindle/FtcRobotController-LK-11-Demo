@@ -27,7 +27,7 @@ public class ZZ_TestBot_LoopTime extends LinearOpMode {
     ButtonMgr buttonMgr;
 
 
-    int loopySample = 50;
+    int loopySample = 200;
     double[] loopyTime = new double[loopySample];
     int loopyTimeCounter = 0;
 
@@ -105,6 +105,7 @@ public class ZZ_TestBot_LoopTime extends LinearOpMode {
             sleep(100);
         }
 
+        telemetry.setMsTransmissionInterval(50);
         ElapsedTime loopElapsedTime = new ElapsedTime();
 
         // run until the end of the match (driver presses STOP)
@@ -114,8 +115,8 @@ public class ZZ_TestBot_LoopTime extends LinearOpMode {
             buttonMgr.updateAll();
 
             if(buttonMgr.wasTapped(1, ButtonMgr.Buttons.a)) {
-                if(buttonMgr.isPressed(1, ButtonMgr.Buttons.left_bumper)) motorMode = 2;
-                else motorMode = 1;
+                if(buttonMgr.isPressed(1, ButtonMgr.Buttons.left_bumper)) motorMode = 1;
+                else motorMode = 2;
             }
 
             if(buttonMgr.wasTapped(1, ButtonMgr.Buttons.b)) {
@@ -124,8 +125,8 @@ public class ZZ_TestBot_LoopTime extends LinearOpMode {
             }
 
             if(buttonMgr.wasTapped(1, ButtonMgr.Buttons.x)) {
-                if(buttonMgr.isPressed(1, ButtonMgr.Buttons.left_bumper)) servoMode = 2;
-                else servoMode = 1;
+                if(buttonMgr.isPressed(1, ButtonMgr.Buttons.left_bumper)) servoMode = 1;
+                else servoMode = 2;
             }
 
             if(buttonMgr.wasTapped(1, ButtonMgr.Buttons.y)) {
@@ -204,6 +205,11 @@ public class ZZ_TestBot_LoopTime extends LinearOpMode {
             double loopyTimeAverage = 0;
             for(int i=0; i<loopySample; i++) loopyTimeAverage+=loopyTime[i];
             loopyTimeAverage /= loopySample;
+
+            telemetry.addLine("back:Hub  left:Imu  rb:Encoders");
+            telemetry.addLine("x:Servos  y:StopS  a:Motors  b:StopM");
+            telemetry.addLine("right:Led  up:Color  down:Distance");
+            telemetry.addLine();
 
             telemetry.addData("HUB", (hub1 ? "HUB1 " : "") + (hub2 ? "HUB2" : ""));
             telemetry.addData("IMU read",IMUmode);
