@@ -8,13 +8,14 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.NeoMatrix;
-import org.firstinspires.ftc.teamcode.RobotParts.LegacyBots.Robot;
+//import org.firstinspires.ftc.teamcode.RobotParts.LegacyBots.Robot;
+//import org.firstinspires.ftc.teamcode.RobotParts.Common.RobotV2;
 
 @TeleOp (name="AA_Adafruit_Neo_P", group="Test")
 //@Disabled
 public class ZZ_Adafruit_Neo_P extends LinearOpMode {
 
-    Robot robot;
+    ZZ_Robot_2025 robot;
     ButtonMgr buttonMgr;
     NeoMatrix neo;
 
@@ -35,7 +36,13 @@ public class ZZ_Adafruit_Neo_P extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        robot = new Robot(this);
+        robot = new ZZ_Robot_2025(this);
+        robot.zz_dualHub = false;
+        robot.motorNames = new String[] { };
+        robot.servoNames = new String[] { };
+        robot.digitalNames = new String[] { };
+        robot.analogNames = new String[] { };
+
         buttonMgr = new ButtonMgr(this);
         neo = new NeoMatrix(this, "neo");
 
@@ -126,7 +133,7 @@ public class ZZ_Adafruit_Neo_P extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            robot.loop();  // this will take care of clearing out the bulk reads
+            robot.runLoop();  // this will take care of clearing out the bulk reads
             buttonMgr.updateAll();
             neo.runLoop();
 
@@ -169,7 +176,7 @@ public class ZZ_Adafruit_Neo_P extends LinearOpMode {
             for(int i=0; i<loopySample; i++) loopyTimeAverage+=loopyTime[i];
             loopyTimeAverage /= loopySample;
 
-            telemetry.addData("Heading", "%.1f", robot.returnImuHeading());
+//            telemetry.addData("Heading", "%.1f", robot.returnImuHeading());
             telemetry.addData("LoopTime(ms)","%.1f",loopElapsedTime.milliseconds());
             telemetry.addData("LoopTimeAvg10(ms)","%.1f",loopyTimeAverage);
             telemetry.addData("LoopSpeed(lps)","%.1f",1/(loopElapsedTime.milliseconds()/1000));
