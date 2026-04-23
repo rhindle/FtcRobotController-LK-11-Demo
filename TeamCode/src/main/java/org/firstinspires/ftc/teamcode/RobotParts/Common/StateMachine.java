@@ -41,6 +41,7 @@ public class StateMachine {
     /* Instance tracking */
     static ArrayList<StateMachine> list = new ArrayList<>();
     static boolean pausedAll = false;
+    static int telemetryLevel = 0;
 
     /* Internal variables */
     String name;
@@ -76,6 +77,7 @@ public class StateMachine {
     ArrayList<String> stopGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
     long overallTimeLimit = 0;
+    int debugLevel = 0;
     Supplier<Boolean> endCriteria;
     Runnable stopRunnable;
     Runnable abortRunnable;
@@ -255,6 +257,7 @@ public class StateMachine {
     public static void addTelemetry() {
         TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "============ State Machines ============");
         for (StateMachine machine : list ) {
+            if (machine.debugLevel > telemetryLevel) continue;
             TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, machine.name, machine.getStatus()+" ("+machine.className+")");
         }
         TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "======================================");
@@ -262,6 +265,7 @@ public class StateMachine {
     public static void addTelemetry(LinearOpMode opMode) {
         opMode.telemetry.addData("=========== State Machines ===========", "");
         for (StateMachine machine : list ) {
+            if (machine.debugLevel > telemetryLevel) continue;
             opMode.telemetry.addData(machine.name, machine.getStatus()+" ("+machine.className+")");
         }
         opMode.telemetry.addData("====================================", "");
@@ -269,6 +273,7 @@ public class StateMachine {
     public static void addTelemetry(Telemetry telemetry) {
         telemetry.addData("=========== State Machines ===========", "");
         for (StateMachine machine : list ) {
+            if (machine.debugLevel > telemetryLevel) continue;
             telemetry.addData(machine.name, machine.getStatus()+" ("+machine.className+")");
         }
         telemetry.addData("====================================", "");
@@ -786,6 +791,17 @@ public class StateMachine {
      */
     public void setNoBulkStop(boolean state) {
         noBulkStop = state;
+    }
+
+    /**
+     * Sets the telemetry debug level for the machine.
+     * When addTelemetry() is called, it displays debug information for any/all machines
+     * where their debugLevel is less than or equal to the global telemetryLevel value.
+     * Default levels are 0 for both.
+     * @param level Typically between 0 and 10, where higher numbers are less "important".
+     */
+    public void setDebugLevel(int level) {
+        debugLevel = level;
     }
 
     /*==============*/
