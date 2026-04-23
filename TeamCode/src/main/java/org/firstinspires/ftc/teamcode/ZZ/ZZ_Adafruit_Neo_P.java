@@ -48,7 +48,7 @@ public class ZZ_Adafruit_Neo_P extends LinearOpMode {
 
         robot.init();
         neo.initialize();
-        neo.flipVert=true;
+//        neo.flipVert=true;
         //neo.flipHoriz=true;
         neo.setUpdateLimit(0); //1//4
         neo.setPreventTearing(true);
