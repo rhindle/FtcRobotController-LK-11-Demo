@@ -30,6 +30,7 @@ public class YY_Turret extends LinearOpMode {
     ZZ_StateMachine smIntakeOff;
     ZZ_StateMachine smRelax;
     ZZ_StateMachine smLaunch;
+    ZZ_StateMachine smSpinDown;
 
     static String motorIntakeName = "motor0B";
     static String motorTransferName = "motor1B";
@@ -210,6 +211,7 @@ public class YY_Turret extends LinearOpMode {
 //            }
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.isPressed)) {
                 // spin up
+                ZZ_StateMachine.stopGroups("spinner");
                 motorSpin1.setVelocity(motorSpinSpeed / (60.0 / spinTicks));
                 motorSpin2.setVelocity(motorSpinSpeed / (60.0 / spinTicks));
             }
@@ -220,8 +222,9 @@ public class YY_Turret extends LinearOpMode {
             }
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.b, ZZ_ButtonMgr.State.wasPressed)) {
                 // idle
-                motorSpin1.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
-                motorSpin2.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
+//                motorSpin1.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
+//                motorSpin2.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
+                smSpinDown.restart();
                 motorIntake.setPower(0);
                 motorTransfer.setPower(0);
                 servoGateL.setPosition(servoGateLClosed);
@@ -239,11 +242,14 @@ public class YY_Turret extends LinearOpMode {
                 motorTransfer.setPower(0);
             }
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
+                // stop spin
+                ZZ_StateMachine.stopGroups("spinner");
                 motorSpin1.setPower(0);
                 motorSpin2.setPower(0);
             }
             // stop all
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.back, ZZ_ButtonMgr.State.wasPressed)) {
+                ZZ_StateMachine.stopAll();
                 motorSpin1.setPower(0);
                 motorSpin2.setPower(0);
                 motorIntake.setPower(0);
@@ -316,7 +322,7 @@ public class YY_Turret extends LinearOpMode {
 
         smIntakeOn = new ZZ_StateMachine("intakeOn");
         task = smIntakeOn;
-        task.setGroups("all", "intake");  // will be killed by
+        task.setGroups("intake");  // will be killed by
         //task.setStopGroups("launcher", "green");    // groups to kill
         //task.setMemberGroups("all", "green");  // will be killed by
         task.setAutoRestart(false);
@@ -325,43 +331,49 @@ public class YY_Turret extends LinearOpMode {
         //task.setTimeoutRunnable( () -> {} );
         //task.setEndCriteria( () -> false );
         //task.setEndCriteriaRunnable( () -> {} );
-        task.addRunOnce(() -> motorTransfer.setPower(0));
-        task.addRunOnce(() -> servoGateL.setPosition(servoGateLClosed));
-        task.addRunOnce(() -> servoGateR.setPosition(servoGateRClosed));
-        task.addWaitFor(() -> servoGateL.isDone());
-        task.addWaitFor(() -> servoGateR.isDone());
-        task.addRunOnce(() -> motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER));
-        task.addRunOnce(() -> motorIntake.setPower(1));
+        task.addRunOnce(() -> {
+            motorTransfer.setPower(0);
+            servoGateL.setPosition(servoGateLClosed);
+            servoGateR.setPosition(servoGateRClosed);
+        });
+        task.addWaitFor(() -> servoGateL.isDone() && servoGateR.isDone());
+        task.addRunOnce(() -> {
+            motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            motorIntake.setPower(1);
+        });
 
         smIntakeOff = new ZZ_StateMachine("intakeOff");
         task = smIntakeOff;
-        task.setGroups("all", "intake");  // will be killed by
+        task.setGroups("intake");  // will be killed by
         task.setAutoRestart(false);
-        task.addRunOnce(() -> motorIntake.setPower(0));
-        task.addRunOnce(() -> motorTransfer.setPower(0));
-        task.addRunOnce(() -> smRelax.restartNoStop());
+        task.addRunOnce(() -> {
+            motorIntake.setPower(0);
+            motorTransfer.setPower(0);
+            smRelax.restartNoStop();
+        });
         task.addWaitFor(() -> smRelax.isDone());
 
         smLaunch = new ZZ_StateMachine("launch");
         task = smLaunch;
-        task.setGroups("all", "intake", "transfer", "spinner");  // will be killed by
+        task.setGroups("intake", "transfer", "spinner");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> {
             motorIntake.setPower(0);
             motorTransfer.setPower(0);
             motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             motorTransfer.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            servoGateL.setPosition(servoGateLOpen);
+            servoGateR.setPosition(servoGateROpen);
         });
-        task.addRunOnce(() -> servoGateL.setPosition(servoGateLOpen));
-        task.addRunOnce(() -> servoGateR.setPosition(servoGateROpen));
-        task.addWaitFor(() -> servoGateL.isDone());
-        task.addWaitFor(() -> servoGateR.isDone());
-        task.addRunOnce(() -> motorIntake.setPower(1));
-        task.addRunOnce(() -> motorTransfer.setPower(1));
+        task.addWaitFor(() -> servoGateL.isDone() && servoGateR.isDone());
+        task.addRunOnce(() -> {
+            motorIntake.setPower(1);
+            motorTransfer.setPower(1);
+        });
 
         smRelax = new ZZ_StateMachine("relax");
         task = smRelax;
-        task.setGroups("all", "intake");  // will be killed by
+        task.setGroups("intake");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> {
             motorIntake.setPower(0);
@@ -372,6 +384,20 @@ public class YY_Turret extends LinearOpMode {
             motorTransfer.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             motorIntake.setPower(1);
             motorTransfer.setPower(1);
+        });
+
+        smSpinDown = new ZZ_StateMachine("spinDown");
+        task = smSpinDown;
+        task.setGroups("spinner");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce(() -> {
+            motorSpin1.setPower(0);
+            motorSpin2.setPower(0);
+        });
+        task.addWaitFor(() -> getMotorSpinSpeed(motorSpin1) < motorSpinIdleSpeed);
+        task.addRunOnce(() -> {
+            motorSpin1.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
+            motorSpin2.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
         });
 
     }
