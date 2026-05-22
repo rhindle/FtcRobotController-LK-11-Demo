@@ -1,35 +1,19 @@
 package org.firstinspires.ftc.teamcode.RobotParts.TurretBot;
 
-import android.annotation.SuppressLint;
-
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
-import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smAutoIntake;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smDeposit;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smPrepareDeposit;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smSafePark;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smSpecimenHang;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smStartFishing;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.smTransfer;
-import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterfaceStatic;
 import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
-import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
-import org.firstinspires.ftc.teamcode.ZZ.ZZ_ServoSSR;
 
 public class TB_Intake implements PartsInterfaceStatic {
 
    public static Parts parts;
 
-   public static ZZ_ServoSSR servoGateL;
-   public static ZZ_ServoSSR servoGateR;
+   public static ServoSSR servoGateL;
+   public static ServoSSR servoGateR;
 
    public static DcMotorEx motorIntake;
    public static DcMotorEx motorTransfer;
@@ -52,6 +36,19 @@ public class TB_Intake implements PartsInterfaceStatic {
    }
 
    public static void initialize() {
+      servoGateL = new ServoSSR(parts.robotV2.getServoByName(servoGateLName)).setDirectionSSR(Servo.Direction.FORWARD).setSweepTime(250);
+      servoGateR = new ServoSSR(parts.robotV2.getServoByName(servoGateRName)).setDirectionSSR(Servo.Direction.REVERSE).setSweepTime(250);
+
+      motorIntake = parts.robotV2.getMotorByName(motorIntakeName);
+      motorTransfer = parts.robotV2.getMotorByName(motorTransferName);
+
+      motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorTransfer.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorIntake.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+      motorTransfer.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+      motorIntake.setDirection(DcMotorEx.Direction.REVERSE);
+      motorTransfer.setDirection(DcMotorEx.Direction.FORWARD);
+
    }
 
    public static void preInit() {
@@ -67,7 +64,51 @@ public class TB_Intake implements PartsInterfaceStatic {
    }
 
    public static void stop() {
+      StateMachine.stopGroups("intake", "transfer");
+      motorIntake.setPower(0);
+      motorTransfer.setPower(0);
+      servoGateL.disable();
+      servoGateR.disable();
    }
+
+   public static void intakeOn() {
+      motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorIntake.setPower(1);
+   }
+
+   public static void intakeOff() {
+      motorIntake.setPower(0);
+      motorTransfer.setPower(0);
+   }
+
+   public static void intakeReverse() {
+      motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorTransfer.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorIntake.setPower(-1);
+      motorTransfer.setPower(-1);
+   }
+
+   public static void transferOn() {
+      motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorTransfer.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+      motorIntake.setPower(1);
+      motorTransfer.setPower(1);
+   }
+
+   public static void transferOff() {
+      motorTransfer.setPower(0);
+   }
+
+   public static void gateOpen() {
+      servoGateL.setPosition(servoGateLOpen);
+      servoGateR.setPosition(servoGateROpen);
+   }
+
+   public static void gateClose() {
+      servoGateL.setPosition(servoGateLClosed);
+      servoGateR.setPosition(servoGateRClosed);
+   }
+
 
 }
 //   /* Settings */
