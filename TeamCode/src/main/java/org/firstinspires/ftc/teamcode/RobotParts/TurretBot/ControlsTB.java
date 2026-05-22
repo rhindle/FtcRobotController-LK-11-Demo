@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.RobotParts.TurretBot;
 
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.Buttons;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr.State;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Controls;
@@ -92,9 +90,9 @@ public class ControlsTB extends Controls {
       }
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
          // modify spin speed
-         TB_Turret.motorSpinSpeed += gamepad1.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinRPM;
-         TB_Turret.motorSpinSpeed += gamepad1.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinRPM;
-         TB_Turret.motorSpinSpeed = Math.max(-TB_Turret.spinRPM, Math.min(TB_Turret.spinRPM, TB_Turret.motorSpinSpeed));
+         TB_Turret.spinnerTargetSpeed += gamepad1.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerTargetSpeed += gamepad1.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerTargetSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerTargetSpeed));
       }
 
       if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
@@ -120,8 +118,8 @@ public class ControlsTB extends Controls {
       }
       if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
          // idle
-//                motorSpin1.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
-//                motorSpin2.setVelocity(motorSpinIdleSpeed / (60.0 / spinTicks));
+//                motorSpin1.setVelocity(spinnerIdleSpeed / (60.0 / spinTicks));
+//                motorSpin2.setVelocity(spinnerIdleSpeed / (60.0 / spinTicks));
          TB_Tasks.smSpinDown.restart();
          TB_Intake.intakeOff();
          TB_Intake.gateClose();

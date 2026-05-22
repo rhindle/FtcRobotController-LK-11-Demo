@@ -87,7 +87,7 @@ class TB_Tasks {
         task.setGroups("spinner");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(TB_Turret::spinOff);
-        task.addWaitFor(() -> TB_Turret.getMotorSpinSpeed(TB_Turret.motorSpin1) < TB_Turret.motorSpinIdleSpeed);
+        task.addWaitFor(() -> TB_Turret.getMotorSpinSpeed(TB_Turret.motorSpin1) < TB_Turret.spinnerIdleSpeed);
         task.addRunOnce(TB_Turret::spinIdle);
 
     }

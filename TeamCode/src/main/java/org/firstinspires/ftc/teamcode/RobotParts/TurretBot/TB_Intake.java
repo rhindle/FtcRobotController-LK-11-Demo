@@ -30,6 +30,8 @@ public class TB_Intake implements PartsInterfaceStatic {
 
    static final int reverseTicks = 10;
    static boolean intakeRunning = false;
+   static boolean transferRunning = false;
+   static boolean gateOpen = false;
 
    public static void setup(Parts p) {
       parts = p;
@@ -65,18 +67,20 @@ public class TB_Intake implements PartsInterfaceStatic {
 
    public static void stop() {
       StateMachine.stopGroups("intake", "transfer");
-      motorIntake.setPower(0);
-      motorTransfer.setPower(0);
+      intakeOff();
       servoGateL.disable();
       servoGateR.disable();
    }
 
    public static void intakeOn() {
+      intakeRunning = true;
       motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
       motorIntake.setPower(1);
    }
 
    public static void intakeOff() {
+      intakeRunning = false;
+      transferRunning = false;
       motorIntake.setPower(0);
       motorTransfer.setPower(0);
    }
@@ -89,6 +93,8 @@ public class TB_Intake implements PartsInterfaceStatic {
    }
 
    public static void transferOn() {
+      transferRunning = true;
+      intakeRunning = true;
       motorIntake.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
       motorTransfer.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
       motorIntake.setPower(1);
@@ -96,15 +102,18 @@ public class TB_Intake implements PartsInterfaceStatic {
    }
 
    public static void transferOff() {
+      transferRunning = false;
       motorTransfer.setPower(0);
    }
 
    public static void gateOpen() {
+      gateOpen = true;
       servoGateL.setPosition(servoGateLOpen);
       servoGateR.setPosition(servoGateROpen);
    }
 
    public static void gateClose() {
+      gateOpen = false;
       servoGateL.setPosition(servoGateLClosed);
       servoGateR.setPosition(servoGateRClosed);
    }
