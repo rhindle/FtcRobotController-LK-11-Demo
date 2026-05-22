@@ -29,6 +29,9 @@ import org.firstinspires.ftc.teamcode.RobotParts.Test2025.T25_Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.TestLL.TLL_Auto;
 import org.firstinspires.ftc.teamcode.RobotParts.TestLL.TLL_Limelight;
 import org.firstinspires.ftc.teamcode.RobotParts.TestLL.TLL_Misc;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Intake;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_LL;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 
@@ -64,6 +67,7 @@ public class Parts implements PartsInterface {
    public boolean useAprilTag = false;
    public boolean useNeoMatrix = false;
    public boolean useIMU = true;   // todo: make everything work when this is disabled; odometry requires heading for example.
+   public boolean useLimeLight = false;
    public boolean useForzaControls = false;
    public Position robotPosition = new Position();
    public Position fieldStartPosition;
@@ -111,7 +115,12 @@ public class Parts implements PartsInterface {
    public TLL_Misc tLL_Misc;
    public TLL_Auto tLL_Auto;
    public TLL_Limelight tLL_Limelight;
+   //---
 
+   //---TurretBot Unique
+//   public TB_Intake tb_Intake;
+//   public TB_Turret tb_turret;
+   public TB_LL rb_LL;
    //---
 
    /* Constructor */
