@@ -105,9 +105,9 @@ public class ControlsTB extends Controls {
       }
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
          // modify spin speed
-         TB_Turret.spinnerTargetSpeed += gamepad1.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
-         TB_Turret.spinnerTargetSpeed += gamepad1.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
-         TB_Turret.spinnerTargetSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerTargetSpeed));
+         TB_Turret.spinnerManualSpeed += gamepad1.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerManualSpeed += gamepad1.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerManualSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerManualSpeed));
       }
 
       if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
@@ -124,7 +124,8 @@ public class ControlsTB extends Controls {
       if (buttonMgr.getState(2, Buttons.x, State.isPressed)) {
          // spin up
          StateMachine.stopGroups("spinner");
-         TB_Turret.setMotorSpinSpeed();
+//         TB_Turret.setMotorSpinSpeed();
+         TB_Turret.setSpinnerTargetSpeed(TB_Turret.spinnerManualSpeed);
       }
       if (buttonMgr.getState(2, Buttons.y, State.wasPressed)) {
          //intake+transfer   (open gate, start both motors)

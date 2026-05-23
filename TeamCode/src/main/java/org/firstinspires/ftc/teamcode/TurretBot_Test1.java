@@ -8,13 +8,11 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.Intake.SB_Intake;
-import org.firstinspires.ftc.teamcode.RobotParts.SpintakeBot.PartsSB;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.PartsTB;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "TurretBot_Test1", group = "")
-@Disabled
+//@Disabled
 public class TurretBot_Test1 extends LinearOpMode {
 
     public Parts parts;
@@ -36,7 +34,8 @@ public class TurretBot_Test1 extends LinearOpMode {
         parts.useDrivetrainEncoders = true;
         parts.reverseDrive = false;
         parts.useDistanceSensors = false;
-        parts.fieldStartPosition = new Position(36,-63,90);  // red side, to the right, facing forward
+//        parts.fieldStartPosition = new Position(36,-63,90);  // red side, to the right, facing forward
+        parts.fieldStartPosition = new Position(0,0,180);  // center, facing back ball
             // reminder: Y goes away from red.
 //        parts.odoRobotOffset = new Position (2.25,0,0);  // if this is inherent to the robot, should it be in PartsDS?
 //        parts.slamraRobotOffset = new Position(-8,-0.75,0); //new Position(-8,-1,0);
@@ -51,7 +50,7 @@ public class TurretBot_Test1 extends LinearOpMode {
 
         TelemetryMgr.setDebugLevel(10);
         TelemetryMgr.enableAllCategories();
-        parts.opMode.telemetry.setMsTransmissionInterval(11);
+//        parts.opMode.telemetry.setMsTransmissionInterval(11);
 
         /* Init Loop */
         while (!isStarted()) {

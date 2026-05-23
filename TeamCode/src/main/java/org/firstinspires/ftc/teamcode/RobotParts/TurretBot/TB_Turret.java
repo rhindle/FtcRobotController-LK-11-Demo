@@ -27,9 +27,9 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static double servoTurretLOffset = 0.0;
    public static double servoTurretROffset = 0.0;
 
-   public static double turretSweepRangeL = 115;
-   public static double turretSweepRangeR = 115;
-   public static double turretTurn90 = 0.33;  //todo: measure this
+   public static double turretSweepRangeL = 110;
+   public static double turretSweepRangeR = 110;
+   public static double turretTurn90 = -0.33;  //todo: measure this
    public static double turret1Degree = turretTurn90 / 90;
 
    public static DcMotorEx motorSpin1;
@@ -40,7 +40,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    static String servoHoodName = "servo2B";
    static String servoTurretLName = "servo5";
    static String servoTurretRName = "servo5B";
-   static String servoLEDName = "servo4B";
+   static String servoLEDName = "servo0";
 
    static double spinTicks = 28.0;
    static int spinMotorRPM = 6000;
@@ -49,6 +49,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    static double turretAngle;
    static double turretPos;
    static double spinnerTargetSpeed = 1500;
+   static double spinnerManualSpeed = 1500;
    static double spinnerIdleSpeed = 500;
    public static PIDFCoefficients spinnerPID = new PIDFCoefficients(100,0,0,12.4);
 
@@ -63,6 +64,10 @@ public class TB_Turret implements PartsInterfaceStatic {
 
    public static int spinnerTolerance = 50; // 75;
    public static int spinnerUndershoot = 100;
+
+   static final double[][] turretTable = {{48, 0.129, 2000},  // distance, hood position, spinner speed
+           {98, 0.348, 2500},
+           {140, 0.501, 3000}};
 
    public static void setup(Parts p) {
       parts = p;
@@ -125,6 +130,7 @@ public class TB_Turret implements PartsInterfaceStatic {
       if (turretArmed) {
          double hoodPos = calcHoodForDistance(targetVector.distance);
          servoHood.setPosition(hoodPos);
+         servoHoodPos = hoodPos;
       }
 
       // update spinner
@@ -184,12 +190,13 @@ public class TB_Turret implements PartsInterfaceStatic {
       }
    }
 
-   public static void setMotorSpinSpeed() {
-      setSpinnerTargetSpeed(spinnerTargetSpeed);
-   }
+//   public static void setMotorSpinSpeed() {
+//      setSpinnerTargetSpeed(spinnerTargetSpeed);
+//   }
 
    public static void setSpinnerTargetSpeed(double rpm) {
       if (rpm < 0 || rpm > 5500) return;
+      spinnerTargetSpeed = rpm;
       double velocity = rpm / (60.0 / spinTicks);
       motorSpin1.setVelocity(velocity);
       motorSpin2.setVelocity(velocity);
@@ -245,9 +252,6 @@ public class TB_Turret implements PartsInterfaceStatic {
 //   static final double spinMiddle               = 3900;
 //   static final double spinFar                  = 4500;
 
-   static final double[][] turretTable = {{48, 0.129, 3300},  // distance, hood position, spinner speed
-                                          {98, 0.348, 3900},
-                                          {140, 0.501, 4500}};
 
    public static double calcHoodForDistance(double distance) {
 //      int i;
