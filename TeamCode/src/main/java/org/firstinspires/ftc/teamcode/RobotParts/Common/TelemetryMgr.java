@@ -150,6 +150,8 @@ public class TelemetryMgr {
         TASK_EXT("TSX"),
         SB_INTAKE("SBI"),
         T25_EFF("EFF"),
+        TB_INTAKE("TBI"),
+        TB_TURRET("TBT"),
         LL("LL3"),
         LL_EXT("LLX"),
         PINPOINT ("PPT"),

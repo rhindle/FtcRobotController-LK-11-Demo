@@ -15,7 +15,7 @@ public class PinpointTB extends Pinpoint {
         deviceName = "pinpoint";
         xDirection = GoBildaPinpointDriver.EncoderDirection.REVERSED;
         yDirection = GoBildaPinpointDriver.EncoderDirection.FORWARD;
-        resolution = 13.26291192f;
+        resolution = 19.89436789f;
         //offsets are taken care of with parts.pinpointRobotOffset
     }
 }

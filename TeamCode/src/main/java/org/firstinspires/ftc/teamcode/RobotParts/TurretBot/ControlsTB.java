@@ -72,6 +72,21 @@ public class ControlsTB extends Controls {
 //                 fineR * speedFine);
 //      }
 
+      // turret test stuff
+      if (buttonMgr.getState(1, Buttons.x, State.wasSingleTapped)) {
+         TB_Turret.armTurret(false);
+      }
+      if (buttonMgr.getState(1, Buttons.x, State.wasDoubleTapped)) {
+         TB_Turret.armTurret(true);
+      }
+      if (buttonMgr.getState(1, Buttons.y, State.wasSingleTapped)) {
+         TB_Turret.armSpinner(false);
+      }
+      if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
+         TB_Turret.armSpinner(true);
+      }
+
+
       if (buttonMgr.getState(2, Buttons.dpad_left, State.wasPressed)) {
          TB_Intake.gateOpen();
       }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.RobotParts.TurretBot;
 
+import android.annotation.SuppressLint;
+
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -22,6 +24,14 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static ServoSSR servoTurretR;
    public static ServoSSR servoLED;
 
+   public static double servoTurretLOffset = 0.0;
+   public static double servoTurretROffset = 0.0;
+
+   public static double turretSweepRangeL = 115;
+   public static double turretSweepRangeR = 115;
+   public static double turretTurn90 = 0.33;  //todo: measure this
+   public static double turret1Degree = turretTurn90 / 90;
+
    public static DcMotorEx motorSpin1;
    public static DcMotorEx motorSpin2;
 
@@ -36,6 +46,8 @@ public class TB_Turret implements PartsInterfaceStatic {
    static int spinMotorRPM = 6000;
 
    static double servoHoodPos = 0.5;
+   static double turretAngle;
+   static double turretPos;
    static double spinnerTargetSpeed = 1500;
    static double spinnerIdleSpeed = 500;
    public static PIDFCoefficients spinnerPID = new PIDFCoefficients(100,0,0,12.4);
@@ -57,9 +69,17 @@ public class TB_Turret implements PartsInterfaceStatic {
    }
 
    public static void initialize(){
-      servoHood = new ServoSSR(parts.robotV2.getServoByName(servoHoodName)).setDirectionSSR(Servo.Direction.FORWARD).setSweepTime(1200);
-      servoTurretL = new ServoSSR(parts.robotV2.getServoByName(servoTurretLName)).setDirectionSSR(Servo.Direction.FORWARD).setSweepTime(1500);
-      servoTurretR = new ServoSSR(parts.robotV2.getServoByName(servoTurretRName)).setDirectionSSR(Servo.Direction.FORWARD).setSweepTime(1500);
+      servoHood = new ServoSSR(parts.robotV2.getServoByName(servoHoodName))
+              .setDirectionSSR(Servo.Direction.FORWARD)
+              .setSweepTime(1200);
+      servoTurretL = new ServoSSR(parts.robotV2.getServoByName(servoTurretLName))
+              .setDirectionSSR(Servo.Direction.FORWARD)
+              .setOffset(servoTurretLOffset)
+              .setSweepTime(1500);
+      servoTurretR = new ServoSSR(parts.robotV2.getServoByName(servoTurretRName))
+              .setDirectionSSR(Servo.Direction.FORWARD)
+              .setOffset(servoTurretROffset)
+              .setSweepTime(1500);
       servoLED = new ServoSSR(parts.robotV2.getServoByName(servoLEDName));
 
       motorSpin1 = parts.robotV2.getMotorByName(motorSpin1Name);
@@ -85,6 +105,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static void preRun() {
    }
 
+   @SuppressLint("DefaultLocale")
    public static void runLoop() {
 
       // update internal target vector
@@ -92,22 +113,23 @@ public class TB_Turret implements PartsInterfaceStatic {
 
       // update turret position
       if (turretArmed) {
-         double turretAngle = getTurretAngle(TB_Misc.targetCurrent);
-         double turretPos = getTurretValueFromAngle(turretAngle);
+         turretAngle = getTurretAngle(TB_Misc.targetCurrent);
+         turretOutOfRange = turretAngle > turretSweepRangeL || turretAngle < -turretSweepRangeR;
+         turretPos = getTurretValueFromAngle(turretAngle);
          servoTurretL.setPosition(turretPos);
          servoTurretR.setPosition(turretPos);
-         turretOutOfRange = turretPos == 0 || turretPos == 1;
+//         turretOutOfRange = turretPos == 0 || turretPos == 1;
       }
 
       // update hood
       if (turretArmed) {
-         double hoodPos = getHoodValueFromDistance(targetVector.distance);
+         double hoodPos = calcHoodForDistance(targetVector.distance);
          servoHood.setPosition(hoodPos);
       }
 
       // update spinner
       if (spinnerArmed) {
-         double spinnerRPM = getSpinnerRPMfromDistance(targetVector.distance);
+         double spinnerRPM = calcRpmForDistance(targetVector.distance);
          setSpinnerTargetSpeed(spinnerRPM);
       }
 
@@ -118,15 +140,21 @@ public class TB_Turret implements PartsInterfaceStatic {
       else if (turretOutOfRange) {
          servoLED.setPosition(TB_Misc.rgbIndicatorColor.Red.color);
       }
-      else if (isSpinnerInTolerance() && servoHood.isDone() && servoTurretL.isDone()) {
+      else if (isSpinnerInToleranceV2() && servoHood.isDone() && servoTurretL.isDone()) {
          servoLED.setPosition(TB_Misc.rgbIndicatorColor.Green.color);
       }
       else {
          servoLED.setPosition(TB_Misc.rgbIndicatorColor.Yellow.color);
       }
 
-      TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Target Vector", targetVector.toString());
-      TelemetryMgr.message(TelemetryMgr.Category.T25_EFF, "Spinner Speed", getSpinnerRPM());
+      TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Target Vector", targetVector.toString());
+      TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Turret Angle",
+              String.format("%.3f", turretPos) + " (" +
+              String.format("%.3f", turretAngle) + "°)");
+      TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Spinner Speed",
+              String.format("%05d", getSpinnerRPM()) + " (" +
+              String.format("%05d", (int)spinnerTargetSpeed) + ")");
+      TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Hood Pos", servoHoodPos);
    }
 
    public static void stop() {
@@ -136,6 +164,24 @@ public class TB_Turret implements PartsInterfaceStatic {
       servoHood.disable();
       servoTurretL.disable();
       servoTurretR.disable();
+      turretArmed = false;
+      spinnerArmed = false;
+   }
+
+   public static void armTurret(boolean arm) {
+      turretArmed = arm;
+      if (!turretArmed) {
+//         servoHood.setPosition(hoodNeutral);
+         servoTurretL.setPosition(0.5);
+         servoTurretR.setPosition(0.5);
+      }
+   }
+
+   public static void armSpinner(boolean arm) {
+      spinnerArmed = arm;
+      if (!spinnerArmed) {
+         spinOff();
+      }
    }
 
    public static void setMotorSpinSpeed() {
@@ -166,7 +212,7 @@ public class TB_Turret implements PartsInterfaceStatic {
       return (int) (getMotorSpinSpeed(motorSpin1) + getMotorSpinSpeed(motorSpin2)) / 2;
    }
 
-   public static double getTurretValueFromAngle(double angle) {
+//   public static double getTurretValueFromAngle(double angle) {
 //      // turret geared so 300° range = 400°
 //      // 0.5 = 0, 0.1 = 180, 0.9 = -180 ???
 //      // let's calculate with an offset of -0.5 to make calculation easier.
@@ -178,27 +224,71 @@ public class TB_Turret implements PartsInterfaceStatic {
 //      double qqq = qq + turretZeroOffset;
 //      return Functions.clamp(qqq, 0, 1.0);
 //      // note a value of 0 or 1 indicates beyond range!
-      return 0;  //major rework needed
+//      return 0;  //major rework needed
+//   }
+
+   public static double getTurretValueFromAngle(double angle) {
+//      angle = Functions.normalizeAngle(angle);
+//      angle = Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL);
+      return 0.5 + turret1Degree * Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL);
    }
 
-   /* ************  REPLACE THIS INTERPOLATION STUFF */
-   private static final double nearTest      = 48;  // 1 tile diagonally
-   private static final double midTest       = 98;
-   private static final double farTest       = 140;
-   static final double hoodNearest              = 0.129;  // 1 tile diagonally
-   static final double hoodFar                  = 0.501;
-   static final double spinNear                 = 3300;
-   static final double spinFar                  = 4500;
 
-   public static double getHoodValueFromDistance(double distance) {
-      return Functions.interpolate(distance, nearTest, farTest, hoodNearest, hoodFar);
+//   /* ************  REPLACE THIS INTERPOLATION STUFF */
+//   private static final double nearTest      = 48;  // 1 tile diagonally
+//   private static final double midTest       = 98;
+//   private static final double farTest       = 140;
+//   static final double hoodNearest              = 0.129;  // 1 tile diagonally
+//   static final double hoodMiddle               = 0.348;
+//   static final double hoodFar                  = 0.501;
+//   static final double spinNear                 = 3300;
+//   static final double spinMiddle               = 3900;
+//   static final double spinFar                  = 4500;
+
+   static final double[][] turretTable = {{48, 0.129, 3300},  // distance, hood position, spinner speed
+                                          {98, 0.348, 3900},
+                                          {140, 0.501, 4500}};
+
+   public static double calcHoodForDistance(double distance) {
+//      int i;
+//      for (i=0; i<turretTable.length; i++) {
+//         if (distance <= turretTable[i][0]) break;
+//      }
+//      if (i==0) return turretTable[0][1];
+//      if (i==turretTable.length) return turretTable[turretTable.length-1][1];
+//      return Functions.interpolate(distance, turretTable[i-1][0], turretTable[i][0], turretTable[i-1][1], turretTable[i][1]);+
+      return interpolateUsingTable(turretTable, distance, 1);
    }
 
-   public static double getSpinnerRPMfromDistance(double distance) {
-      return Functions.interpolate(distance, nearTest, farTest, spinNear, spinFar);
+   public static double calcRpmForDistance(double distance) {
+      return interpolateUsingTable(turretTable, distance, 2);
    }
+
+   public static double interpolateUsingTable(double[][] table, double value, int index) {
+      // index must be 1 or 2 for turretTable.  Probably should sanity check.
+      // This does not extrapolate beyond the ends of the table; uses the first or last value instead.
+      int i;
+      for (i = 0; i < table.length; i++) {
+         if (value <= table[i][0]) break;
+      }
+      if (i==0) return table[0][index];
+      if (i==table.length) return table[table.length-1][index];
+      return Functions.interpolate(value, table[i-1][0], table[i][0], table[i-1][index], table[i][index]);
+   }
+
+//   public static double getHoodValueFromDistance(double distance) {
+//      return Functions.interpolate(distance, nearTest, farTest, hoodNearest, hoodFar);
+//   }
+//
+//   public static double getSpinnerRPMfromDistance(double distance) {
+//      return Functions.interpolate(distance, nearTest, farTest, spinNear, spinFar);
+//   }
 
    public static Vector2D getTargetVector(Position target) {
+      //todo: make an improved version for shoot-on-the-move target adjustment
+      //   which will need to account for:
+      //      - change in position of the robot based on velocity and the time to transfer
+      //      - velocity of the robot imparted to the ball (and the time of flight)
       if (target==null || parts.positionMgr.noPosition()) return new Vector2D();
       return new Vector2D(parts.positionMgr.robotPosition, target);
    }
@@ -216,7 +306,7 @@ public class TB_Turret implements PartsInterfaceStatic {
       return Math.abs(getSpinnerRPM() - targetRPM) <= tolerance;
    }
 
-   public boolean isSpinnerInToleranceV2() {
+   static public boolean isSpinnerInToleranceV2() {
       // todo: figure out if undershoot is consistent or should be a multiplier
       double target = spinnerTargetSpeed - spinnerUndershoot;  // adjusted target speed accounting for undershoot
       double diff = Math.abs(getSpinnerRPM() - target);  // difference between actual and target
