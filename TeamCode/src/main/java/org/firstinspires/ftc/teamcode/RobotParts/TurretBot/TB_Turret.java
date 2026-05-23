@@ -123,9 +123,10 @@ public class TB_Turret implements PartsInterfaceStatic {
          turretAngle = getTurretAngle(TB_Misc.targetCurrent);
          turretOutOfRange = turretAngle > turretSweepRangeL || turretAngle < -turretSweepRangeR;
          turretPos = getTurretValueFromAngle(turretAngle);
-         servoTurretL.setPosition(turretPos);
-         servoTurretR.setPosition(turretPos);
-//         turretOutOfRange = turretPos == 0 || turretPos == 1;
+         if (!Double.isNaN(turretPos)) {  //todo: Does this prevent the error on 5/23/2026? If so, how does this become NaN?
+            servoTurretL.setPosition(turretPos);
+            servoTurretR.setPosition(turretPos);
+         }
       }
 
       // update hood
@@ -180,7 +181,6 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static void armTurret(boolean arm) {
       turretArmed = arm;
       if (!turretArmed) {
-//         servoHood.setPosition(hoodNeutral);
          servoTurretL.setPosition(0.5);
          servoTurretR.setPosition(0.5);
       }
@@ -192,10 +192,6 @@ public class TB_Turret implements PartsInterfaceStatic {
          spinOff();
       }
    }
-
-//   public static void setMotorSpinSpeed() {
-//      setSpinnerTargetSpeed(spinnerTargetSpeed);
-//   }
 
    public static void setSpinnerTargetSpeed(double rpm) {
       if (rpm < 0 || rpm > 5500) return;
@@ -222,49 +218,12 @@ public class TB_Turret implements PartsInterfaceStatic {
       return (int) (getMotorSpinSpeed(motorSpin1) + getMotorSpinSpeed(motorSpin2)) / 2;
    }
 
-//   public static double getTurretValueFromAngle(double angle) {
-//      // turret geared so 300° range = 400°
-//      // 0.5 = 0, 0.1 = 180, 0.9 = -180 ???
-//      // let's calculate with an offset of -0.5 to make calculation easier.
-//      angle = Functions.normalizeAngle(angle);
-//      double rangeFraction = 0.9;
-//      // 180*.9
-//      double q = (angle / 180) * rangeFraction;
-//      double qq = q/2 + 0.5;
-//      double qqq = qq + turretZeroOffset;
-//      return Functions.clamp(qqq, 0, 1.0);
-//      // note a value of 0 or 1 indicates beyond range!
-//      return 0;  //major rework needed
-//   }
-
    public static double getTurretValueFromAngle(double angle) {
-//      angle = Functions.normalizeAngle(angle);
-//      angle = Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL);
 //      return 0.5 + turret1Degree * Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL);
       return Functions.clamp(0.5 + turret1Degree * Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL),0,1);
    }
 
-
-//   /* ************  REPLACE THIS INTERPOLATION STUFF */
-//   private static final double nearTest      = 48;  // 1 tile diagonally
-//   private static final double midTest       = 98;
-//   private static final double farTest       = 140;
-//   static final double hoodNearest              = 0.129;  // 1 tile diagonally
-//   static final double hoodMiddle               = 0.348;
-//   static final double hoodFar                  = 0.501;
-//   static final double spinNear                 = 3300;
-//   static final double spinMiddle               = 3900;
-//   static final double spinFar                  = 4500;
-
-
    public static double calcHoodForDistance(double distance) {
-//      int i;
-//      for (i=0; i<turretTable.length; i++) {
-//         if (distance <= turretTable[i][0]) break;
-//      }
-//      if (i==0) return turretTable[0][1];
-//      if (i==turretTable.length) return turretTable[turretTable.length-1][1];
-//      return Functions.interpolate(distance, turretTable[i-1][0], turretTable[i][0], turretTable[i-1][1], turretTable[i][1]);+
       return interpolateUsingTable(turretTable, distance, 1);
    }
 
@@ -283,14 +242,6 @@ public class TB_Turret implements PartsInterfaceStatic {
       if (i==table.length) return table[table.length-1][index];
       return Functions.interpolate(value, table[i-1][0], table[i][0], table[i-1][index], table[i][index]);
    }
-
-//   public static double getHoodValueFromDistance(double distance) {
-//      return Functions.interpolate(distance, nearTest, farTest, hoodNearest, hoodFar);
-//   }
-//
-//   public static double getSpinnerRPMfromDistance(double distance) {
-//      return Functions.interpolate(distance, nearTest, farTest, spinNear, spinFar);
-//   }
 
    public static Vector2D getTargetVector(Position target) {
       //todo: make an improved version for shoot-on-the-move target adjustment

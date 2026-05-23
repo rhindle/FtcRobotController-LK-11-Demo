@@ -13,17 +13,11 @@ public class ControlsTB extends Controls {
    double speedSlow = 0.25;
    double speedNormal = 0.5;
    double speedFast = 1.0;
-   float speedFine = (float) 0.2;   // float on purpose!
    public boolean forza = false;
    
    // working variables
    boolean isStopped = false;
    float speedFactor = 1;    // this is float on purpose so drivedata overload is correct!
-   double slideSpeed = 0;
-   double liftSpeed = 0;
-   float fineX = 0;
-   float fineY = 0;
-   float fineR = 0;
 
    public ControlsTB(Parts parts) {
       super(parts);
@@ -61,16 +55,6 @@ public class ControlsTB extends Controls {
                  gamepad1.left_stick_x * speedFactor, 
                  gamepad1.right_stick_x * speedFactor);
       }
-
-
-//      fineX = gamepad2.left_stick_x;
-//      fineY = gamepad2.left_stick_y;
-//      // if the intake driver is trying to control the robot, override the primary driver controls
-//      if (Math.abs(Functions.mathHypotenuse(fineX, fineY))>0.125 || Math.abs(fineR)>0.125) {
-//         driveData = new DriveData(fineX * speedFine,
-//                 fineY * speedFine,
-//                 fineR * speedFine);
-//      }
 
       // turret test stuff
       if (buttonMgr.getState(1, Buttons.x, State.wasSingleTapped)) {
@@ -115,16 +99,11 @@ public class ControlsTB extends Controls {
          TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
          if (TB_Intake.intakeRunning) TB_Tasks.smIntakeOn.restart();
          else TB_Tasks.smIntakeOff.restart();
-//                smIntakeOn.restart();
       }
-//            if (buttonMgr.getState(1, Buttons.a, State.wasReleased)) {
-//                // toggle intake off  (stop intake, release pressure)
-//                smIntakeOff.restart();
-//            }
+
       if (buttonMgr.getState(2, Buttons.x, State.isPressed)) {
          // spin up
          StateMachine.stopGroups("spinner");
-//         TB_Turret.setMotorSpinSpeed();
          TB_Turret.setSpinnerTargetSpeed(TB_Turret.spinnerManualSpeed);
       }
       if (buttonMgr.getState(2, Buttons.y, State.wasPressed)) {
@@ -134,8 +113,6 @@ public class ControlsTB extends Controls {
       }
       if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
          // idle
-//                motorSpin1.setVelocity(spinnerIdleSpeed / (60.0 / spinTicks));
-//                motorSpin2.setVelocity(spinnerIdleSpeed / (60.0 / spinTicks));
          TB_Tasks.smSpinDown.restart();
          TB_Intake.intakeOff();
          TB_Intake.gateClose();
@@ -159,59 +136,6 @@ public class ControlsTB extends Controls {
          TB_Intake.stop();
          // add drivetrain, etc
       }
-//
-//      if (!buttonMgr.getState(2,Buttons.left_bumper, State.isPressed)) {  // left bumper not pressed
-//         if (buttonMgr.getState(2, Buttons.x, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_SAFE_PARK);
-//         }
-//         if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_START_SAMPLING);
-//         }
-//         if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_INTAKE);
-//         }
-//         if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_TRANSFER);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_PREP_DEPOSIT);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_right, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.AUTO_DEPOSIT);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasSingleTapped)) {
-//            SB_Intake.action(IntakeActions.SPECIMEN_GRAB_READY);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasDoubleTapped)) {
-//            SB_Intake.action(IntakeActions.SPECIMEN_GRAB);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasSingleTapped)) {
-//            SB_Intake.action(IntakeActions.SPECIMEN_HANG_READY);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasDoubleTapped)) {
-//            SB_Intake.action(IntakeActions.SPECIMEN_HANG);
-//         }
-//      }
-//      else {  // left bumper is pressed
-//         if (buttonMgr.getState(2, Buttons.a, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SPINNER_IN);
-//         }
-//         if (buttonMgr.getState(2, Buttons.b, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SPINNER_OFF);
-//         }
-//         if (buttonMgr.getState(2, Buttons.y, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SPINNER_OUT);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SPINTAKE_SAFE);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_right, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SPINTAKE_ALMOSTFLOOR);
-//         }
-//         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasTapped)) {
-//            SB_Intake.action(IntakeActions.SPINTAKE_DISABLE);
-//         }
-//      }
 
       // Toggle pivot
       if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
@@ -242,11 +166,11 @@ public class ControlsTB extends Controls {
       }
 
       // Delete this test - position queue
-      if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
-              buttonMgr.getState(1,Buttons.right_trigger, State.isHeld) &&
-              buttonMgr.getState(1,Buttons.left_trigger, State.wasDoubleTapped)) {
-//         parts.dsAuto.testAutoMethod();
-      }
+//      if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
+//              buttonMgr.getState(1,Buttons.right_trigger, State.isHeld) &&
+//              buttonMgr.getState(1,Buttons.left_trigger, State.wasDoubleTapped)) {
+////         parts.dsAuto.testAutoMethod();
+//      }
    }
 
    public void stopEverything() {

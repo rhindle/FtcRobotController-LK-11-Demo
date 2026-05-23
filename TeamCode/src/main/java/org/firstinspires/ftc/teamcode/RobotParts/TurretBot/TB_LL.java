@@ -10,7 +10,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
-import org.firstinspires.ftc.teamcode.Tools.PartsInterface;
 import org.firstinspires.ftc.teamcode.Tools.PartsInterfaceStatic;
 import org.firstinspires.ftc.teamcode.Tools.ServoSSR;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
@@ -22,9 +21,6 @@ public class TB_LL implements PartsInterfaceStatic {
 
     public static Parts parts;
     static Limelight3A limelight;
-//    public TB_LL(Robot parent) {
-//        super(parent, "limelight");
-//    }
 
     // public variables for configuration
     static int sizeOfBuffer = 50;                           // number of transforms for averaging & standard deviation
@@ -36,7 +32,6 @@ public class TB_LL implements PartsInterfaceStatic {
     static public String ledServoName = "servo5";          // name of the servo for the LED indicator
 
     // internal variables
-//    protected PositionTracker positionTracker;
     static final Position zero = new Position(0,0,0);
     static int bufferPointer = 0;
     static boolean transformValid = false;                  // Flips to true once buffer has filled
@@ -106,7 +101,6 @@ public class TB_LL implements PartsInterfaceStatic {
 //                parent.opMode.telemetry.addData("Color", "X: %.2f, Y: %.2f", cr.getTargetXDegrees(), cr.getTargetYDegrees());
 //            }
         } else {
-//            parent.opMode.telemetry.addData("Limelight", "No data available");
             TelemetryMgr.message(TelemetryMgr.Category.LL, "Limelight", "No data available");
         }
 
@@ -118,20 +112,11 @@ public class TB_LL implements PartsInterfaceStatic {
     }
 
 //    @Override
-//    public void onBeanLoad() {
-//        positionTracker = getBeanManager().getBestMatch(PositionTracker.class, false, false);
-//    }
-
-//    @Override
     public static void initialize() {
-//        limelight = parent.opMode.hardwareMap.get(Limelight3A.class, "limelight");
         limelight = parts.robotV2.hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
-//        parent.opMode.telemetry.setMsTransmissionInterval(11);
-//        parts.opMode.telemetry.setMsTransmissionInterval(11);
         limelight.start();
         if (ledServoName != null && !ledServoName.isEmpty())
-//            ledIndicator = parent.opMode.hardwareMap.get(Servo.class, ledServoName);
             ledIndicator = new ServoSSR(parts.robotV2.getServoByName(ledServoName));
     }
 
@@ -165,26 +150,22 @@ public class TB_LL implements PartsInterfaceStatic {
         }
 
         // Calculate the fused position using the odo position and saved transform
-//        Position currentPos = positionTracker.getCurrentPosition();
         Position currentPos = parts.positionMgr.beforeOverride;
         if (currentPos != null && llSavedTransform != null) {
             llFusedPosition = llSavedTransform.transformPosition(currentPos);
 //            DecodeSettings.storeFusedPosition(llFusedPosition);
-//            parent.opMode.telemetry.addData("Fused", llFusedPosition.toString());
             TelemetryMgr.message(TelemetryMgr.Category.LL, "Fused", llFusedPosition.toString());
         }
 
         // Verify that the results are updating (not stuck) and abort if not;
         // this deals with LL disconnects where the result stops updating
         llTimeStamp = llResult.getTimestamp();
-//        parent.opMode.telemetry.addData("LLTIME", llTimeStamp);
         TelemetryMgr.message(TelemetryMgr.Category.LL, "LLTIME", llTimeStamp);
         if (llTimeStamp != 0 && llTimeStamp == llLastTimeStamp) {
             llStuck++;
             if (llStuck > 5) {
                 isStuck = true;
                 setLedIndicator(rgbIndicatorColor.Orange);
-//                parent.opMode.telemetry.addData("LLPOS", "Stuck / Disconnect");
                 TelemetryMgr.message(TelemetryMgr.Category.LL, "LLPOS", "Stuck / Disconnect");
                 finalTelemetry();
                 return;
@@ -213,14 +194,6 @@ public class TB_LL implements PartsInterfaceStatic {
                     llResult.getBotpose().getPosition().toUnit(DistanceUnit.INCH).y,
                     llResult.getBotpose().getOrientation().getYaw(AngleUnit.DEGREES));
 
-//            // Verify that the position is updating (not stuck) and abort if not;
-//            // this deals with LL disconnects where the result stops updating
-//            if (!isPositionChanging()) {
-//                setLedIndicator(rgbIndicatorColor.Orange);
-//                parent.opMode.telemetry.addData("LLPOS", "Stuck / Disconnect");
-//                finalTelemetry();
-//                return;
-//            }
 
             // Calculate an "offset" for the tag in the image for the purpose of ignoring
             // positions that are less accurate (e.g., off to the edges of the video frame)
@@ -229,7 +202,6 @@ public class TB_LL implements PartsInterfaceStatic {
                     llResult.getTy(),  // How far up or down the target is (degrees)
                     llResult.getTa()); // How big the target looks (0%-100% of the image)
 
-//            parent.opMode.telemetry.addData("LLPOS", llPosition.toString());
             TelemetryMgr.message(TelemetryMgr.Category.LL, "LLPOS", llPosition.toString());
 
             // Ignore zero position such as when viewing the obelisk (or other reasons?)
@@ -275,8 +247,6 @@ public class TB_LL implements PartsInterfaceStatic {
         }
         else {
             // if there isn't a valid result, keep the telemetry consistent
-//            parent.opMode.telemetry.addData("LLTIME", "n/a");
-//            parent.opMode.telemetry.addData("LLPOS", "n/a");
             TelemetryMgr.message(TelemetryMgr.Category.LL, "LLPOS", "n/a");
             finalTelemetry();
         }
@@ -284,10 +254,6 @@ public class TB_LL implements PartsInterfaceStatic {
 
     static void finalTelemetry () {
         // Used to keep the telemetry consistent each loop (not bouncing)
-//        parent.opMode.telemetry.addData("Accpt", acceptableStdDev.toString());
-//        parent.opMode.telemetry.addData("StDev", llStandardDeviation.toString());
-//        parent.opMode.telemetry.addData("Trans", llSavedTransform.toString());
-//        parent.opMode.telemetry.addData("LastV", llLastValidTransform.toString());
         TelemetryMgr.message(TelemetryMgr.Category.LL, "Accpt", acceptableStdDev.toString());
         TelemetryMgr.message(TelemetryMgr.Category.LL, "StDev", llStandardDeviation.toString());
         TelemetryMgr.message(TelemetryMgr.Category.LL, "Trans", llSavedTransform.toString());
@@ -321,7 +287,6 @@ public class TB_LL implements PartsInterfaceStatic {
     static public void applyTransform() {
         // Updates the saved transform to the last valid transform
         llSavedTransform = llLastValidTransform.clone();
-//        positionTracker.setOverrideTransform(llSavedTransform);
         parts.positionMgr.overrideTransform = llSavedTransform;
         if (!automaticTransform) {
             setLedIndicator(rgbIndicatorColor.Off);
@@ -375,20 +340,6 @@ public class TB_LL implements PartsInterfaceStatic {
         z = Math.sqrt(z / buffer.length);
         return new Position(x, y, z);
     }
-
-//    public boolean isPositionChanging() {
-//        // Compares position to previous position to see if it's changing;
-//        // consider it stuck after a certain number of repeats (currently 5)
-//        if (llPosition.isEqualTo(llLastPosition) && !llPosition.isEqualTo(zero)) {
-//            llStuck++;  // rollover is not a danger
-//            if (llStuck >= 5) return false;
-//        }
-//        else {
-//            llStuck = 0;
-//            llLastPosition = llPosition.copy();
-//        }
-//        return true;
-//    }
 
     public enum rgbIndicatorColor {
         Off (0.0),

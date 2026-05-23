@@ -32,7 +32,6 @@ public class PartsTB extends Parts {
         }
         useRobotV2 = true;
         isSetup = true;
-//        pinpointRobotOffset = new Position(123,-165,0);  // team3
         pinpointRobotOffset = new Position(-86,-118,0);  // 14273 new chassis measured
 
 //        pinpointRobotOffset = new Position(-56.0,52.0,0);  // In mm, Refer to User Guide, Y offset of X, X offset of Y, R will be ignored
@@ -140,7 +139,6 @@ public class PartsTB extends Parts {
         userDrive.runLoop();
 //        autoDrive.runLoop();
         drivetrain.runLoop();
-//        t24Grabber.runLoop();
         TB_Intake.runLoop();
         TB_Turret.runLoop();
         StateMachine.runLoop();
@@ -150,28 +148,31 @@ public class PartsTB extends Parts {
         TelemetryMgr.Update();
     }
 
-//    @Override
-//    public void autoRunLoop() {
-//        if (!opMode.opModeIsActive()) return;
-//        addTelemetryLoopStart();
-//
-//        robotV2.runLoop();
-//        buttonMgr.runLoop();
-//        if (useIMU) imuMgr.runLoop();
-//        if (usePinpoint) pinpoint.runLoop();
-//        if (useSlamra) slamra.runLoop();
-//        if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
-//        if (useLimeLight) TB_LL.runLoop();
-//        positionMgr.runLoop();
-//        controls.runLoop();
-//////        userDrive.runLoop();
-////        autoDrive.runLoop();
-//        drivetrain.runLoop();
-//
-//        addTelemetryLoopEnd();
-//        StateMachine.addTelemetry();
-//        TelemetryMgr.Update();
-//    }
+    @Override
+    public void autoRunLoop() {
+        if (!opMode.opModeIsActive()) return;
+        addTelemetryLoopStart();
+
+        robotV2.runLoop();
+        buttonMgr.runLoop();
+        if (useIMU) imuMgr.runLoop();
+        if (usePinpoint) pinpoint.runLoop();
+        if (useSlamra) slamra.runLoop();
+        if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
+        if (useLimeLight) TB_LL.runLoop();
+        positionMgr.runLoop();
+        controls.runLoop();  // todo: comment this out?
+//        userDrive.runLoop();
+//        autoDrive.runLoop();
+        drivetrain.runLoop();
+        TB_Intake.runLoop();
+        TB_Turret.runLoop();
+        StateMachine.runLoop();
+
+        addTelemetryLoopEnd();
+        StateMachine.addTelemetry();
+        TelemetryMgr.Update();
+    }
 
     @Override
     public void stop() {

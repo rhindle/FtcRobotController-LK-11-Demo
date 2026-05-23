@@ -26,11 +26,6 @@ class TB_Tasks {
     static void buildStateMachines() {
         StateMachine task;
 
-        // toggle intake on  (close gate, start intake)
-        // toggle intake off  (stop intake, release pressure)
-        //intake+transfer   (open gate, start both motors)
-        // release pressure
-
         smIntakeOn = new StateMachine("intakeOn");
         task = smIntakeOn;
         task.setGroups("intake");  // will be killed by
