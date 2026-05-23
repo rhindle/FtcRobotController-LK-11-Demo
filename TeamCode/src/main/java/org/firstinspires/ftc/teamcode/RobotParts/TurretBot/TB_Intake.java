@@ -28,7 +28,7 @@ public class TB_Intake implements PartsInterfaceStatic {
    static final double servoGateROpen = 1;
    static final double servoGateRClosed = 0;
 
-   static final int reverseTicks = 10;
+   static final int reverseTicks = 5; //10;
    static boolean intakeRunning = false;
    static boolean transferRunning = false;
    static boolean gateOpen = false;

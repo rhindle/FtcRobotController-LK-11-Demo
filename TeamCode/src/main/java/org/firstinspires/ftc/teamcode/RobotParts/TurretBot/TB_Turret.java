@@ -65,9 +65,11 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static int spinnerTolerance = 50; // 75;
    public static int spinnerUndershoot = 100;
 
-   static final double[][] turretTable = {{48, 0.129, 2000},  // distance, hood position, spinner speed
-           {98, 0.348, 2500},
-           {140, 0.501, 3000}};
+   static final double[][] turretTable = {{50, 0.012, 2700},   // distance, hood position, spinner speed
+                                         {75, 0.260, 3000},
+                                         {100, 0.310, 3300},
+                                         {120, 0.32, 3500},
+                                         {140, 0.482, 4000}};
 
    public static void setup(Parts p) {
       parts = p;
@@ -159,7 +161,8 @@ public class TB_Turret implements PartsInterfaceStatic {
               String.format("%.3f", turretAngle) + "°)");
       TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Spinner Speed",
               String.format("%05d", getSpinnerRPM()) + " (" +
-              String.format("%05d", (int)spinnerTargetSpeed) + ")");
+              String.format("%05d", (int)spinnerTargetSpeed) + ") (" +
+              String.format("%05d", (int)spinnerManualSpeed) +")");
       TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Hood Pos", servoHoodPos);
    }
 
@@ -237,7 +240,8 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static double getTurretValueFromAngle(double angle) {
 //      angle = Functions.normalizeAngle(angle);
 //      angle = Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL);
-      return 0.5 + turret1Degree * Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL);
+//      return 0.5 + turret1Degree * Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL);
+      return Functions.clamp(0.5 + turret1Degree * Functions.clamp(angle, -turretSweepRangeR, turretSweepRangeL),0,1);
    }
 
 

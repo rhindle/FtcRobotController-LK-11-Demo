@@ -105,8 +105,8 @@ public class ControlsTB extends Controls {
       }
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
          // modify spin speed
-         TB_Turret.spinnerManualSpeed += gamepad1.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
-         TB_Turret.spinnerManualSpeed += gamepad1.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerManualSpeed += gamepad2.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerManualSpeed += gamepad2.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
          TB_Turret.spinnerManualSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerManualSpeed));
       }
 
