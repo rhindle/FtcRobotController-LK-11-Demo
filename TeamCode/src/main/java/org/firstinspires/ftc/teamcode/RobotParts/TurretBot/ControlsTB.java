@@ -13,11 +13,12 @@ public class ControlsTB extends Controls {
    double speedSlow = 0.25;
    double speedNormal = 0.5;
    double speedFast = 1.0;
-   public boolean forza = false;
-   
+
    // working variables
    boolean isStopped = false;
-   float speedFactor = 1;    // this is float on purpose so drivedata overload is correct!
+   boolean fulLSpeed = false;
+//   float speedFactor = 1;    // this is float on purpose so drivedata overload is correct!
+   float speedFactor = (float)speedNormal;
 
    public ControlsTB(Parts parts) {
       super(parts);
@@ -33,18 +34,25 @@ public class ControlsTB extends Controls {
    @Override
    public void userInput() {
 
-      speedFactor = (float)speedNormal;
-      parts.userDrive.setSpeedMaximum(speedNormal);
-      if (buttonMgr.getState(1, Buttons.right_bumper, State.isPressed)) {
-         speedFactor = (float)speedFast;
-         parts.userDrive.setSpeedMaximum(speedFast);
-      }
-      if (buttonMgr.getState(1, Buttons.left_bumper, State.isPressed)) {
-         speedFactor = (float)speedSlow;
-         parts.userDrive.setSpeedMaximum(speedSlow);
+      if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
+         fulLSpeed = !fulLSpeed;
+         if (fulLSpeed) speedFactor = (float)speedFast;
+         else speedFactor = (float)speedNormal;
+         parts.userDrive.setSpeedMaximum(speedFactor);
       }
 
-      if (!forza) {
+//      speedFactor = (float)speedNormal;
+//      parts.userDrive.setSpeedMaximum(speedNormal);
+//      if (buttonMgr.getState(1, Buttons.right_bumper, State.isPressed)) {
+//         speedFactor = (float)speedFast;
+//         parts.userDrive.setSpeedMaximum(speedFast);
+//      }
+//      if (buttonMgr.getState(1, Buttons.left_bumper, State.isPressed)) {
+//         speedFactor = (float)speedSlow;
+//         parts.userDrive.setSpeedMaximum(speedSlow);
+//      }
+
+      if (!TB_Misc.forza) {
          driveData = new DriveData(gamepad1.left_stick_x * speedFactor,
                  gamepad1.left_stick_y * speedFactor,
                  gamepad1.right_stick_x * speedFactor);
@@ -52,8 +60,8 @@ public class ControlsTB extends Controls {
       else {
          driveData = new DriveData(gamepad1.left_trigger * speedFactor,
                  gamepad1.right_trigger * speedFactor, 
-                 gamepad1.left_stick_x * speedFactor, 
-                 gamepad1.right_stick_x * speedFactor);
+                 gamepad1.right_stick_x * speedFactor,
+                 gamepad1.left_stick_x * speedFactor);
       }
 
       // turret test stuff
@@ -137,13 +145,13 @@ public class ControlsTB extends Controls {
          // add drivetrain, etc
       }
 
-      // Toggle pivot
-      if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
-         parts.userDrive.setLockRear(!parts.userDrive.getLockRear());
-      }
-      if (buttonMgr.getState(1, Buttons.y, State.wasHeld)) {
-         parts.userDrive.setLockFront(!parts.userDrive.getLockFront());
-      }
+//      // Toggle pivot
+//      if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
+//         parts.userDrive.setLockRear(!parts.userDrive.getLockRear());
+//      }
+//      if (buttonMgr.getState(1, Buttons.y, State.wasHeld)) {
+//         parts.userDrive.setLockFront(!parts.userDrive.getLockFront());
+//      }
 
       // Toggle FCD
       if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {

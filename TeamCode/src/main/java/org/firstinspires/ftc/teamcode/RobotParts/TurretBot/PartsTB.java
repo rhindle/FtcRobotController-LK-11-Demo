@@ -74,9 +74,11 @@ public class PartsTB extends Parts {
 
         if (useLimeLight) TB_LL.setup(this);
 
-        drivetrain.accelControl = false;
+        drivetrain.accelControl = true;  //!!!!!!!!!! todo: remove this if drivers don't like
+        drivetrain.accelControlRamp = 250;
         drivetrain.minimizeCycleTime = false;
         userDrive.useHeadingHold = false;
+        userDrive.useHoldPosition = false;
 
         StateMachine.reset();
     }
@@ -116,9 +118,9 @@ public class PartsTB extends Parts {
         if (usePinpoint) pinpoint.preRun();
         if (useODO) odometry.initialize();
         userDrive.initialize();
-//        autoDrive.initialize();
+        autoDrive.initialize();
         if (useODO) odometry.runLoop();  // get some things squared away before the regular runLoops start
-//        autoDrive.runLoop();
+        autoDrive.runLoop();
         if (useSlamra) slamra.preRun();
         if (useLimeLight) TB_LL.preRun();
     }
@@ -137,7 +139,7 @@ public class PartsTB extends Parts {
         positionMgr.runLoop();
         controls.runLoop();
         userDrive.runLoop();
-//        autoDrive.runLoop();
+        autoDrive.runLoop();
         drivetrain.runLoop();
         TB_Intake.runLoop();
         TB_Turret.runLoop();
@@ -163,7 +165,7 @@ public class PartsTB extends Parts {
         positionMgr.runLoop();
         controls.runLoop();  // todo: comment this out?
 //        userDrive.runLoop();
-//        autoDrive.runLoop();
+        autoDrive.runLoop();
         drivetrain.runLoop();
         TB_Intake.runLoop();
         TB_Turret.runLoop();

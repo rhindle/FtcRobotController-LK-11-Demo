@@ -68,10 +68,12 @@ public class UserDrive implements PartsInterface {
    // Determine motor speeds when under driver control
    public void userDrivePower () {
 
-      TelemetryMgr.message(Category.USERDRIVE, "sto", JavaUtil.formatNumber(storedHeading, 2));
+      TelemetryMgr.message(Category.USERDRIVE, "stored heading", JavaUtil.formatNumber(storedHeading, 2));
+      TelemetryMgr.message(Category.USERDRIVE, "heading hold", useHeadingHold);
+      TelemetryMgr.message(Category.USERDRIVE, "position hold", useHoldPosition);
 
       if (parts.autoDrive.isNavigating) {
-         TelemetryMgr.message(Category.USERDRIVE, "pow : autoDrive is Navigating");
+         TelemetryMgr.message(Category.USERDRIVE, "pow: autoDrive is Navigating");
          if (parts.positionMgr.hasPosition()) storedHeading = parts.positionMgr.robotPosition.R;
          return;
       }

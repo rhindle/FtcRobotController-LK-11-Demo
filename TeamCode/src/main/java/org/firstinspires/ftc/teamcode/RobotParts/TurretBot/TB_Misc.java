@@ -17,6 +17,7 @@ public class TB_Misc  {
    static boolean allianceBlue = true;
    public static Position targetCurrent = targetBlue;
    public static boolean servosInit = false;
+   public static boolean forza = false;
 
    public static PositionTolerance toleranceImpossible = new PositionTolerance (0.5, 0.5, 250);
    public static PositionTolerance toleranceHigh = new PositionTolerance (1.0, 1.0, 250);

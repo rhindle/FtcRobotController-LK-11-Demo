@@ -65,19 +65,23 @@ class TB_Tasks {
         task.addRunOnce(TB_Intake::gateClose);
         task.addRunOnce(() -> smSpinDown.restartNoStop());
 
-        smRelax = new StateMachine("relax");
+        smRelax = new StateMachine("relax");   //now does the opposite?
         task = smRelax;
         task.setGroups("intake");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(TB_Intake::intakeOff);
+        task.addDelayOf(500);
         task.addRunOnce(() -> {
-            TB_Intake.motorIntake.setTargetPosition(TB_Intake.motorIntake.getCurrentPosition()-TB_Intake.reverseTicks);
-            TB_Intake.motorTransfer.setTargetPosition(TB_Intake.motorTransfer.getCurrentPosition()-TB_Intake.reverseTicks);
+            TB_Intake.motorIntake.setTargetPosition(TB_Intake.motorIntake.getCurrentPosition()+TB_Intake.reverseTicks);
+            TB_Intake.motorTransfer.setTargetPosition(TB_Intake.motorTransfer.getCurrentPosition()+TB_Intake.reverseTicks);
             TB_Intake.motorIntake.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             TB_Intake.motorTransfer.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             TB_Intake.motorIntake.setPower(1);
             TB_Intake.motorTransfer.setPower(1);
         });
+        task.addDelayOf(2000);
+        task.addRunOnce(TB_Intake::transferOff);
+        task.addRunOnce(TB_Intake::intakeOff);
 
         smSpinDown = new StateMachine("spinDown");
         task = smSpinDown;

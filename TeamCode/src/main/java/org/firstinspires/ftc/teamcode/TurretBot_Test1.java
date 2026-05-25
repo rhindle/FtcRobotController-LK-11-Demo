@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.PartsTB;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Misc;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "TurretBot_Test1", group = "")
@@ -56,14 +57,21 @@ public class TurretBot_Test1 extends LinearOpMode {
         while (!isStarted()) {
             TelemetryMgr.message(Category.MANDATORY, "Press Play to start");
             TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
-            TelemetryMgr.message(Category.MANDATORY, "Team,", teamBlue ? "Blue" : "Red");
+            TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team,", teamBlue ? "Blue" : "Red");
+            TelemetryMgr.message(Category.MANDATORY, "(Press X) Drive", TB_Misc.forza ? "Forza" : "Arcade");
             parts.initLoop();
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
                 teamBlue = !teamBlue;
-            if (parts.buttonMgr.getState(2, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
-                teamBlue = !teamBlue;
+//            if (parts.buttonMgr.getState(2, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
+//                teamBlue = !teamBlue;
+            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed))
+                TB_Misc.forza = !TB_Misc.forza;
+
             sleep(20);
         }
+
+        if (teamBlue) TB_Misc.setAllianceBlue();
+        else TB_Misc.setAllianceRed();
 
 //        SB_Intake.isRedLegal = !teamBlue;
 //        SB_Intake.isBlueLegal = teamBlue;

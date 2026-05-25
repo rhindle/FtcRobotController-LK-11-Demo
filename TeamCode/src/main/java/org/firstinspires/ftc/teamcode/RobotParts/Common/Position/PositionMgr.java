@@ -174,6 +174,9 @@ public class PositionMgr implements PartsInterface {
             case PINPOINT:
                if (pinpointPosition!=null) return PosSource.PINPOINT;
                break;
+            case PINPOINT_R:
+               if (pinpointPosition!=null) return PosSource.PINPOINT_R;
+               break;
             case SLAMRA:
                if (slamraPosition!=null) return PosSource.SLAMRA;
                break;
