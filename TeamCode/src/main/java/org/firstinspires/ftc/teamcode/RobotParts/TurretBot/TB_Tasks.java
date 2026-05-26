@@ -14,6 +14,7 @@ class TB_Tasks {
     static StateMachine smRelax;
     static StateMachine smLaunch;
     static StateMachine smSpinDown;
+    static StateMachine smInitServos;
 
     public static void setup(Parts p) {
         parts = p;
@@ -90,6 +91,32 @@ class TB_Tasks {
         task.addRunOnce(TB_Turret::spinOff);
         task.addWaitFor(() -> TB_Turret.getMotorSpinSpeed(TB_Turret.motorSpin1) < TB_Turret.spinnerIdleSpeed);
         task.addRunOnce(TB_Turret::spinIdle);
+
+        smInitServos = new StateMachine("initServos");
+        task = smInitServos;
+        task.setGroups("intake", "transfer");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce(() -> {
+            TB_Intake.servoGateL.setPosition(0.5);
+            TB_Intake.servoGateR.setPosition(0.5);
+            TB_Turret.servoHood.setPosition(0.5);
+            TB_Turret.servoTurretL.setPosition(0.55);
+            TB_Turret.servoTurretR.setPosition(0.55);
+        });
+        task.addDelayOf(500);
+        task.addRunOnce(() -> {
+            TB_Intake.gateOpen();
+            TB_Turret.servoHood.setPosition(0.02);
+            TB_Turret.servoTurretL.setPosition(0.45);
+            TB_Turret.servoTurretR.setPosition(0.45);
+        });
+        task.addDelayOf(500);
+        task.addRunOnce(() -> {
+            TB_Intake.gateClose();
+            TB_Turret.servoHood.setPosition(0.25);
+            TB_Turret.armTurret(false);
+        });
+        task.addRunOnce(() -> TB_Misc.servosInit = true);
 
     }
 }

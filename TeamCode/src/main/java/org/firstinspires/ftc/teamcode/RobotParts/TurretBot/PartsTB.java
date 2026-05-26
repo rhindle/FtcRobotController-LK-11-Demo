@@ -58,17 +58,17 @@ public class PartsTB extends Parts {
 
         if (useODO) {
             odometry = new Odometry(this);
-            odometry.odoFieldStart = fieldStartPosition;
+            odometry.odoFieldStart = decideStartPosition(false); //fieldStartPosition;
             odometry.odoRobotOffset = odoRobotOffset;
         }
         if (usePinpoint) {
             pinpoint = new PinpointTB(this);
-            pinpoint.pinpointFieldStart = fieldStartPosition;
+            pinpoint.pinpointFieldStart = decideStartPosition(true); //fieldStartPosition;
             pinpoint.pinpointRobotOffset = pinpointRobotOffset;  // Rotation will be ignored
         }
         if (useSlamra) {
             slamra = new Slamra(this);
-            slamra.slamraFieldStart = fieldStartPosition;
+            slamra.slamraFieldStart = decideStartPosition(false); //fieldStartPosition;
             slamra.slamraRobotOffset = slamraRobotOffset;
         }
 
@@ -87,14 +87,25 @@ public class PartsTB extends Parts {
         StateMachine.reset();
     }
 
+    Position decideStartPosition(boolean pinpoint) {
+        Position start = new Position();
+        if (TB_Misc.isAuto()) start=fieldStartPosition;
+        else if (TB_Misc.noPosition) start=fieldStartPosition;
+        //if (pinpoint) start=
+        return TB_Misc.currentPosition;
+    }
+
     @Override
     public void preInit() {
         robotV2.initialize();
         if (useIMU) imuMgr.initialize();
         if (usePinpoint) {
             pinpoint.initialize();
-            opMode.sleep(500);
-            pinpoint.preInit();
+            if (TB_Misc.isAuto() || TB_Misc.noPosition) {
+                pinpoint.reset();
+                opMode.sleep(500);
+                pinpoint.preInit();   // this sets the position
+            }
         }
         positionMgr.initialize();
         if (useSlamra) slamra.initialize();
@@ -103,6 +114,10 @@ public class PartsTB extends Parts {
         TB_Turret.initialize();
         TB_Tasks.initialize();
         TB_TasksAuto.initialize();
+          // init servos here only in autonomous; in teleop, no movement is permitted
+          // (and they should have already been init in autonomous anyway)
+        if (TB_Misc.isAuto() && !TB_Misc.servosInit) TB_Tasks.smInitServos.restart();
+        TB_Misc.noPosition = false;   // todo: REVISIT THIS LAST MINTUTE HACK =============================
     }
 
     @Override
@@ -120,7 +135,7 @@ public class PartsTB extends Parts {
     public void preRun() {
         drivetrain.initialize();
         if (useIMU) imuMgr.preRun();
-        if (usePinpoint) pinpoint.preRun();
+        if (usePinpoint && TB_Misc.isAuto()) pinpoint.preRun(); // this sets the position
         if (useODO) odometry.initialize();
         userDrive.initialize();
         autoDrive.initialize();
@@ -128,6 +143,7 @@ public class PartsTB extends Parts {
         autoDrive.runLoop();
         if (useSlamra) slamra.preRun();
         if (useLimeLight) TB_LL.preRun();
+        if (TB_Misc.isTeleOp() && !TB_Misc.servosInit) TB_Tasks.smInitServos.restart();
     }
 
     @Override
@@ -153,6 +169,7 @@ public class PartsTB extends Parts {
         addTelemetryLoopEnd();
         StateMachine.addTelemetry();
         TelemetryMgr.Update();
+        TB_Misc.currentPosition = positionMgr.robotPosition;
     }
 
     @Override
@@ -179,6 +196,7 @@ public class PartsTB extends Parts {
         addTelemetryLoopEnd();
         StateMachine.addTelemetry();
         TelemetryMgr.Update();
+        TB_Misc.currentPosition = positionMgr.robotPosition;
     }
 
     @Override

@@ -42,6 +42,9 @@ public class Pinpoint implements PartsInterface {
       //pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
       pinpoint.setEncoderResolution(resolution);
       pinpoint.setEncoderDirections(xDirection, yDirection);
+   }
+
+   public void reset(){
       pinpoint.resetPosAndIMU();
    }
 
