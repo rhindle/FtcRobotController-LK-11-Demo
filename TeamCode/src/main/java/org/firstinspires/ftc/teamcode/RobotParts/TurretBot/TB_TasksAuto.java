@@ -69,9 +69,78 @@ public class TB_TasksAuto {
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart());
         task.addWaitFor(2000);
         task.addRunOnce(() -> parts.autoDrive.stop());
+        
+        
+        /*
+        
+        Auto near:
+        
+        1. Move to shoot point, shoot  [3]
+        2. Get 2nd spike
+        3. Shoot point, shoot  [6]
+        4. Get balls at gate
+        5. Shoot point, shoot  [9]
+        6. Repeat 4,5 as time allows  [2 more -> 15]
+             (w/o lots of optimization, may be stuck at 2 iterations only -> 12)
+        7. Get 1st spike  [18]
+        8. Shoot point, shoot
+            
+        Auto far:
+        
+        1. Move to shoot point, shoot  [3]
+        2. Get human player
+            (may take some fancy driving)
+        3. Shoot point, shoot  [6]
+        4. Get 3rd spike
+        5. Shoot point, shoot  [9]
+        6. Human player attempts
+          a. If not full, move over and try again (need sensors)
+          b. If no balls, move over and try yet again
+          c. If still no balls, start 6 over
+          d. Shoot point, shoot  [12 15]
+        
+        */
+
+        // These are positions copied from robot 1 blue side. Could do red instead.
+
+//        Position p_targetGoal                = redOrBlue(-70.5, -60.5, 180);   // Y: -70.5; BlueGoal Position.
+        Position p_fieldStart                = redOrBlue(-39.0,-55,-180); // TODO: Confirm/Tune this position.
+//        Position p_obeliskView               = redOrBlue(-39.0, -31, 160);  // GoalBlue: ObeliskView Position
+        Position p_launchPosZero             = redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
+        Position p_launchPosOne              = redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
+        Position p_launchPosFinal            = redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position for pinkServo. Z:???.
+
+        Position p_pre_intakeArtifactRow2    = redOrBlue(14, -22, 90);   // X:12; Blue: Ready to collect on Row2
+        Position p_intakeArtifactRow2        = redOrBlue(14, -60, 90);   // X:12; Blue: Intake Artifacts in Row2
+
+        Position p_pre_intakeArtifactRow1    = redOrBlue(-12, -22, 90);  // Blue: Ready to collect on Row1
+        Position p_intakeArtifactRow1        = redOrBlue(-12, -53, 90);  // Blue: Intake Artifacts in Row1
+
+        //leave row 3 for far team?
+//        Position p_pre_intakeArtifactRow3    = redOrBlue(35.5, -22, 90);   // Blue: Ready to collect in Row3
+//        Position p_intakeArtifactRow3        = redOrBlue(35.5, -60, 90);   // Blue: Intake Artifacts in Row3
+
+        Position p_pre_leverOpen             = redOrBlue(0, -45, -180);    // Blue: Pre-Open Lever Position
+        Position p_leverOpen                 = redOrBlue(0, -55, -180);    // Blue: Open Lever Position
+        Position p_parkAfterAuto             = redOrBlue(-12,-28,-180);
+
+        // suggestion:  Make different actions different tasks with an orchestrator task that
+        // runs them all and can adjust for time remaining, etc.
+        // Do not give the orchestrator task the same group name or it will be stopped by the subtasks.
+
+
 
     }
 
+    static Position redOrBlue (double X, double Y, double R) {
+        if (TB_Misc.isAllianceRed()) {
+            return new Position(X, -Y, -R);
+        }
+        else {
+            return new Position(X, Y, R);
+        }
+    }
+    
     static NavigationTarget toTargetTransition (Position pos) {
         return new NavigationTarget(pos, toleranceTransition, 0.5, 5000, true);
     }
