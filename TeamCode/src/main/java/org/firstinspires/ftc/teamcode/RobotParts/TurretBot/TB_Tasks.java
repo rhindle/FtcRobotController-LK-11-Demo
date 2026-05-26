@@ -61,7 +61,7 @@ class TB_Tasks {
         // here we need a timer or sensor to determine when to turn this off
         task.addDelayOf(2000);
         task.addRunOnce(TB_Intake::transferOff);
-        task.addRunOnce(TB_Intake::intakeOff);
+//        task.addRunOnce(TB_Intake::intakeOff);  // do we want this on? off? whatever state it was?
         task.addRunOnce(TB_Intake::gateClose);
         task.addRunOnce(() -> smSpinDown.restartNoStop());
 

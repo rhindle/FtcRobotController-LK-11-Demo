@@ -273,5 +273,15 @@ public class TB_Turret implements PartsInterfaceStatic {
       return diff <= spinnerTolerance;
    }
 
+   static public void manualOverride(double distance) {
+      armTurret(false);
+      armSpinner(false);
+      double hoodPos = calcHoodForDistance(distance);
+      servoHood.setPosition(hoodPos);
+      servoHoodPos = hoodPos;
+      double spinnerRPM = calcRpmForDistance(distance);
+      setSpinnerTargetSpeed(spinnerRPM);
+      servoLED.setPosition(TB_Misc.rgbIndicatorColor.Blue.color);
+   }
 
 }

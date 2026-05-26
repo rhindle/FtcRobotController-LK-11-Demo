@@ -80,29 +80,46 @@ public class ControlsTB extends Controls {
          TB_Turret.armSpinner(true);
       }
 
-
-      if (buttonMgr.getState(2, Buttons.dpad_left, State.wasPressed)) {
-         TB_Intake.gateOpen();
-      }
-      if (buttonMgr.getState(2, Buttons.dpad_right, State.wasPressed)) {
-         TB_Intake.gateClose();
-      }
-      if (buttonMgr.getState(2, Buttons.dpad_up, State.isPressed)) {
-         TB_Turret.servoHoodPos += TB_Turret.hoodChange;
-         TB_Turret.servoHoodPos = Math.max(0, Math.min(1, TB_Turret.servoHoodPos));
-         TB_Turret.servoHood.setPosition(TB_Turret.servoHoodPos);
-      }
-      if (buttonMgr.getState(2, Buttons.dpad_down, State.isPressed)) {
-         TB_Turret.servoHoodPos -= TB_Turret.hoodChange;
-         TB_Turret.servoHoodPos = Math.max(0, Math.min(1, TB_Turret.servoHoodPos));
-         TB_Turret.servoHood.setPosition(TB_Turret.servoHoodPos);
-      }
+      // emergency overrides
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
          // modify spin speed
          TB_Turret.spinnerManualSpeed += gamepad2.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
          TB_Turret.spinnerManualSpeed += gamepad2.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
          TB_Turret.spinnerManualSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerManualSpeed));
+
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.isPressed)) {
+            TB_Turret.manualOverride(100);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasPressed)) {
+            TB_Turret.manualOverride(75);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_down, State.isPressed)) {
+            TB_Turret.manualOverride(140);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_right, State.wasPressed)) {
+            TB_Turret.manualOverride(120);
+         }
+
       }
+      else {
+         if (buttonMgr.getState(2, Buttons.dpad_left, State.wasPressed)) {
+            TB_Intake.gateOpen();
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_right, State.wasPressed)) {
+            TB_Intake.gateClose();
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.isPressed)) {
+            TB_Turret.servoHoodPos += TB_Turret.hoodChange;
+            TB_Turret.servoHoodPos = Math.max(0, Math.min(1, TB_Turret.servoHoodPos));
+            TB_Turret.servoHood.setPosition(TB_Turret.servoHoodPos);
+         }
+         if (buttonMgr.getState(2, Buttons.dpad_down, State.isPressed)) {
+            TB_Turret.servoHoodPos -= TB_Turret.hoodChange;
+            TB_Turret.servoHoodPos = Math.max(0, Math.min(1, TB_Turret.servoHoodPos));
+            TB_Turret.servoHood.setPosition(TB_Turret.servoHoodPos);
+         }
+      }
+
 
       if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
          // toggle intake on  (close gate, start intake)

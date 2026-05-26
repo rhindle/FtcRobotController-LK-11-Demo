@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.TurretBot;
 import android.annotation.SuppressLint;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
@@ -80,7 +81,9 @@ public class PartsTB extends Parts {
         drivetrain.minimizeCycleTime = false;
         userDrive.useHeadingHold = false;
         userDrive.useHoldPosition = false;
-
+        // modify the following defaults to work with turretbot (P should probably be lower)
+        autoDrive.PIDmovement = new PIDCoefficients(0.06,0.0012,0.006); //.12 0 .035
+        autoDrive.PIDrotate = new PIDCoefficients(0.026,0.01,0.00025);  // .03 0 0
         StateMachine.reset();
     }
 
