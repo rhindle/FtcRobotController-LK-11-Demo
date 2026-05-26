@@ -33,6 +33,19 @@ public class ControlsTB extends Controls {
 
    @Override
    public void userInput() {
+      switch (controlMode) {
+         case 0:
+            NormalControls();
+            break;
+         case 1:
+            TestControls();
+            break;
+      }
+   }
+
+   //~~~~~~~~~~~~~~~~~~~~~~~~ NORMAL CONTROLS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+   public void NormalControls() {
 
       if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
          fulLSpeed = !fulLSpeed;
@@ -41,17 +54,6 @@ public class ControlsTB extends Controls {
          parts.userDrive.setSpeedMaximum(speedFactor);
       }
 
-//      speedFactor = (float)speedNormal;
-//      parts.userDrive.setSpeedMaximum(speedNormal);
-//      if (buttonMgr.getState(1, Buttons.right_bumper, State.isPressed)) {
-//         speedFactor = (float)speedFast;
-//         parts.userDrive.setSpeedMaximum(speedFast);
-//      }
-//      if (buttonMgr.getState(1, Buttons.left_bumper, State.isPressed)) {
-//         speedFactor = (float)speedSlow;
-//         parts.userDrive.setSpeedMaximum(speedSlow);
-//      }
-
       if (!TB_Misc.forza) {
          driveData = new DriveData(gamepad1.left_stick_x * speedFactor,
                  gamepad1.left_stick_y * speedFactor,
@@ -59,7 +61,7 @@ public class ControlsTB extends Controls {
       }
       else {
          driveData = new DriveData(gamepad1.left_trigger * speedFactor,
-                 gamepad1.right_trigger * speedFactor, 
+                 gamepad1.right_trigger * speedFactor,
                  gamepad1.right_stick_x * speedFactor,
                  gamepad1.left_stick_x * speedFactor);
       }
@@ -115,7 +117,14 @@ public class ControlsTB extends Controls {
          TB_Turret.setSpinnerTargetSpeed(TB_Turret.spinnerManualSpeed);
       }
       if (buttonMgr.getState(2, Buttons.y, State.wasPressed)) {
-         //intake+transfer   (open gate, start both motors)
+         //intake+transfer   (open gate, start both motors)  [only if in range]
+         if (!TB_Turret.turretOutOfRange) {
+            TB_Intake.intakeRunning = false;
+            TB_Tasks.smLaunch.restart();
+         }
+      }
+      if (buttonMgr.getState(2, Buttons.y, State.wasHeld)) {
+         //intake+transfer   (open gate, start both motors)  [override]
          TB_Intake.intakeRunning = false;
          TB_Tasks.smLaunch.restart();
       }
@@ -132,6 +141,18 @@ public class ControlsTB extends Controls {
       if (buttonMgr.getState(2, Buttons.right_bumper, State.wasReleased)) {
          TB_Intake.intakeOff();
       }
+
+      if (buttonMgr.getState(2, Buttons.left_trigger, State.isPressed) &&
+              buttonMgr.getState(2, Buttons.right_trigger, State.isPressed)) {
+         TB_Turret.manualTurretOffest = 0;
+      }
+      else if (buttonMgr.getState(2, Buttons.left_trigger, State.wasPressed)) {
+         TB_Turret.manualTurretOffest += 1;
+      }
+      else if (buttonMgr.getState(2, Buttons.right_trigger, State.wasPressed)) {
+         TB_Turret.manualTurretOffest -= 1;
+      }
+
       if (buttonMgr.getState(2, Buttons.start, State.wasPressed)) {
          // stop spin
          StateMachine.stopGroups("spinner");
@@ -144,14 +165,6 @@ public class ControlsTB extends Controls {
          TB_Intake.stop();
          // add drivetrain, etc
       }
-
-//      // Toggle pivot
-//      if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
-//         parts.userDrive.setLockRear(!parts.userDrive.getLockRear());
-//      }
-//      if (buttonMgr.getState(1, Buttons.y, State.wasHeld)) {
-//         parts.userDrive.setLockFront(!parts.userDrive.getLockFront());
-//      }
 
       // Toggle FCD
       if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
@@ -173,12 +186,132 @@ public class ControlsTB extends Controls {
          parts.userDrive.togglePositionHold();
       }
 
-      // Delete this test - position queue
-//      if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
-//              buttonMgr.getState(1,Buttons.right_trigger, State.isHeld) &&
-//              buttonMgr.getState(1,Buttons.left_trigger, State.wasDoubleTapped)) {
-////         parts.dsAuto.testAutoMethod();
+   }
+
+   //~~~~~~~~~~~~~~~~~~~~~~~~ TEST CONTROLS ~~~~~~~~~~~~~~~~~~~~~~~~//
+
+   public void TestControls() {
+
+//      if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
+//         fulLSpeed = !fulLSpeed;
+//         if (fulLSpeed) speedFactor = (float)speedFast;
+//         else speedFactor = (float)speedNormal;
+//         parts.userDrive.setSpeedMaximum(speedFactor);
 //      }
+//
+//      if (!TB_Misc.forza) {
+//         driveData = new DriveData(gamepad1.left_stick_x * speedFactor,
+//                 gamepad1.left_stick_y * speedFactor,
+//                 gamepad1.right_stick_x * speedFactor);
+//      }
+//      else {
+//         driveData = new DriveData(gamepad1.left_trigger * speedFactor,
+//                 gamepad1.right_trigger * speedFactor,
+//                 gamepad1.right_stick_x * speedFactor,
+//                 gamepad1.left_stick_x * speedFactor);
+//      }
+//
+//      // turret test stuff
+//      if (buttonMgr.getState(1, Buttons.x, State.wasSingleTapped)) {
+//         TB_Turret.armTurret(false);
+//      }
+//      if (buttonMgr.getState(1, Buttons.x, State.wasDoubleTapped)) {
+//         TB_Turret.armTurret(true);
+//      }
+//      if (buttonMgr.getState(1, Buttons.y, State.wasSingleTapped)) {
+//         TB_Turret.armSpinner(false);
+//      }
+//      if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
+//         TB_Turret.armSpinner(true);
+//      }
+//
+//
+//      if (buttonMgr.getState(2, Buttons.dpad_left, State.wasPressed)) {
+//         TB_Intake.gateOpen();
+//      }
+//      if (buttonMgr.getState(2, Buttons.dpad_right, State.wasPressed)) {
+//         TB_Intake.gateClose();
+//      }
+//      if (buttonMgr.getState(2, Buttons.dpad_up, State.isPressed)) {
+//         TB_Turret.servoHoodPos += TB_Turret.hoodChange;
+//         TB_Turret.servoHoodPos = Math.max(0, Math.min(1, TB_Turret.servoHoodPos));
+//         TB_Turret.servoHood.setPosition(TB_Turret.servoHoodPos);
+//      }
+//      if (buttonMgr.getState(2, Buttons.dpad_down, State.isPressed)) {
+//         TB_Turret.servoHoodPos -= TB_Turret.hoodChange;
+//         TB_Turret.servoHoodPos = Math.max(0, Math.min(1, TB_Turret.servoHoodPos));
+//         TB_Turret.servoHood.setPosition(TB_Turret.servoHoodPos);
+//      }
+//      if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
+//         // modify spin speed
+//         TB_Turret.spinnerManualSpeed += gamepad2.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
+//         TB_Turret.spinnerManualSpeed += gamepad2.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
+//         TB_Turret.spinnerManualSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerManualSpeed));
+//      }
+//
+//      if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
+//         // toggle intake on  (close gate, start intake)
+//         TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
+//         if (TB_Intake.intakeRunning) TB_Tasks.smIntakeOn.restart();
+//         else TB_Tasks.smIntakeOff.restart();
+//      }
+//
+//      if (buttonMgr.getState(2, Buttons.x, State.isPressed)) {
+//         // spin up
+//         StateMachine.stopGroups("spinner");
+//         TB_Turret.setSpinnerTargetSpeed(TB_Turret.spinnerManualSpeed);
+//      }
+//      if (buttonMgr.getState(2, Buttons.y, State.wasPressed)) {
+//         //intake+transfer   (open gate, start both motors)
+//         TB_Intake.intakeRunning = false;
+//         TB_Tasks.smLaunch.restart();
+//      }
+//      if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
+//         // idle
+//         TB_Tasks.smSpinDown.restart();
+//         TB_Intake.intakeOff();
+//         TB_Intake.gateClose();
+//      }
+//      if (buttonMgr.getState(2, Buttons.right_bumper, State.wasPressed)) {
+//         // reverse
+//         TB_Intake.intakeReverse();
+//      }
+//      if (buttonMgr.getState(2, Buttons.right_bumper, State.wasReleased)) {
+//         TB_Intake.intakeOff();
+//      }
+//      if (buttonMgr.getState(2, Buttons.start, State.wasPressed)) {
+//         // stop spin
+//         StateMachine.stopGroups("spinner");
+//         TB_Turret.spinOff();
+//      }
+//      // stop all
+//      if (buttonMgr.getState(2, Buttons.back, State.wasPressed)) {
+//         StateMachine.stopAll();
+//         TB_Turret.stop();
+//         TB_Intake.stop();
+//         // add drivetrain, etc
+//      }
+//
+//      // Toggle FCD
+//      if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
+//         parts.userDrive.toggleFieldCentricDrive();
+//      }
+//
+//      // Toggle HeadingHold
+//      if (buttonMgr.getState(1, Buttons.back, State.wasDoubleTapped)) {
+//         parts.userDrive.toggleHeadingHold();
+//      }
+//
+//      // Store heading correction
+//      if (buttonMgr.getState(1, Buttons.right_stick_button, State.wasReleased)) {
+//         parts.userDrive.setDeltaHeading();
+//      }
+//
+//      // Toggle PositionHold
+//      if (buttonMgr.getState(1, Buttons.left_stick_button, State.wasReleased))  {
+//         parts.userDrive.togglePositionHold();
+//      }
+
    }
 
    public void stopEverything() {

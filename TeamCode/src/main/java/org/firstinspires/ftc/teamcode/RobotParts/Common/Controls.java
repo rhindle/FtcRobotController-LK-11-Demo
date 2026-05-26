@@ -13,6 +13,7 @@ public class Controls implements PartsInterface {
    public ButtonMgr buttonMgr;
    public DriveData driveData;
    public double liftSpeed;
+   public int controlMode = 0;
 
    /* Constructor */
    public Controls(Parts parts){

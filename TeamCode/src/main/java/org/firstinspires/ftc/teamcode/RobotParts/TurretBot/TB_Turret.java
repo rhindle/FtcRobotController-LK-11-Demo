@@ -52,6 +52,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    static double spinnerManualSpeed = 1500;
    static double spinnerIdleSpeed = 500;
    public static PIDFCoefficients spinnerPID = new PIDFCoefficients(100,0,0,12.4);
+   public static int manualTurretOffest = 0;
 
    static final double spinSmallChange = .0001;
    static final double spinLargeChange = .005;
@@ -254,7 +255,7 @@ public class TB_Turret implements PartsInterfaceStatic {
 
    public static double getTurretAngle(Position target) {
       if (target==null || parts.positionMgr.noPosition()) return 0;
-      return Functions.normalizeAngle(getTargetVector(target).angle - parts.positionMgr.robotPosition.R);
+      return Functions.normalizeAngle(getTargetVector(target).angle - parts.positionMgr.robotPosition.R + manualTurretOffest);
    }
 
    static boolean isSpinnerInTolerance() {
