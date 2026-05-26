@@ -51,6 +51,7 @@ public class PartsTB extends Parts {
         TB_Turret.setup(this);
         TB_Misc.setup(this);
         TB_Tasks.setup(this);
+        TB_TasksAuto.setup(this);
 
 //        sb_Auto = new SB_Auto(this);
 
@@ -98,6 +99,7 @@ public class PartsTB extends Parts {
         TB_Intake.initialize();
         TB_Turret.initialize();
         TB_Tasks.initialize();
+        TB_TasksAuto.initialize();
     }
 
     @Override

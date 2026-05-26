@@ -211,7 +211,10 @@ public class AutoDrive implements PartsInterface {
       drivePowers.v1 = autoSpeed * (Math.cos(Math.toRadians(navAngle)) + Math.sin(Math.toRadians(navAngle))) - powerRotate;
       drivePowers.v3 = autoSpeed * (Math.cos(Math.toRadians(navAngle)) - Math.sin(Math.toRadians(navAngle))) - powerRotate;
       // scale so average motor speed is not more than maxSpeed, but only if maxspeed <> 1
-      if (speedMaximum != 1) {
+      if (navTarget.maxSpeed != 1) {
+         drivePowers.scaleAverage(navTarget.maxSpeed);
+      }
+      else if (speedMaximum != 1) {
          drivePowers.scaleAverage(speedMaximum);
       }
       // scale to no higher than 1
@@ -284,6 +287,7 @@ public class AutoDrive implements PartsInterface {
    private void updateNavTarget(NavigationTarget target, boolean hold) {
       //if (parts.positionMgr.noPosition()) return;  //todo:Is this necessary? Or just rely on the loop's checks
       this.navTarget = target;
+//      speedMaximum = target.maxSpeed;
       timeNavStart = System.currentTimeMillis();
       isNavigating = true;
       isHolding = hold;
