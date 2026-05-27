@@ -15,6 +15,7 @@ class TB_Tasks {
     static StateMachine smLaunch;
     static StateMachine smSpinDown;
     static StateMachine smInitServos;
+    static StateMachine smUnpauseTurret;
 
     public static void setup(Parts p) {
         parts = p;
@@ -38,6 +39,7 @@ class TB_Tasks {
         //task.setTimeoutRunnable( () -> {} );
         //task.setEndCriteria( () -> false );
         //task.setEndCriteriaRunnable( () -> {} );
+        task.addRunOnce(() -> TB_Turret.pauseTurret(true));  // todo: see if this works well
         task.addRunOnce(TB_Intake::transferOff);
         task.addRunOnce(TB_Intake::gateClose);
         task.addWaitFor(() -> TB_Intake.servoGateL.isDone() && TB_Intake.servoGateR.isDone());
@@ -47,20 +49,34 @@ class TB_Tasks {
         task = smIntakeOff;
         task.setGroups("intake");  // will be killed by
         task.setAutoRestart(false);
+        task.addRunOnce(() -> TB_Turret.pauseTurret(false));  // todo: see if this works well
         task.addRunOnce(TB_Intake::intakeOff);
         task.addRunOnce(() -> smRelax.restartNoStop());
         task.addWaitFor(() -> smRelax.isDone());
+
+        smUnpauseTurret = new StateMachine("unpauseTurret");
+        task = smUnpauseTurret;
+        task.setGroups("transfer");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce(() -> {
+            if (!TB_Turret.turretPaused) smUnpauseTurret.end();
+        });
+        task.addRunOnce(() -> TB_Turret.pauseTurret(false));
+        task.addYield();  // this break should allow the turret to be repositioned
+        task.addWaitFor(TB_Turret.servoTurretR::isDone);
 
         smLaunch = new StateMachine("launch");
         task = smLaunch;
         task.setGroups("intake", "transfer", "spinner");  // will be killed by
         task.setAutoRestart(false);
+        task.addRunOnce(smUnpauseTurret::restartNoStop);
         task.addRunOnce(TB_Intake::intakeOff);
         task.addRunOnce(TB_Intake::gateOpen);
         task.addWaitFor(() -> TB_Intake.servoGateL.isDone() && TB_Intake.servoGateR.isDone());
+        task.addWaitFor(smUnpauseTurret::isDone);
         task.addRunOnce(TB_Intake::transferOn);
         // here we need a timer or sensor to determine when to turn this off
-        task.addDelayOf(2000);
+        task.addDelayOf(1500);
         task.addRunOnce(TB_Intake::transferOff);
 //        task.addRunOnce(TB_Intake::intakeOff);  // do we want this on? off? whatever state it was?
         task.addRunOnce(TB_Intake::gateClose);

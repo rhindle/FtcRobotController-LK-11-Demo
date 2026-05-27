@@ -60,6 +60,7 @@ public class TB_Turret implements PartsInterfaceStatic {
 
    public static Vector2D targetVector;
    public static boolean turretArmed = false;
+   public static boolean turretPaused = false;
    public static boolean spinnerArmed = false;
    public static boolean turretOutOfRange = false;
 
@@ -120,7 +121,7 @@ public class TB_Turret implements PartsInterfaceStatic {
       targetVector = getTargetVector(TB_Misc.targetCurrent);
 
       // update turret position
-      if (turretArmed) {
+      if (turretArmed && !turretPaused) {
          turretAngle = getTurretAngle(TB_Misc.targetCurrent);
          turretOutOfRange = turretAngle > turretSweepRangeL || turretAngle < -turretSweepRangeR;
          turretPos = getTurretValueFromAngle(turretAngle);
@@ -182,6 +183,17 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static void armTurret(boolean arm) {
       turretArmed = arm;
       if (!turretArmed) {
+         servoTurretL.setPosition(0.5);
+         servoTurretR.setPosition(0.5);
+      } else {
+         turretPaused = false;
+      }
+   }
+
+   public static void pauseTurret(boolean pause) {
+      turretPaused = pause;
+      if (!turretArmed) return;
+      if (pause) {
          servoTurretL.setPosition(0.5);
          servoTurretR.setPosition(0.5);
       }
