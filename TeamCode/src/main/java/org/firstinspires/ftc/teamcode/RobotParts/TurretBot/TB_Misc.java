@@ -18,7 +18,7 @@ public class TB_Misc  {
    public static Position targetCurrent = targetBlue;
    public static boolean servosInit = false;
    public static boolean noPosition = true;
-   public static boolean forza = false;
+//   public static boolean forza = false;
    public static Position currentPosition = new Position();
 
    public static PositionTolerance toleranceImpossible = new PositionTolerance (0.5, 0.5, 250);

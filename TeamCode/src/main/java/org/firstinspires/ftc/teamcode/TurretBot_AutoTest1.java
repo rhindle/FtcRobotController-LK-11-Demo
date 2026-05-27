@@ -45,8 +45,6 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         parts.setup();
         parts.preInit();
 
-        TB_Misc.forza = true;
-
         TelemetryMgr.setDebugLevel(10);
         TelemetryMgr.enableAllCategories();
 
@@ -55,19 +53,15 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
             TelemetryMgr.message(Category.MANDATORY, "Press Play to start");
             TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
             TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team,", teamBlue ? "Blue" : "Red");
-            TelemetryMgr.message(Category.MANDATORY, "(Press X) Drive", TB_Misc.forza ? "Forza" : "Arcade");
             parts.initLoop();
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
                 teamBlue = !teamBlue;
-            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed))
-                TB_Misc.forza = !TB_Misc.forza;
 
             sleep(20);
         }
 
         if (teamBlue) TB_Misc.setAllianceBlue();
         else TB_Misc.setAllianceRed();
-
 
         parts.preRun();
 
@@ -76,7 +70,6 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         /* Run Loop */
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-//                parts.runLoop();
                 parts.autoRunLoop();
             }
         }

@@ -54,7 +54,7 @@ public class ControlsTB extends Controls {
          parts.userDrive.setSpeedMaximum(speedFactor);
       }
 
-      if (!TB_Misc.forza) {
+      if (!parts.useForzaControls) {
          driveData = new DriveData(gamepad1.left_stick_x * speedFactor,
                  gamepad1.left_stick_y * speedFactor,
                  gamepad1.right_stick_x * speedFactor);

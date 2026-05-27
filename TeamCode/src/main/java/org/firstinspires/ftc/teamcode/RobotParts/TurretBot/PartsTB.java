@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.NeoMatrix;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
+import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.EncoderTracker;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.ImuMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.Odometry;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Position.PositionMgr;
@@ -71,6 +72,13 @@ public class PartsTB extends Parts {
             slamra.slamraFieldStart = decideStartPosition(false); //fieldStartPosition;
             slamra.slamraRobotOffset = slamraRobotOffset;
         }
+        if (useEncoderTracker) {
+            encoderTracker = new EncoderTracker(this);
+//            encoderTracker.encoderRobotPosition = fieldStartPosition.clone();  // this is going to be updated so must be a clone, not a direct reference
+//            encoderTracker.encoderRobotPositionAbsolute = fieldStartPosition.clone();  // as above
+            encoderTracker.encoderRobotPosition = decideStartPosition(false).clone();
+            encoderTracker.encoderRobotPositionAbsolute = decideStartPosition(false).clone();
+        }
 
         if (useNeoMatrix) neo = new NeoMatrix(opMode, "neo", 8, 8, AdafruitNeoDriver.ColorOrder.GRB);  //RGB for fairy string
 
@@ -88,11 +96,12 @@ public class PartsTB extends Parts {
     }
 
     Position decideStartPosition(boolean pinpoint) {
-        Position start = new Position();
-        if (TB_Misc.isAuto()) start=fieldStartPosition;
-        else if (TB_Misc.noPosition) start=fieldStartPosition;
-        //if (pinpoint) start=
-        return TB_Misc.currentPosition;
+        Position startPos;
+        if (TB_Misc.isAuto()) startPos=fieldStartPosition;         // all autonomous starts need position set
+        else if (TB_Misc.noPosition) startPos=fieldStartPosition;  // if position not set yet in teleop
+        //if (pinpoint) startPos=
+        else startPos = TB_Misc.currentPosition;                   // use the stored position (assuming the robot has not moved)
+        return startPos;
     }
 
     @Override
@@ -100,11 +109,12 @@ public class PartsTB extends Parts {
         robotV2.initialize();
         if (useIMU) imuMgr.initialize();
         if (usePinpoint) {
-            pinpoint.initialize();
+            pinpoint.initialize();  // reset was removed from init; only do it in auto (or if no position)
             if (TB_Misc.isAuto() || TB_Misc.noPosition) {
                 pinpoint.reset();
                 opMode.sleep(500);
                 pinpoint.preInit();   // this sets the position
+//                TB_Misc.noPosition = false;
             }
         }
         positionMgr.initialize();
@@ -117,7 +127,7 @@ public class PartsTB extends Parts {
           // init servos here only in autonomous; in teleop, no movement is permitted
           // (and they should have already been init in autonomous anyway)
         if (TB_Misc.isAuto() && !TB_Misc.servosInit) TB_Tasks.smInitServos.restart();
-        TB_Misc.noPosition = false;   // todo: REVISIT THIS LAST MINTUTE HACK =============================
+        TB_Misc.noPosition = false;   // todo: REVISIT THIS LAST MINUTE HACK =============================
     }
 
     @Override
@@ -135,7 +145,7 @@ public class PartsTB extends Parts {
     public void preRun() {
         drivetrain.initialize();
         if (useIMU) imuMgr.preRun();
-        if (usePinpoint && TB_Misc.isAuto()) pinpoint.preRun(); // this sets the position
+        if (usePinpoint && TB_Misc.isAuto()) pinpoint.preRun(); // this sets the position (again)
         if (useODO) odometry.initialize();
         userDrive.initialize();
         autoDrive.initialize();
@@ -143,6 +153,7 @@ public class PartsTB extends Parts {
         autoDrive.runLoop();
         if (useSlamra) slamra.preRun();
         if (useLimeLight) TB_LL.preRun();
+        if (useEncoderTracker) encoderTracker.preRun();
         if (TB_Misc.isTeleOp() && !TB_Misc.servosInit) TB_Tasks.smInitServos.restart();
     }
 
@@ -153,6 +164,7 @@ public class PartsTB extends Parts {
         robotV2.runLoop();
         buttonMgr.runLoop();
         if (useIMU) imuMgr.runLoop();
+        if (useEncoderTracker) encoderTracker.runLoop();
         if (usePinpoint) pinpoint.runLoop();
         if (useSlamra) slamra.runLoop();
         if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available
@@ -180,6 +192,7 @@ public class PartsTB extends Parts {
         robotV2.runLoop();
         buttonMgr.runLoop();
         if (useIMU) imuMgr.runLoop();
+        if (useEncoderTracker) encoderTracker.runLoop();
         if (usePinpoint) pinpoint.runLoop();
         if (useSlamra) slamra.runLoop();
         if (useODO) odometry.runLoop();   // run odometry after IMU and slamra so it has up to date headings available

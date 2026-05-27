@@ -42,9 +42,11 @@ public class Pinpoint implements PartsInterface {
       //pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
       pinpoint.setEncoderResolution(resolution);
       pinpoint.setEncoderDirections(xDirection, yDirection);
+//      pinpoint.resetPosAndIMU();
    }
 
    public void reset(){
+      // this was taken out of initialize because we don't want to reset between autonomous and teleop
       pinpoint.resetPosAndIMU();
    }
 

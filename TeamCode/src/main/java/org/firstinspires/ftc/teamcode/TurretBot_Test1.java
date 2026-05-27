@@ -42,13 +42,12 @@ public class TurretBot_Test1 extends LinearOpMode {
 //        parts.pinpointRobotOffset = new Position (-56.0,52.0,0);  // In mm, Refer to User Guide, Y offset of X, X offset of Y, R will be ignored
         parts.speedMaximum = 1;
 //        DSAprilTag.USE_WEBCAM = true;
+        parts.useForzaControls = true;
 
         settingsOverride();
 
         parts.setup();
         parts.preInit();
-
-        TB_Misc.forza = true;
 
         TelemetryMgr.setDebugLevel(10);
         TelemetryMgr.enableAllCategories();
@@ -59,24 +58,18 @@ public class TurretBot_Test1 extends LinearOpMode {
             TelemetryMgr.message(Category.MANDATORY, "Press Play to start");
             TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
             TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team,", teamBlue ? "Blue" : "Red");
-            TelemetryMgr.message(Category.MANDATORY, "(Press X) Drive", TB_Misc.forza ? "Forza" : "Arcade");
+            TelemetryMgr.message(Category.MANDATORY, "(Press X) Drive",  parts.useForzaControls ? "Forza" : "Arcade");
             parts.initLoop();
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
                 teamBlue = !teamBlue;
-//            if (parts.buttonMgr.getState(2, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
-//                teamBlue = !teamBlue;
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed))
-                TB_Misc.forza = !TB_Misc.forza;
+                parts.useForzaControls = !parts.useForzaControls;
 
             sleep(20);
         }
 
         if (teamBlue) TB_Misc.setAllianceBlue();
         else TB_Misc.setAllianceRed();
-
-//        SB_Intake.isRedLegal = !teamBlue;
-//        SB_Intake.isBlueLegal = teamBlue;
-//        // Yellow would need to be set depending on if sampling for specimens
 
         parts.preRun();
 
