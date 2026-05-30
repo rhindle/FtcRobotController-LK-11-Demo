@@ -126,7 +126,7 @@ public class PartsTB extends Parts {
         TB_TasksAuto.initialize();
           // init servos here only in autonomous; in teleop, no movement is permitted
           // (and they should have already been init in autonomous anyway)
-        if (TB_Misc.isAuto() && !TB_Misc.servosInit) TB_Tasks.smInitServos.restart();
+        if (TB_Misc.isAuto()) TB_Tasks.smInitServos.restart();
         TB_Misc.noPosition = false;   // todo: REVISIT THIS LAST MINUTE HACK =============================
     }
 
