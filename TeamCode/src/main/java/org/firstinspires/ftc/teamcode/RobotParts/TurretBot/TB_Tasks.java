@@ -89,8 +89,8 @@ class TB_Tasks {
         task.addWaitFor(smUnpauseTurret::isDone);
         task.addRunOnce(TB_Intake::transferOn);
         // here we need a timer or sensor to determine when to turn this off
-        task.addWaitFor(() -> TB_Intake.probably0, 1800);
-        task.addDelayOf(200);
+        task.addWaitFor(() -> TB_Intake.probably0, 1700);
+        task.addDelayOf(300);
         task.addRunOnce(TB_Intake::transferOff);
 //        task.addRunOnce(TB_Intake::intakeOff);  // do we want this on? off? whatever state it was?
         task.addRunOnce(TB_Intake::gateClose);

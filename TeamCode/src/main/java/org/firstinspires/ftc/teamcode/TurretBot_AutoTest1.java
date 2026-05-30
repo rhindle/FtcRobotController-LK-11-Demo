@@ -36,7 +36,7 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         parts.reverseDrive = false;
         parts.useDistanceSensors = false;
 //        parts.fieldStartPosition = new Position(0,0,180);  // center, facing back ball
-        parts.fieldStartPosition = TB_TasksAuto.redOrBlue(-41, -56, 180);  //todo: Fix this hack
+        parts.fieldStartPosition = TB_TasksAuto.redOrBlue(-40, -56, 180);  //todo: Fix this hack
             // reminder: Y goes away from red.
 
         parts.speedMaximum = 1;

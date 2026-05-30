@@ -68,7 +68,7 @@ public class TurretBot_Test1 extends LinearOpMode {
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed))
                 parts.useForzaControls = !parts.useForzaControls;
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.wasPressed))
-                parts.pinpoint.setPosition(parts.pinpoint.pinpointFieldStart);
+                parts.pinpoint.setPosition(parts.fieldStartPosition);
 
             sleep(20);
         }

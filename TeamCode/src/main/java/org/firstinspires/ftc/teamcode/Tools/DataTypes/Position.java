@@ -109,6 +109,14 @@ public class Position
         return new Position(X, Y, newR);
     }
 
+    public Position withX (double newX) {
+        return new Position(newX, Y, R);
+    }
+
+    public Position withY (double newY) {
+        return new Position(X, newY, R);
+    }
+
     public void addVector (Vector2D vec) {
         X += vec.X();
         Y += vec.Y();

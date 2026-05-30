@@ -90,8 +90,8 @@ public class PartsTB extends Parts {
         userDrive.useHeadingHold = false;
         userDrive.useHoldPosition = false;
         // modify the following defaults to work with turretbot (P should probably be lower)
-        autoDrive.PIDmovement = new PIDCoefficients(0.06,0.0012,0.006); //.12 0 .035
-        autoDrive.PIDrotate = new PIDCoefficients(0.026,0.01,0.00025);  // .03 0 0
+        autoDrive.PIDmovement = new PIDCoefficients(0.03,0.0012,0.006); //.12 0 .035  0.06
+        autoDrive.PIDrotate = new PIDCoefficients(0.026,0.01,0.00025);  // .03 0 0   0.026
         StateMachine.reset();
     }
 

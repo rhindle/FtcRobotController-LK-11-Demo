@@ -236,6 +236,9 @@ public class ControlsTB extends Controls {
       if (buttonMgr.getState(1, Buttons.dpad_down, State.wasPressed)) {
          TB_TasksAuto.smAutoTestGotoSpike2.restart();
       }
+      if (buttonMgr.getState(1, Buttons.left_bumper, State.wasPressed)) {
+         TB_TasksAuto.smAutoTestGotoSpike3.restart();
+      }
       if (buttonMgr.getState(1, Buttons.y, State.wasPressed)) {
          TB_TasksAuto.smAutoTestDriveToGate.restart();
       }
@@ -257,6 +260,9 @@ public class ControlsTB extends Controls {
          StateMachine.stopAll();
          TB_Turret.stop();
          TB_Intake.stop();
+      }
+      if (buttonMgr.getState(1, Buttons.left_trigger, State.wasPressed)) {
+         TB_TasksAuto.smTieItAllTogether.restart();
       }
 
    }
