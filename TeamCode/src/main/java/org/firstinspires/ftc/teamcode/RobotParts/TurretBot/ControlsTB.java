@@ -40,6 +40,9 @@ public class ControlsTB extends Controls {
          case 1:
             TestControls();
             break;
+         case 100:
+            AutoControls();
+            break;
       }
    }
 
@@ -208,6 +211,56 @@ public class ControlsTB extends Controls {
       }
 
    }
+
+   //~~~~~~~~~~~~~~~~~~~~~~~~ AUTO CONTROLS ~~~~~~~~~~~~~~~~~~~~~~~~//
+
+   public void AutoControls() {
+
+      //        public static StateMachine smAutoTestGotoCenter;
+//        public static StateMachine smAutoTestGotoNearShoot;
+//        public static StateMachine smAutoTestGotoSpike1;
+//        public static StateMachine smAutoTestGotoSpike2;
+//        public static StateMachine smAutoTestDriveToGate;
+//        public static StateMachine smAutoTestOperateGate;
+
+
+      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasPressed)) {
+         TB_TasksAuto.smAutoTestGotoCenter.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasPressed)) {
+         TB_TasksAuto.smAutoTestGotoNearShoot.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_left, State.wasPressed)) {
+         TB_TasksAuto.smAutoTestGotoSpike1.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasPressed)) {
+         TB_TasksAuto.smAutoTestGotoSpike2.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.y, State.wasPressed)) {
+         TB_TasksAuto.smAutoTestDriveToGate.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.x, State.wasPressed)) {
+         TB_TasksAuto.smAutoTestOperateGate.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.a, State.wasPressed)) {
+         TB_Tasks.smLaunch.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.b, State.wasPressed)) {
+         TB_Turret.armTurret(true);
+         TB_Turret.armSpinner(true);
+      }
+      if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
+         TB_Turret.armTurret(false);
+         TB_Turret.armSpinner(false);
+      }
+      if (buttonMgr.getState(1, Buttons.back, State.wasPressed)) {
+         StateMachine.stopAll();
+         TB_Turret.stop();
+         TB_Intake.stop();
+      }
+
+   }
+
 
    //~~~~~~~~~~~~~~~~~~~~~~~~ TEST CONTROLS ~~~~~~~~~~~~~~~~~~~~~~~~//
 

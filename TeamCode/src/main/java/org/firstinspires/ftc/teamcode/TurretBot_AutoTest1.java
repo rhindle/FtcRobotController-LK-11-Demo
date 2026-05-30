@@ -18,7 +18,7 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
 
     public Parts parts;
 
-    boolean teamBlue = false;
+    boolean teamBlue = true;
 
     @Override
     public void runOpMode() {
@@ -35,7 +35,8 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         parts.useDrivetrainEncoders = true;
         parts.reverseDrive = false;
         parts.useDistanceSensors = false;
-        parts.fieldStartPosition = new Position(0,0,180);  // center, facing back ball
+//        parts.fieldStartPosition = new Position(0,0,180);  // center, facing back ball
+        parts.fieldStartPosition = TB_TasksAuto.redOrBlue(-41, -56, 180);  //todo: Fix this hack
             // reminder: Y goes away from red.
 
         parts.speedMaximum = 1;
@@ -46,6 +47,8 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
 
         parts.setup();
         parts.preInit();
+
+        parts.controls.controlMode=100;
 
         TelemetryMgr.setDebugLevel(10);
         TelemetryMgr.enableAllCategories();
@@ -67,7 +70,7 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
 
         parts.preRun();
 
-        TB_TasksAuto.smAutoTest1.restart();   // get the ball rolling
+//        TB_TasksAuto.smAutoTest1.restart();   // get the ball rolling
 
         /* Run Loop */
         if (opModeIsActive()) {

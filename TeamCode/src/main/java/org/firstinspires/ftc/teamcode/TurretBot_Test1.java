@@ -61,11 +61,14 @@ public class TurretBot_Test1 extends LinearOpMode {
             TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
             TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team,", teamBlue ? "Blue" : "Red");
             TelemetryMgr.message(Category.MANDATORY, "(Press X) Drive",  parts.useForzaControls ? "Forza" : "Arcade");
+            TelemetryMgr.message(Category.MANDATORY, "(Press DOWN) Center Position");
             parts.initLoop();
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
                 teamBlue = !teamBlue;
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed))
                 parts.useForzaControls = !parts.useForzaControls;
+            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.wasPressed))
+                parts.pinpoint.setPosition(parts.pinpoint.pinpointFieldStart);
 
             sleep(20);
         }
