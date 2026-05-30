@@ -16,6 +16,7 @@ class TB_Tasks {
     static StateMachine smSpinDown;
     static StateMachine smInitServos;
     static StateMachine smUnpauseTurret;
+    static StateMachine smIntakeAutoStop;
 
     public static void setup(Parts p) {
         parts = p;
@@ -44,6 +45,7 @@ class TB_Tasks {
         task.addRunOnce(TB_Intake::gateClose);
         task.addWaitFor(() -> TB_Intake.servoGateL.isDone() && TB_Intake.servoGateR.isDone());
         task.addRunOnce(TB_Intake::intakeOn);
+        task.addRunOnce(() -> smIntakeAutoStop.restart());  // throws a null with :: notation
 
         smIntakeOff = new StateMachine("intakeOff");
         task = smIntakeOff;
@@ -53,6 +55,17 @@ class TB_Tasks {
         task.addRunOnce(TB_Intake::intakeOff);
         task.addRunOnce(() -> smRelax.restartNoStop());
         task.addWaitFor(() -> smRelax.isDone());
+
+        smIntakeAutoStop = new StateMachine("intakeAuto");
+        task = smIntakeAutoStop;
+        task.setGroups("intake");  // will be killed by
+        task.setAutoRestart(false);
+        task.addRunOnce(() -> {
+            if (TB_Intake.disableIntakeSensors) smIntakeAutoStop.end();
+        });
+        task.addWaitFor(() -> TB_Intake.definitely3);
+//        task.addRunOnce(TB_Turret::indicateFullIntake);
+        task.addRunOnce(smIntakeOff::restart);
 
         smUnpauseTurret = new StateMachine("unpauseTurret");
         task = smUnpauseTurret;
@@ -76,11 +89,13 @@ class TB_Tasks {
         task.addWaitFor(smUnpauseTurret::isDone);
         task.addRunOnce(TB_Intake::transferOn);
         // here we need a timer or sensor to determine when to turn this off
-        task.addDelayOf(1500);
+        task.addWaitFor(() -> TB_Intake.probably0, 1800);
+        task.addDelayOf(200);
         task.addRunOnce(TB_Intake::transferOff);
 //        task.addRunOnce(TB_Intake::intakeOff);  // do we want this on? off? whatever state it was?
         task.addRunOnce(TB_Intake::gateClose);
         task.addRunOnce(() -> smSpinDown.restartNoStop());
+        task.addRunOnce(smIntakeOn::restart);
 
         smRelax = new StateMachine("relax");   //now does the opposite?
         task = smRelax;
@@ -130,7 +145,17 @@ class TB_Tasks {
         task.addRunOnce(() -> {
             TB_Intake.gateClose();
             TB_Turret.servoHood.setPosition(0.25);
+            TB_Turret.servoTurretL.setPosition(0.5);
+            TB_Turret.servoTurretR.setPosition(0.5);
             TB_Turret.armTurret(false);
+        });
+        task.addRunOnce(() -> {
+            TB_Turret.turretLPosSetting[0] = TB_Turret.servoTurretL.getPosition();
+            TB_Turret.turretRPosSetting[0] = TB_Turret.servoTurretR.getPosition();
+            TB_Turret.hoodPosSetting[0] = TB_Turret.servoHood.getPosition();
+            TB_Turret.spinner1VelocitySetting[0] = 0;
+            TB_Turret.spinner2VelocitySetting[0] = 0;
+            TB_Turret.LEDSetting[0] = 0;
         });
         task.addRunOnce(() -> TB_Misc.servosInit = true);
 

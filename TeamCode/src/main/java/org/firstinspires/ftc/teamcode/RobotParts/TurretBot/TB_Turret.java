@@ -73,6 +73,14 @@ public class TB_Turret implements PartsInterfaceStatic {
                                          {120, 0.32, 3500},
                                          {140, 0.482, 4000}};
 
+   public static int roundRobin = 0;
+   public static double[] hoodPosSetting = {0, 0};
+   public static double[] turretLPosSetting = {0, 0};
+   public static double[] turretRPosSetting = {0, 0};
+   public static double[] spinner1VelocitySetting = {0, 0};
+   public static double[] spinner2VelocitySetting = {0, 0};
+   public static double[] LEDSetting = {0, 0};
+
    public static void setup(Parts p) {
       parts = p;
    }
@@ -126,15 +134,18 @@ public class TB_Turret implements PartsInterfaceStatic {
          turretOutOfRange = turretAngle > turretSweepRangeL || turretAngle < -turretSweepRangeR;
          turretPos = getTurretValueFromAngle(turretAngle);
          if (!Double.isNaN(turretPos)) {  //todo: Does this prevent the error on 5/23/2026? If so, how does this become NaN?
-            servoTurretL.setPosition(turretPos);
-            servoTurretR.setPosition(turretPos);
+//            servoTurretL.setPosition(turretPos);
+//            servoTurretR.setPosition(turretPos);
+            turretLPosSetting[0] = turretPos;
+            turretRPosSetting[0] = turretPos;
          }
       }
 
       // update hood
       if (turretArmed) {
          double hoodPos = calcHoodForDistance(targetVector.distance);
-         servoHood.setPosition(hoodPos);
+//         servoHood.setPosition(hoodPos);
+         hoodPosSetting[0] = hoodPos;
          servoHoodPos = hoodPos;
       }
 
@@ -145,18 +156,28 @@ public class TB_Turret implements PartsInterfaceStatic {
       }
 
       // update LED
-      if (!turretArmed || !spinnerArmed) {
-         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
+      if (!turretArmed || !spinnerArmed || turretPaused) {
+//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
+//         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+         // Update LED for intake status
+         if (TB_Intake.definitely3) LEDSetting[0] = TB_Misc.rgbIndicatorColor.White.color;
+         else if (TB_Intake.atLeast1) LEDSetting[0] = TB_Misc.rgbIndicatorColor.Orange.color;
+         else LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
       }
       else if (turretOutOfRange) {
-         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Red.color);
+//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Red.color);
+         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Red.color;
       }
       else if (isSpinnerInToleranceV2() && servoHood.isDone() && servoTurretL.isDone()) {
-         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Green.color);
+//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Green.color);
+         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Green.color;
       }
       else {
-         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Yellow.color);
+//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Yellow.color);
+         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Yellow.color;
       }
+
+      roundRobinSetting();
 
       TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Target Vector", targetVector.toString());
       TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Turret Angle",
@@ -169,6 +190,48 @@ public class TB_Turret implements PartsInterfaceStatic {
       TelemetryMgr.message(TelemetryMgr.Category.TB_TURRET, "Hood Pos", servoHoodPos);
    }
 
+   public static void roundRobinSetting() {
+      roundRobin++;
+      if (roundRobin > 6) roundRobin = 1;
+      if (roundRobin == 1) {
+         if (LEDSetting[0] != LEDSetting[1]) {
+            LEDSetting[1] = LEDSetting[0];
+            servoLED.setPosition(LEDSetting[0]);
+         } else roundRobin++;
+      }
+      if (roundRobin == 2) {
+         if (hoodPosSetting[0] != hoodPosSetting[1]) {
+            hoodPosSetting[1] = hoodPosSetting[0];
+            servoHood.setPosition(hoodPosSetting[0]);
+         } else roundRobin++;
+      }
+      if (roundRobin == 3) {
+         if (turretLPosSetting[0] != turretLPosSetting[1]) {
+            turretLPosSetting[1] = turretLPosSetting[0];
+            servoTurretL.setPosition(turretLPosSetting[0]);
+            roundRobin++;  // the servos sound bad when set separately (the 10-20ms is apparently too much)
+         } else roundRobin++;
+      }
+      if (roundRobin == 4) {
+         if (turretRPosSetting[0] != turretRPosSetting[1]) {
+            turretRPosSetting[1] = turretRPosSetting[0];
+            servoTurretR.setPosition(turretRPosSetting[0]);
+         } else roundRobin++;
+      }
+      if (roundRobin == 5) {
+         if (spinner1VelocitySetting[0] != spinner1VelocitySetting[1]) {
+            spinner1VelocitySetting[1] = spinner1VelocitySetting[0];
+            motorSpin1.setVelocity(spinner1VelocitySetting[0]);
+         } else roundRobin++;
+      }
+      if (roundRobin == 6) {
+         if (spinner2VelocitySetting[0] != spinner2VelocitySetting[1]) {
+            spinner2VelocitySetting[1] = spinner2VelocitySetting[0];
+            motorSpin2.setVelocity(spinner2VelocitySetting[0]);
+         } else roundRobin = 0;
+      }
+   }
+
    public static void stop() {
       StateMachine.stopGroups("spinner");
       motorSpin1.setPower(0);
@@ -178,13 +241,24 @@ public class TB_Turret implements PartsInterfaceStatic {
       servoTurretR.disable();
       turretArmed = false;
       spinnerArmed = false;
+
+      spinner1VelocitySetting[0] = 0;
+      spinner2VelocitySetting[0] = 0;
+      spinner1VelocitySetting[1] = spinner1VelocitySetting[0];
+      spinner2VelocitySetting[1] = spinner2VelocitySetting[0];
+      hoodPosSetting[1] = hoodPosSetting[0];
+      turretLPosSetting[1] = turretLPosSetting[0];
+      turretRPosSetting[1] = turretRPosSetting[0];
    }
 
    public static void armTurret(boolean arm) {
       turretArmed = arm;
       if (!turretArmed) {
-         servoTurretL.setPosition(0.5);
-         servoTurretR.setPosition(0.5);
+//         servoTurretL.setPosition(0.5);
+//         servoTurretR.setPosition(0.5);
+         turretLPosSetting[0] = 0.5;
+         turretRPosSetting[0] = 0.5;
+         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
       } else {
          turretPaused = false;
       }
@@ -194,8 +268,11 @@ public class TB_Turret implements PartsInterfaceStatic {
       turretPaused = pause;
       if (!turretArmed) return;
       if (pause) {
-         servoTurretL.setPosition(0.5);
-         servoTurretR.setPosition(0.5);
+//         servoTurretL.setPosition(0.5);
+//         servoTurretR.setPosition(0.5);
+         turretLPosSetting[0] = 0.5;
+         turretRPosSetting[0] = 0.5;
+         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
       }
    }
 
@@ -203,6 +280,7 @@ public class TB_Turret implements PartsInterfaceStatic {
       spinnerArmed = arm;
       if (!spinnerArmed) {
          spinOff();
+         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
       }
    }
 
@@ -210,8 +288,10 @@ public class TB_Turret implements PartsInterfaceStatic {
       if (rpm < 0 || rpm > 5500) return;
       spinnerTargetSpeed = rpm;
       double velocity = rpm / (60.0 / spinTicks);
-      motorSpin1.setVelocity(velocity);
-      motorSpin2.setVelocity(velocity);
+//      motorSpin1.setVelocity(velocity);
+//      motorSpin2.setVelocity(velocity);
+      spinner1VelocitySetting[0] = velocity;
+      spinner2VelocitySetting[0] = velocity;
    }
 
    public static void spinIdle() {
@@ -222,6 +302,10 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static void spinOff() {
       motorSpin1.setPower(0);
       motorSpin2.setPower(0);
+      spinner1VelocitySetting[0] = 0;
+      spinner2VelocitySetting[0] = 0;
+      spinner1VelocitySetting[1] = 0;
+      spinner2VelocitySetting[1] = 0;
    }
 
    public static int getMotorSpinSpeed(DcMotorEx m) {
@@ -285,15 +369,25 @@ public class TB_Turret implements PartsInterfaceStatic {
       return diff <= spinnerTolerance;
    }
 
+//   static public void indicateFullIntake() {
+//      LEDSetting[0] = TB_Misc.rgbIndicatorColor.White.color;
+//   }
+//
+//   static public void indicateClear() {
+//      LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+//   }
+
    static public void manualOverride(double distance) {
       armTurret(false);
       armSpinner(false);
       double hoodPos = calcHoodForDistance(distance);
-      servoHood.setPosition(hoodPos);
+//      servoHood.setPosition(hoodPos);
+      hoodPosSetting[0] = hoodPos;
       servoHoodPos = hoodPos;
       double spinnerRPM = calcRpmForDistance(distance);
       setSpinnerTargetSpeed(spinnerRPM);
-      servoLED.setPosition(TB_Misc.rgbIndicatorColor.Blue.color);
+//      servoLED.setPosition(TB_Misc.rgbIndicatorColor.Blue.color);
+      LEDSetting[0] = TB_Misc.rgbIndicatorColor.Blue.color;
    }
 
 }

@@ -87,17 +87,20 @@ public class ControlsTB extends Controls {
          TB_Turret.spinnerManualSpeed += gamepad2.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
          TB_Turret.spinnerManualSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerManualSpeed));
 
-         if (buttonMgr.getState(2, Buttons.dpad_up, State.isPressed)) {
+         if (buttonMgr.getState(2, Buttons.dpad_up, State.wasPressed)) {
             TB_Turret.manualOverride(100);
          }
          if (buttonMgr.getState(2, Buttons.dpad_left, State.wasPressed)) {
             TB_Turret.manualOverride(75);
          }
-         if (buttonMgr.getState(2, Buttons.dpad_down, State.isPressed)) {
+         if (buttonMgr.getState(2, Buttons.dpad_down, State.wasPressed)) {
             TB_Turret.manualOverride(140);
          }
          if (buttonMgr.getState(2, Buttons.dpad_right, State.wasPressed)) {
             TB_Turret.manualOverride(120);
+         }
+         if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
+            TB_Intake.disableSensors();
          }
 
       }
@@ -157,6 +160,7 @@ public class ControlsTB extends Controls {
       }
       if (buttonMgr.getState(2, Buttons.right_bumper, State.wasReleased)) {
          TB_Intake.intakeOff();
+         TB_Intake.clearSensorFlags();
       }
 
       if (buttonMgr.getState(2, Buttons.left_trigger, State.isPressed) &&

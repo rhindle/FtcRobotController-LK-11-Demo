@@ -40,6 +40,8 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
 
         parts.speedMaximum = 1;
 
+        TB_Misc.setAuto();
+
         settingsOverride();
 
         parts.setup();

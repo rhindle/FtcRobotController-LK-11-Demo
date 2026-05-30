@@ -44,6 +44,8 @@ public class TurretBot_Test1 extends LinearOpMode {
 //        DSAprilTag.USE_WEBCAM = true;
         parts.useForzaControls = true;
 
+        TB_Misc.setTeleOp();
+
         settingsOverride();
 
         parts.setup();

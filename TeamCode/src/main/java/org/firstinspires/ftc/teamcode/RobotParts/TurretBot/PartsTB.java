@@ -138,6 +138,7 @@ public class PartsTB extends Parts {
         if (useSlamra) slamra.initLoop();
         if (useLimeLight) TB_LL.initLoop();
         positionMgr.initLoop();
+        StateMachine.runLoop();  // so the servos can init in Auto
         TelemetryMgr.Update();
     }
 
