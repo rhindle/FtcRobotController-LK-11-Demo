@@ -74,6 +74,7 @@ public class TB_Turret implements PartsInterfaceStatic {
                                          {140, 0.482, 4000}};
 
    public static int roundRobin = 0;
+   public static int roundRobinLoop = 0;
    public static double[] hoodPosSetting = {0, 0};
    public static double[] turretLPosSetting = {0, 0};
    public static double[] turretRPosSetting = {0, 0};
@@ -191,45 +192,51 @@ public class TB_Turret implements PartsInterfaceStatic {
    }
 
    public static void roundRobinSetting() {
-      roundRobin++;
-      if (roundRobin > 6) roundRobin = 1;
-      if (roundRobin == 1) {
-         if (LEDSetting[0] != LEDSetting[1]) {
-            LEDSetting[1] = LEDSetting[0];
-            servoLED.setPosition(LEDSetting[0]);
-         } else roundRobin++;
-      }
-      if (roundRobin == 2) {
-         if (hoodPosSetting[0] != hoodPosSetting[1]) {
-            hoodPosSetting[1] = hoodPosSetting[0];
-            servoHood.setPosition(hoodPosSetting[0]);
-         } else roundRobin++;
-      }
-      if (roundRobin == 3) {
-         if (turretLPosSetting[0] != turretLPosSetting[1]) {
-            turretLPosSetting[1] = turretLPosSetting[0];
-            servoTurretL.setPosition(turretLPosSetting[0]);
-            roundRobin++;  // the servos sound bad when set separately (the 10-20ms is apparently too much)
-         } else roundRobin++;
-      }
-      if (roundRobin == 4) {
-         if (turretRPosSetting[0] != turretRPosSetting[1]) {
-            turretRPosSetting[1] = turretRPosSetting[0];
-            servoTurretR.setPosition(turretRPosSetting[0]);
-         } else roundRobin++;
-      }
-      if (roundRobin == 5) {
-         if (spinner1VelocitySetting[0] != spinner1VelocitySetting[1]) {
-            spinner1VelocitySetting[1] = spinner1VelocitySetting[0];
-            motorSpin1.setVelocity(spinner1VelocitySetting[0]);
-         } else roundRobin++;
-      }
-      if (roundRobin == 6) {
-         if (spinner2VelocitySetting[0] != spinner2VelocitySetting[1]) {
-            spinner2VelocitySetting[1] = spinner2VelocitySetting[0];
-            motorSpin2.setVelocity(spinner2VelocitySetting[0]);
-         } else roundRobin = 0;
-      }
+      roundRobinLoop = 0;
+      do {
+         roundRobinLoop++;
+         roundRobin++;
+         if (roundRobin > 6) roundRobin = 1;
+         if (roundRobin == 1) {
+            if (LEDSetting[0] != LEDSetting[1]) {
+               LEDSetting[1] = LEDSetting[0];
+               servoLED.setPosition(LEDSetting[0]);
+            } else roundRobin++;
+         }
+         if (roundRobin == 2) {
+            if (hoodPosSetting[0] != hoodPosSetting[1]) {
+               hoodPosSetting[1] = hoodPosSetting[0];
+               servoHood.setPosition(hoodPosSetting[0]);
+            } else roundRobin++;
+         }
+         if (roundRobin == 3) {
+            if (turretLPosSetting[0] != turretLPosSetting[1]) {
+               turretLPosSetting[1] = turretLPosSetting[0];
+               servoTurretL.setPosition(turretLPosSetting[0]);
+               roundRobin++;  // the servos sound bad when set separately (the 10-20ms is apparently too much)
+            } else roundRobin++;
+         }
+         if (roundRobin == 4) {
+            if (turretRPosSetting[0] != turretRPosSetting[1]) {
+               turretRPosSetting[1] = turretRPosSetting[0];
+               servoTurretR.setPosition(turretRPosSetting[0]);
+            } else roundRobin++;
+         }
+         if (roundRobin == 5) {
+            if (spinner1VelocitySetting[0] != spinner1VelocitySetting[1]) {
+               spinner1VelocitySetting[1] = spinner1VelocitySetting[0];
+               motorSpin1.setVelocity(spinner1VelocitySetting[0]);
+            } else roundRobin++;
+         }
+         if (roundRobin == 6) {
+            if (spinner2VelocitySetting[0] != spinner2VelocitySetting[1]) {
+               spinner2VelocitySetting[1] = spinner2VelocitySetting[0];
+               motorSpin2.setVelocity(spinner2VelocitySetting[0]);
+            } else roundRobin = 0;
+         }
+         // todo: add the 2nd LED for limelight here as 7
+      } while (roundRobinLoop == 1 && roundRobin == 0);
+        // if it's the first loop and we hit the end, then nothing happened so wrap back around
    }
 
    public static void stop() {
