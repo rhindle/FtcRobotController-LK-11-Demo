@@ -13,6 +13,11 @@ public class TB_Misc  {
    public static final Position targetRed              = new Position(-70.5, 70.5, 0.0);
    public static final Position targetBlue             = new Position(-70.5, -70.5, 0.0);
 
+   public static final Position fieldStartPositionBlueNear = new Position(-40, -56, 180);
+   public static final Position fieldStartPositionBlueFar  = new Position(63, -16, 180);  // todo: update this
+   public static Position fieldStartPositionBlue = fieldStartPositionBlueNear.clone();
+   public static Position fieldStartPosition = fieldStartPositionBlue.clone();
+
    static boolean modeTeleOp = true;
    static boolean allianceBlue = true;
    public static Position targetCurrent = targetBlue;
@@ -36,11 +41,34 @@ public class TB_Misc  {
    public static boolean isTeleOp() { return modeTeleOp; }
    public static boolean isAuto() { return !modeTeleOp; }
 
-   public static void setAllianceBlue() { allianceBlue = true; targetCurrent=targetBlue; }
-   public static void setAllianceRed() { allianceBlue = false; targetCurrent=targetRed; }
+   public static void setAllianceBlue() {
+      allianceBlue = true; targetCurrent=targetBlue;
+      fieldStartPosition = redOrBlue(fieldStartPositionBlue);
+   }
+   public static void setAllianceRed() {
+      allianceBlue = false; targetCurrent=targetRed;
+      fieldStartPosition = redOrBlue(fieldStartPositionBlue);
+
+   }
    public static boolean isAllianceBlue() { return allianceBlue; }
    public static boolean isAllianceRed() { return !allianceBlue; }
 
+   public static Position redOrBlue (double X, double Y, double R) {
+      if (TB_Misc.isAllianceRed()) {
+         return new Position(X, -Y, -R);
+      }
+      else {
+         return new Position(X, Y, R);
+      }
+   }
+   public static Position redOrBlue (Position pos) {
+      if (TB_Misc.isAllianceRed()) {
+         return new Position(pos.X, -pos.Y, -pos.R);
+      }
+      else {
+         return pos.clone();
+      }
+   }
 
    public enum rgbIndicatorColor {
       Off (0.0),

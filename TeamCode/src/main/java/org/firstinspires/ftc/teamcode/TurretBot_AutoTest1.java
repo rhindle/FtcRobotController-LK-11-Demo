@@ -36,12 +36,16 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         parts.reverseDrive = false;
         parts.useDistanceSensors = false;
 //        parts.fieldStartPosition = new Position(0,0,180);  // center, facing back ball
-        parts.fieldStartPosition = TB_TasksAuto.redOrBlue(-40, -56, 180);  //todo: Fix this hack
+//        parts.fieldStartPosition = TB_Misc.fieldStartPosition;
+//        parts.fieldStartPosition = TB_Misc.redOrBlue(TB_Misc.fieldStartPositionBlue);  //todo: Fix this hack?
             // reminder: Y goes away from red.
 
         parts.speedMaximum = 1;
 
         TB_Misc.setAuto();
+        if (teamBlue) TB_Misc.setAllianceBlue(); else TB_Misc.setAllianceRed();
+        parts.fieldStartPosition = TB_Misc.fieldStartPosition;
+        parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition;
 
         settingsOverride();
 
@@ -59,14 +63,19 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
             TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
             TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team,", teamBlue ? "Blue" : "Red");
             parts.initLoop();
-            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
+            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped)) {
                 teamBlue = !teamBlue;
+                if (teamBlue) TB_Misc.setAllianceBlue(); else TB_Misc.setAllianceRed();
+                parts.fieldStartPosition = TB_Misc.fieldStartPosition;
+                parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition;
+                parts.pinpoint.preRun();
+            }
 
             sleep(20);
         }
 
-        if (teamBlue) TB_Misc.setAllianceBlue();
-        else TB_Misc.setAllianceRed();
+//        if (teamBlue) TB_Misc.setAllianceBlue();
+//        else TB_Misc.setAllianceRed();
 
         parts.preRun();
 

@@ -20,6 +20,8 @@ public class TB_TasksAuto {
     public static StateMachine smAutoTestOperateGate;
     public static StateMachine smTieItAllTogether;
 
+    public static double autoSpeed = 1.0;
+
     public static void setup(Parts p) {
         parts = p;
     }
@@ -111,25 +113,25 @@ public class TB_TasksAuto {
         // These are positions copied from robot 1 blue side. Could do red instead.
 
 //        Position p_targetGoal                = redOrBlue(-70.5, -60.5, 180);   // Y: -70.5; BlueGoal Position.
-        Position p_fieldStart                = redOrBlue(-39.0,-55,-180); // TODO: Confirm/Tune this position.
+        Position p_fieldStart                = TB_Misc.redOrBlue(-39.0,-55,-180); // TODO: Confirm/Tune this position.
 //        Position p_obeliskView               = redOrBlue(-39.0, -31, 160);  // GoalBlue: ObeliskView Position
-        Position p_launchPosZero             = redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
-        Position p_launchPosOne              = redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
-        Position p_launchPosFinal            = redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position for pinkServo. Z:???.
+        Position p_launchPosZero             = TB_Misc.redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
+        Position p_launchPosOne              = TB_Misc.redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
+        Position p_launchPosFinal            = TB_Misc.redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position for pinkServo. Z:???.
 
-        Position p_pre_intakeArtifactRow2    = redOrBlue(14, -22, 90);   // X:12; Blue: Ready to collect on Row2
-        Position p_intakeArtifactRow2        = redOrBlue(14, -60, 90);   // X:12; Blue: Intake Artifacts in Row2
+        Position p_pre_intakeArtifactRow2    = TB_Misc.redOrBlue(14, -22, 90);   // X:12; Blue: Ready to collect on Row2
+        Position p_intakeArtifactRow2        = TB_Misc.redOrBlue(14, -60, 90);   // X:12; Blue: Intake Artifacts in Row2
 
-        Position p_pre_intakeArtifactRow1    = redOrBlue(-12, -22, 90);  // Blue: Ready to collect on Row1
-        Position p_intakeArtifactRow1        = redOrBlue(-12, -53, 90);  // Blue: Intake Artifacts in Row1
+        Position p_pre_intakeArtifactRow1    = TB_Misc.redOrBlue(-12, -22, 90);  // Blue: Ready to collect on Row1
+        Position p_intakeArtifactRow1        = TB_Misc.redOrBlue(-12, -53, 90);  // Blue: Intake Artifacts in Row1
 
         //leave row 3 for far team?
 //        Position p_pre_intakeArtifactRow3    = redOrBlue(35.5, -22, 90);   // Blue: Ready to collect in Row3
 //        Position p_intakeArtifactRow3        = redOrBlue(35.5, -60, 90);   // Blue: Intake Artifacts in Row3
 
-        Position p_pre_leverOpen             = redOrBlue(0, -45, -180);    // Blue: Pre-Open Lever Position
-        Position p_leverOpen                 = redOrBlue(0, -55, -180);    // Blue: Open Lever Position
-        Position p_parkAfterAuto             = redOrBlue(-12,-28,-180);
+        Position p_pre_leverOpen             = TB_Misc.redOrBlue(0, -45, -180);    // Blue: Pre-Open Lever Position
+        Position p_leverOpen                 = TB_Misc.redOrBlue(0, -55, -180);    // Blue: Open Lever Position
+        Position p_parkAfterAuto             = TB_Misc.redOrBlue(-12,-28,-180);
 
         // suggestion:  Make different actions different tasks with an orchestrator task that
         // runs them all and can adjust for time remaining, etc.
@@ -137,45 +139,38 @@ public class TB_TasksAuto {
 
 
 
-        Position p_center                   = redOrBlue(0,0,180);
+        Position p_center                   = TB_Misc.redOrBlue(0,0,180);
 //        Position p_nearStart                = redOrBlue(-41, -56, 180);
-        Position p_nearStart                = redOrBlue(-40, -56, 180);
+//        Position p_nearStart                = redOrBlue(-40, -56, 180);  // This isn't defined here; see partsTB
 //        Position p_nearShoot                = redOrBlue(-27, -22, -134);
-        Position p_nearShoot                = redOrBlue(-12, -17, -135);
+        Position p_nearShoot                = TB_Misc.redOrBlue(-12, -17, -135);
 
-        Position p_spike1_pre               = redOrBlue(-13, -27, -90); //-15
-        Position p_spike1_fin               = redOrBlue(-13, -53, -90);
+        Position p_spike1_pre               = TB_Misc.redOrBlue(-13, -27, -90); //-15
+        Position p_spike1_fin               = TB_Misc.redOrBlue(-13, -53, -90);
 
-        Position p_spike2_pre               = redOrBlue(12, -29, -90);  //13
-        Position p_spike2_fin               = redOrBlue(12, -60, -90);
-//        Position p_spike2_leave             = redOrBlue(13, -35, -90);
+        Position p_spike2_pre               = TB_Misc.redOrBlue(12, -29, -90);  //13
+        Position p_spike2_fin               = TB_Misc.redOrBlue(12, -60, -90);
         Position p_spike2_leave             = p_spike2_pre.clone();
 
         Position p_spike3_pre               = p_spike2_pre.withX(35.5); //36.5
         Position p_spike3_fin               = p_spike2_fin.withX(35.5);
         Position p_spike3_leave             = p_spike3_pre.clone();
 
-        Position p_gate_pre1                = redOrBlue(5, -29, -90);
-        Position p_gate_pre2                = redOrBlue(7, -46, -90);
-        Position p_gate_tap                 = redOrBlue(7, -54, -90);
+        Position p_gate_pre1                = TB_Misc.redOrBlue(5, -29, -90);
+        Position p_gate_pre2                = TB_Misc.redOrBlue(7, -46, -90);
+        Position p_gate_tap                 = TB_Misc.redOrBlue(7, -54, -90);
 //        Position p_gate_gather              = redOrBlue(12.5, -58.75, -120);
-        Position p_gate_gather              = redOrBlue(14, -59.75, -120);  // -58.75
-        Position p_gate_leave1              = redOrBlue(15, -54, -120);
+        Position p_gate_gather              = TB_Misc.redOrBlue(14, -59.75, -120);  // -58.75
+        Position p_gate_leave1              = TB_Misc.redOrBlue(15, -54, -120);
         Position p_gate_leave2              = p_spike2_pre.clone();
 
-//        public static StateMachine smAutoTestGotoCenter;
-//        public static StateMachine smAutoTestGotoNearShoot;
-//        public static StateMachine smAutoTestGotoSpike1;
-//        public static StateMachine smAutoTestGotoSpike2;
-//        public static StateMachine smAutoTestDriveToGate;
-//        public static StateMachine smAutoTestOperateGate;
-
+        autoSpeed = 1.0;  //0.5;
 
         smAutoTestGotoCenter = new StateMachine("ATCenter");
         task = smAutoTestGotoCenter;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
-        task.addRunOnce(() -> TB_Intake.intakeOff());
+        task.addRunOnce(TB_Intake::intakeOff);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetAccurate(p_center)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> parts.autoDrive.stop());
@@ -184,7 +179,7 @@ public class TB_TasksAuto {
         task = smAutoTestGotoNearShoot;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
-        task.addRunOnce(() -> TB_Intake.intakeOff());
+        task.addRunOnce(TB_Intake::intakeOff);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_nearShoot)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
@@ -239,10 +234,8 @@ public class TB_TasksAuto {
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_tap)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_gather)) );
-//        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addWaitFor(() -> TB_Intake.definitely3, 3000);
         task.addRunOnce(() -> parts.autoDrive.stop());  // in case it's still trying to navigate
-//        task.addDelayOf(3000);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_leave1)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
@@ -260,14 +253,14 @@ public class TB_TasksAuto {
         });
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
-        task.addRunOnce(() -> TB_Tasks.smLaunch.restart());
+        task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
         task.addRunOnce(smAutoTestGotoSpike2::restart);
         task.addWaitFor(smAutoTestGotoSpike2::isDone);
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
-        task.addRunOnce(() -> TB_Tasks.smLaunch.restart());
+        task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
         task.addRunOnce(smAutoTestDriveToGate::restart);
@@ -276,7 +269,7 @@ public class TB_TasksAuto {
         task.addWaitFor(smAutoTestOperateGate::isDone);
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
-        task.addRunOnce(() -> TB_Tasks.smLaunch.restart());
+        task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
         task.addRunOnce(smAutoTestDriveToGate::restart);
@@ -285,7 +278,7 @@ public class TB_TasksAuto {
         task.addWaitFor(smAutoTestOperateGate::isDone);
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
-        task.addRunOnce(() -> TB_Tasks.smLaunch.restart());
+        task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
         task.addRunOnce(smAutoTestDriveToGate::restart);
@@ -294,45 +287,37 @@ public class TB_TasksAuto {
         task.addWaitFor(smAutoTestOperateGate::isDone);
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
-        task.addRunOnce(() -> TB_Tasks.smLaunch.restart());
+        task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
         task.addRunOnce(smAutoTestGotoSpike1::restart);
         task.addWaitFor(smAutoTestGotoSpike1::isDone);
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
-        task.addRunOnce(() -> TB_Tasks.smLaunch.restart());
+        task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
     }
 
-    public static Position redOrBlue (double X, double Y, double R) {
-        if (TB_Misc.isAllianceRed()) {
-            return new Position(X, -Y, -R);
-        }
-        else {
-            return new Position(X, Y, R);
-        }
-    }
-    
     static NavigationTarget toTargetTransition (Position pos) {
-        return new NavigationTarget(pos, toleranceTransition, 0.5, 5000, true);
+        return toTargetTransition (pos, autoSpeed, 5000, true);
+    }
+    static NavigationTarget toTargetTransition (Position pos, double speed, long time, boolean noSlow) {
+        return new NavigationTarget(pos, toleranceHigh, speed, time, noSlow);  // 0.5
     }
 
     static NavigationTarget toTargetAccurate (Position pos) {
-        return toTargetAccurate(pos, 0.5, 5000);
-//        return new NavigationTarget(pos, toleranceHigh, 0.5, 5000, false);
+        return toTargetAccurate(pos, autoSpeed, 5000);
     }
     static NavigationTarget toTargetAccurate (Position pos, double speed, long time) {
-        return new NavigationTarget(pos, toleranceHigh, 1, 5000, false);  // 0.5
+        return new NavigationTarget(pos, toleranceHigh, speed, time, false);  // 0.5
     }
 
     static NavigationTarget toTargetMedium (Position pos) {
-        return toTargetMedium(pos, 0.5, 5000);
-//        return new NavigationTarget(pos, toleranceMedium, 0.5, 5000, false);
+        return toTargetMedium(pos, autoSpeed, 5000);
     }
     static NavigationTarget toTargetMedium (Position pos, double speed, long time) {
-        return new NavigationTarget(pos, toleranceMedium, 1, 5000, false);
+        return new NavigationTarget(pos, toleranceMedium, speed, time, false);
     }
 
     static NavigationTarget toTarget (Position pos, PositionTolerance tolerance, double maxSpeed, long timeLimit, boolean noSlow) {
