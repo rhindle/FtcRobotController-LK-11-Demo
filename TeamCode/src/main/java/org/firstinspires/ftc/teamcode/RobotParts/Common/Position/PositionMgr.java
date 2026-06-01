@@ -84,7 +84,7 @@ public class PositionMgr implements PartsInterface {
       robotPosition = normalUpdate();
       beforeOverride = robotPosition==null ? null : robotPosition.clone();
 
-      if (overrideTransform!=null) {
+      if (overrideTransform!=null && robotPosition!=null) {
          robotPosition = overrideTransform.transformPosition(robotPosition);
       }
 
