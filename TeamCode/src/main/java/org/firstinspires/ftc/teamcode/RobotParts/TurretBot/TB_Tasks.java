@@ -155,7 +155,7 @@ class TB_Tasks {
             TB_Turret.hoodPosSetting[0] = TB_Turret.servoHood.getPosition();
             TB_Turret.spinner1VelocitySetting[0] = 0;
             TB_Turret.spinner2VelocitySetting[0] = 0;
-            TB_Turret.LEDSetting[0] = 0;
+            TB_Turret.LEDSettingTurret[0] = 0;
         });
         task.addRunOnce(() -> TB_Misc.servosInit = true);
 

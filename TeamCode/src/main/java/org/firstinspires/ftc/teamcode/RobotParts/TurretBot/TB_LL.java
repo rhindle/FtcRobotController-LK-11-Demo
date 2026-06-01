@@ -29,7 +29,7 @@ public class TB_LL implements PartsInterfaceStatic {
     static public long manualIndicatorTimeout = 5000;       // ms to wait before turning off LED
     static public long automaticIndicatorTimeout = 500;     // ms to wait before turning off LED
     static public boolean automaticTransform = false;       // apply the transform automatically? Otherwise manual
-    static public String ledServoName = "servo5";          // name of the servo for the LED indicator
+//    static public String ledServoName = "servo5";          // name of the servo for the LED indicator
 
     // internal variables
     static final Position zero = new Position(0,0,0);
@@ -49,7 +49,7 @@ public class TB_LL implements PartsInterfaceStatic {
     static double llTimeStamp = 0;                          //
     static double llLastTimeStamp = 0;                      //
     static boolean isStuck = false;                         //
-    static Servo ledIndicator;
+//    static Servo ledIndicator;
 
     // classificationId Defaults to 21.
     // Valid values are 21(GPP), 22(PGP), 23(PPG).
@@ -116,8 +116,8 @@ public class TB_LL implements PartsInterfaceStatic {
         limelight = parts.robotV2.hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
         limelight.start();
-        if (ledServoName != null && !ledServoName.isEmpty())
-            ledIndicator = new ServoSSR(parts.robotV2.getServoByName(ledServoName));
+//        if (ledServoName != null && !ledServoName.isEmpty())
+//            ledIndicator = new ServoSSR(parts.robotV2.getServoByName(ledServoName));
     }
 
 
@@ -263,7 +263,8 @@ public class TB_LL implements PartsInterfaceStatic {
 
     static void setLedIndicator(rgbIndicatorColor color) {
         // Update the color of the LED if it exists
-        if (ledIndicator != null) ledIndicator.setPosition(color.color);
+//        if (ledIndicator != null) ledIndicator.setPosition(color.color);
+        TB_Turret.LEDSettingLL[0] = color.color;
     }
 
     static public void toggleAuto() {

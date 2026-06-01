@@ -22,7 +22,8 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static ServoSSR servoHood;
    public static ServoSSR servoTurretL;
    public static ServoSSR servoTurretR;
-   public static ServoSSR servoLED;
+   public static ServoSSR servoLedTurret;
+   public static ServoSSR servoLedLL;
 
    public static double servoTurretLOffset = 0.0;
    public static double servoTurretROffset = 0.0;
@@ -40,7 +41,8 @@ public class TB_Turret implements PartsInterfaceStatic {
    static String servoHoodName = "servo2B";
    static String servoTurretLName = "servo5";
    static String servoTurretRName = "servo5B";
-   static String servoLEDName = "servo0";
+   static String servoLedTurretName = "servo3B";
+   static String servoLedLLName = "servo0";
 
    static double spinTicks = 28.0;
    static int spinMotorRPM = 6000;
@@ -80,7 +82,8 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static double[] turretRPosSetting = {0, 0};
    public static double[] spinner1VelocitySetting = {0, 0};
    public static double[] spinner2VelocitySetting = {0, 0};
-   public static double[] LEDSetting = {0, 0};
+   public static double[] LEDSettingTurret = {0, 0};
+   public static double[] LEDSettingLL = {0, 0};
 
    public static void setup(Parts p) {
       parts = p;
@@ -98,7 +101,8 @@ public class TB_Turret implements PartsInterfaceStatic {
               .setDirectionSSR(Servo.Direction.FORWARD)
               .setOffset(servoTurretROffset)
               .setSweepTime(1500);
-      servoLED = new ServoSSR(parts.robotV2.getServoByName(servoLEDName));
+      servoLedTurret = new ServoSSR(parts.robotV2.getServoByName(servoLedTurretName));
+      servoLedLL = new ServoSSR(parts.robotV2.getServoByName(servoLedLLName));
 
       motorSpin1 = parts.robotV2.getMotorByName(motorSpin1Name);
       motorSpin2 = parts.robotV2.getMotorByName(motorSpin2Name);
@@ -158,24 +162,24 @@ public class TB_Turret implements PartsInterfaceStatic {
 
       // update LED
       if (!turretArmed || !spinnerArmed || turretPaused) {
-//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
-//         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+//         servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
+//         LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Off.color;
          // Update LED for intake status
-         if (TB_Intake.definitely3) LEDSetting[0] = TB_Misc.rgbIndicatorColor.White.color;
-         else if (TB_Intake.atLeast1) LEDSetting[0] = TB_Misc.rgbIndicatorColor.Orange.color;
-         else LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+         if (TB_Intake.definitely3) LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.White.color;
+         else if (TB_Intake.atLeast1) LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Orange.color;
+         else LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Off.color;
       }
       else if (turretOutOfRange) {
-//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Red.color);
-         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Red.color;
+//         servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Red.color);
+         LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Red.color;
       }
       else if (isSpinnerInToleranceV2() && servoHood.isDone() && servoTurretL.isDone()) {
-//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Green.color);
-         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Green.color;
+//         servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Green.color);
+         LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Green.color;
       }
       else {
-//         servoLED.setPosition(TB_Misc.rgbIndicatorColor.Yellow.color);
-         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Yellow.color;
+//         servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Yellow.color);
+         LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Yellow.color;
       }
 
       roundRobinSetting();
@@ -196,11 +200,11 @@ public class TB_Turret implements PartsInterfaceStatic {
       do {
          roundRobinLoop++;
          roundRobin++;
-         if (roundRobin > 6) roundRobin = 1;
+         if (roundRobin > 7) roundRobin = 1;
          if (roundRobin == 1) {
-            if (LEDSetting[0] != LEDSetting[1]) {
-               LEDSetting[1] = LEDSetting[0];
-               servoLED.setPosition(LEDSetting[0]);
+            if (LEDSettingTurret[0] != LEDSettingTurret[1]) {
+               LEDSettingTurret[1] = LEDSettingTurret[0];
+               servoLedTurret.setPosition(LEDSettingTurret[0]);
             } else roundRobin++;
          }
          if (roundRobin == 2) {
@@ -232,9 +236,14 @@ public class TB_Turret implements PartsInterfaceStatic {
             if (spinner2VelocitySetting[0] != spinner2VelocitySetting[1]) {
                spinner2VelocitySetting[1] = spinner2VelocitySetting[0];
                motorSpin2.setVelocity(spinner2VelocitySetting[0]);
+            } else roundRobin++;
+         }
+         if (roundRobin == 7) {
+            if (LEDSettingLL[0] != LEDSettingLL[1]) {
+               LEDSettingLL[1] = LEDSettingLL[0];
+               servoLedLL.setPosition(LEDSettingLL[0]);
             } else roundRobin = 0;
          }
-         // todo: add the 2nd LED for limelight here as 7
       } while (roundRobinLoop == 1 && roundRobin == 0);
         // if it's the first loop and we hit the end, then nothing happened so wrap back around
    }
@@ -265,7 +274,7 @@ public class TB_Turret implements PartsInterfaceStatic {
 //         servoTurretR.setPosition(0.5);
          turretLPosSetting[0] = 0.5;
          turretRPosSetting[0] = 0.5;
-         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+         LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Off.color;
       } else {
          turretPaused = false;
       }
@@ -279,7 +288,7 @@ public class TB_Turret implements PartsInterfaceStatic {
 //         servoTurretR.setPosition(0.5);
          turretLPosSetting[0] = 0.5;
          turretRPosSetting[0] = 0.5;
-         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+         LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Off.color;
       }
    }
 
@@ -287,7 +296,7 @@ public class TB_Turret implements PartsInterfaceStatic {
       spinnerArmed = arm;
       if (!spinnerArmed) {
          spinOff();
-         LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+         LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Off.color;
       }
    }
 
@@ -377,11 +386,11 @@ public class TB_Turret implements PartsInterfaceStatic {
    }
 
 //   static public void indicateFullIntake() {
-//      LEDSetting[0] = TB_Misc.rgbIndicatorColor.White.color;
+//      LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.White.color;
 //   }
 //
 //   static public void indicateClear() {
-//      LEDSetting[0] = TB_Misc.rgbIndicatorColor.Off.color;
+//      LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Off.color;
 //   }
 
    static public void manualOverride(double distance) {
@@ -393,8 +402,8 @@ public class TB_Turret implements PartsInterfaceStatic {
       servoHoodPos = hoodPos;
       double spinnerRPM = calcRpmForDistance(distance);
       setSpinnerTargetSpeed(spinnerRPM);
-//      servoLED.setPosition(TB_Misc.rgbIndicatorColor.Blue.color);
-      LEDSetting[0] = TB_Misc.rgbIndicatorColor.Blue.color;
+//      servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Blue.color);
+      LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Blue.color;
    }
 
 }
