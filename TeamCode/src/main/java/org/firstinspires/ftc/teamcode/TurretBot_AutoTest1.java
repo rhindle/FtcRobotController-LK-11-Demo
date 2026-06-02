@@ -45,11 +45,12 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         TB_Misc.setAuto();
         if (teamBlue) TB_Misc.setAllianceBlue(); else TB_Misc.setAllianceRed();
         parts.fieldStartPosition = TB_Misc.fieldStartPosition;
-        parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition;
+//        parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition; // not constructed yet
 
         settingsOverride();
 
         parts.setup();
+        parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition;
         parts.preInit();
 
         parts.controls.controlMode=100;

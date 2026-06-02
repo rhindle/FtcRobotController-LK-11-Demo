@@ -17,6 +17,7 @@ class TB_Tasks {
     static StateMachine smInitServos;
     static StateMachine smUnpauseTurret;
     static StateMachine smIntakeAutoStop;
+    static StateMachine smShowAlliance;
 
     public static void setup(Parts p) {
         parts = p;
@@ -123,6 +124,26 @@ class TB_Tasks {
         task.addWaitFor(() -> TB_Turret.getMotorSpinSpeed(TB_Turret.motorSpin1) < TB_Turret.spinnerIdleSpeed);
         task.addRunOnce(TB_Turret::spinIdle);
 
+        smShowAlliance = new StateMachine("showAlliance");
+        task = smShowAlliance;
+        task.setGroups("led");  // will be killed by
+        task.setAutoRestart(true);
+        task.setStopRunnable( () -> {
+            TB_Turret.servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
+            TB_Turret.servoLedLL.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
+        });
+        task.addDelayOf(500);
+        task.addWaitFor(() -> !smInitServos.isRunning());
+        task.addRunOnce(() -> smShowAlliance.dub1 = TB_Misc.isAllianceBlue() ?
+                TB_Misc.rgbIndicatorColor.Blue.color : TB_Misc.rgbIndicatorColor.Red.color);
+        task.addRunOnce(() -> TB_Turret.servoLedTurret.setPosition(smShowAlliance.dub1));
+        task.addDelayOf(500);
+        task.addRunOnce(() -> TB_Turret.servoLedLL.setPosition(smShowAlliance.dub1));
+        task.addDelayOf(500);
+        task.addRunOnce(() -> TB_Turret.servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Off.color));
+        task.addDelayOf(500);
+        task.addRunOnce(() -> TB_Turret.servoLedLL.setPosition(TB_Misc.rgbIndicatorColor.Off.color));
+
         smInitServos = new StateMachine("initServos");
         task = smInitServos;
         task.setGroups("intake", "transfer");  // will be killed by
@@ -133,6 +154,8 @@ class TB_Tasks {
             TB_Turret.servoHood.setPosition(0.5);
             TB_Turret.servoTurretL.setPosition(0.55);
             TB_Turret.servoTurretR.setPosition(0.55);
+            TB_Turret.servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Red.color);
+            TB_Turret.servoLedLL.setPosition(TB_Misc.rgbIndicatorColor.Red.color);
         });
         task.addDelayOf(500);
         task.addRunOnce(() -> {
@@ -140,6 +163,8 @@ class TB_Tasks {
             TB_Turret.servoHood.setPosition(0.02);
             TB_Turret.servoTurretL.setPosition(0.45);
             TB_Turret.servoTurretR.setPosition(0.45);
+            TB_Turret.servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Green.color);
+            TB_Turret.servoLedLL.setPosition(TB_Misc.rgbIndicatorColor.Green.color);
         });
         task.addDelayOf(500);
         task.addRunOnce(() -> {
@@ -148,6 +173,8 @@ class TB_Tasks {
             TB_Turret.servoTurretL.setPosition(0.5);
             TB_Turret.servoTurretR.setPosition(0.5);
             TB_Turret.armTurret(false);
+            TB_Turret.servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
+            TB_Turret.servoLedLL.setPosition(TB_Misc.rgbIndicatorColor.Off.color);
         });
         task.addRunOnce(() -> {
             TB_Turret.turretLPosSetting[0] = TB_Turret.servoTurretL.getPosition();

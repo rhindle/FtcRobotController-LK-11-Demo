@@ -9,6 +9,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.PartsTB;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Misc;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "TurretBot_Test1", group = "")
@@ -17,7 +18,8 @@ public class TurretBot_Test1 extends LinearOpMode {
 
     public Parts parts;
 
-    boolean teamBlue = false;
+//    boolean teamBlue = false;
+    boolean teamBlue = TB_Misc.isAllianceBlue();
 
     @Override
     public void runOpMode() {
@@ -59,14 +61,19 @@ public class TurretBot_Test1 extends LinearOpMode {
         while (!isStarted()) {
             TelemetryMgr.message(Category.MANDATORY, "Press Play to start");
             TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
-            TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team,", teamBlue ? "Blue" : "Red");
+            TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team", teamBlue ? "Blue" : "Red");
             TelemetryMgr.message(Category.MANDATORY, "(Press X) Drive",  parts.useForzaControls ? "Forza" : "Arcade");
+            TelemetryMgr.message(Category.MANDATORY, "(Press B) SlowShoot", TB_Turret.slowForTest ? "True" : "False");
             TelemetryMgr.message(Category.MANDATORY, "(Press DOWN) Center Position");
             parts.initLoop();
-            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped))
+            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped)) {
                 teamBlue = !teamBlue;
+                if (teamBlue) TB_Misc.setAllianceBlue(); else TB_Misc.setAllianceRed();
+            }
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.x, ButtonMgr.State.wasPressed))
                 parts.useForzaControls = !parts.useForzaControls;
+            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.b, ButtonMgr.State.wasPressed))
+                TB_Turret.slowForTest = !TB_Turret.slowForTest;
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.wasPressed))
                 parts.pinpoint.setPosition(parts.fieldStartPosition);
 
@@ -89,6 +96,7 @@ public class TurretBot_Test1 extends LinearOpMode {
     }
 
     public void settingsOverride(){
+        // team color?  better to hold from autonomous?
     }
 }
 

@@ -82,6 +82,19 @@ public class ControlsTB extends Controls {
       if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
          TB_Turret.armSpinner(true);
       }
+      if (buttonMgr.getState(1, Buttons.a, State.wasPressed)) {
+         // toggle intake on  (close gate, start intake)
+         TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
+         if (TB_Intake.intakeRunning) TB_Tasks.smIntakeOn.restart();
+         else TB_Tasks.smIntakeOff.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.b, State.wasPressed)) {
+         //intake+transfer   (open gate, start both motors)  [only if in range]
+         if (!TB_Turret.turretOutOfRange) {
+            TB_Intake.intakeRunning = false;
+            TB_Tasks.smLaunch.restart();
+         }
+      }
 
       // emergency overrides with left bumper
       if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
@@ -105,10 +118,10 @@ public class ControlsTB extends Controls {
          if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
             TB_Intake.disableSensors();
          }
-         if (buttonMgr.getState(1, Buttons.y, State.wasPressed)) {
+         if (buttonMgr.getState(2, Buttons.y, State.wasPressed)) {
             TB_LL.applyTransform();
          }
-         if (buttonMgr.getState(1, Buttons.x, State.wasPressed)) {
+         if (buttonMgr.getState(2, Buttons.x, State.wasPressed)) {
             TB_LL.toggleAuto();
          }
 
@@ -187,32 +200,33 @@ public class ControlsTB extends Controls {
          TB_Turret.spinOff();
       }
       // stop all
-      if (buttonMgr.getState(2, Buttons.back, State.wasPressed)) {
+      if (buttonMgr.getState(2, Buttons.back, State.wasPressed) || buttonMgr.getState(1, Buttons.back, State.wasPressed)) {
          StateMachine.stopAll();
          TB_Turret.stop();
          TB_Intake.stop();
          // add drivetrain, etc
       }
 
-      // Toggle FCD
-      if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
-         parts.userDrive.toggleFieldCentricDrive();
-      }
 
-      // Toggle HeadingHold
-      if (buttonMgr.getState(1, Buttons.back, State.wasDoubleTapped)) {
-         parts.userDrive.toggleHeadingHold();
-      }
-
-      // Store heading correction
-      if (buttonMgr.getState(1, Buttons.right_stick_button, State.wasReleased)) {
-         parts.userDrive.setDeltaHeading();
-      }
-
-      // Toggle PositionHold
-      if (buttonMgr.getState(1, Buttons.left_stick_button, State.wasReleased))  {
-         parts.userDrive.togglePositionHold();
-      }
+//      // Toggle FCD
+//      if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
+//         parts.userDrive.toggleFieldCentricDrive();
+//      }
+//
+//      // Toggle HeadingHold
+//      if (buttonMgr.getState(1, Buttons.back, State.wasDoubleTapped)) {
+//         parts.userDrive.toggleHeadingHold();
+//      }
+//
+//      // Store heading correction
+//      if (buttonMgr.getState(1, Buttons.right_stick_button, State.wasReleased)) {
+//         parts.userDrive.setDeltaHeading();
+//      }
+//
+//      // Toggle PositionHold
+//      if (buttonMgr.getState(1, Buttons.left_stick_button, State.wasReleased))  {
+//         parts.userDrive.togglePositionHold();
+//      }
 
    }
 

@@ -65,6 +65,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    public static boolean turretPaused = false;
    public static boolean spinnerArmed = false;
    public static boolean turretOutOfRange = false;
+   public static boolean slowForTest = false;
 
    public static int spinnerTolerance = 50; // 75;
    public static int spinnerUndershoot = 100;
@@ -341,7 +342,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    }
 
    public static double calcRpmForDistance(double distance) {
-      return interpolateUsingTable(turretTable, distance, 2);
+      return interpolateUsingTable(turretTable, distance, 2) * (slowForTest ? 0.5 : 1);
    }
 
    public static double interpolateUsingTable(double[][] table, double value, int index) {

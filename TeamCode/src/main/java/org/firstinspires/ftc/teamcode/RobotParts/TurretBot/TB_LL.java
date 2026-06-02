@@ -238,7 +238,7 @@ public class TB_LL implements PartsInterfaceStatic {
                     applyTransform();
                 }
                 else {
-                    setLedIndicator(rgbIndicatorColor.Green);
+                    setLedIndicator(rgbIndicatorColor.Azure);
                 }
             }
 

@@ -127,6 +127,7 @@ public class PartsTB extends Parts {
           // init servos here only in autonomous; in teleop, no movement is permitted
           // (and they should have already been init in autonomous anyway)
         if (TB_Misc.isAuto()) TB_Tasks.smInitServos.restart();
+        TB_Tasks.smShowAlliance.restart();
         TB_Misc.noPosition = false;   // todo: REVISIT THIS LAST MINUTE HACK =============================
     }
 
@@ -139,11 +140,13 @@ public class PartsTB extends Parts {
         if (useLimeLight) TB_LL.initLoop();
         positionMgr.initLoop();
         StateMachine.runLoop();  // so the servos can init in Auto
+        StateMachine.addTelemetry();
         TelemetryMgr.Update();
     }
 
     @Override
     public void preRun() {
+        TB_Tasks.smShowAlliance.stop();
         drivetrain.initialize();
         if (useIMU) imuMgr.preRun();
         if (usePinpoint && TB_Misc.isAuto()) pinpoint.preRun(); // this sets the position (again)
