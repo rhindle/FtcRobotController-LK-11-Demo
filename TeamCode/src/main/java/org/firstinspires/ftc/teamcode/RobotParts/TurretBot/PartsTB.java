@@ -123,7 +123,7 @@ public class PartsTB extends Parts {
         TB_Intake.initialize();
         TB_Turret.initialize();
         TB_Tasks.initialize();
-        TB_TasksAuto.initialize();
+//        TB_TasksAuto.initialize();  // moved to pre-run
           // init servos here only in autonomous; in teleop, no movement is permitted
           // (and they should have already been init in autonomous anyway)
         if (TB_Misc.isAuto()) TB_Tasks.smInitServos.restart();
@@ -147,6 +147,7 @@ public class PartsTB extends Parts {
     @Override
     public void preRun() {
         TB_Tasks.smShowAlliance.stop();
+        TB_TasksAuto.initialize();  // done here so changes made in initLoop are reflected
         drivetrain.initialize();
         if (useIMU) imuMgr.preRun();
         if (usePinpoint && TB_Misc.isAuto()) pinpoint.preRun(); // this sets the position (again)
