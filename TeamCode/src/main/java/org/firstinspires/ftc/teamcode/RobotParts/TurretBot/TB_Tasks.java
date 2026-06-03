@@ -78,6 +78,7 @@ class TB_Tasks {
         task.addRunOnce(() -> TB_Turret.pauseTurret(false));
         task.addYield();  // this break should allow the turret to be repositioned
         task.addWaitFor(TB_Turret.servoTurretR::isDone);
+        task.addDelayOf(250);  //doesn't seem to wait long enough
 
         smLaunch = new StateMachine("launch");
         task = smLaunch;

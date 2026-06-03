@@ -192,7 +192,7 @@ public class TB_TasksAuto {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike1_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike1_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike1_pre)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike1_pre)) ); //toTargetMedium
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 
@@ -254,6 +254,8 @@ public class TB_TasksAuto {
         });
 
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_start_move1)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+//        task.addRunOnce(() -> parts.autoDrive.stop());
 
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
@@ -304,7 +306,7 @@ public class TB_TasksAuto {
     }
 
     static NavigationTarget toTargetTransition (Position pos) {
-        return toTargetTransition (pos, autoSpeed, 5000, true);
+        return toTargetTransition (pos, autoSpeed, 1000, true);   //giving up on noslow for now 5000
     }
     static NavigationTarget toTargetTransition (Position pos, double speed, long time, boolean noSlow) {
         return new NavigationTarget(pos, toleranceHigh, speed, time, noSlow);  // 0.5
@@ -333,5 +335,5 @@ public class TB_TasksAuto {
     static PositionTolerance toleranceHigh = new PositionTolerance (1.0, 1.0, 250);
     static PositionTolerance toleranceMedium = new PositionTolerance (2.0, 2.0, 125);
     static PositionTolerance toleranceLow = new PositionTolerance(2.0,6.0,5.0,50);
-    static PositionTolerance toleranceTransition = new PositionTolerance(4.0,90.0,0);
+    static PositionTolerance toleranceTransition = new PositionTolerance(6.0,90.0,0);
 }

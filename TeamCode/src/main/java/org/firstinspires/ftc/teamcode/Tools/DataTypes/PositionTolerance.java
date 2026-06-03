@@ -91,7 +91,7 @@ public class PositionTolerance {
 
     public boolean inToleranceByTime (Position target, Position current, long duration) {
         if (inTolerance(target, current)) {
-            if ((System.currentTimeMillis()-toleranceTime) > duration) return true;
+            if ((System.currentTimeMillis()-toleranceTime) >= duration) return true;
         }
         return false;
     }

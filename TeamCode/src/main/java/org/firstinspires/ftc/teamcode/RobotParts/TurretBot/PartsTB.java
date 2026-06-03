@@ -85,7 +85,7 @@ public class PartsTB extends Parts {
         if (useLimeLight) TB_LL.setup(this);
 
         drivetrain.accelControl = true;  //!!!!!!!!!! todo: remove this if drivers don't like
-        drivetrain.accelControlRamp = 250;
+        drivetrain.accelControlRamp = 125; //250;
         drivetrain.minimizeCycleTime = false;
         userDrive.useHeadingHold = false;
         userDrive.useHoldPosition = false;

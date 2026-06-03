@@ -65,7 +65,7 @@ public class ControlsTB extends Controls {
       else {
          driveData = new DriveData(gamepad1.left_trigger * speedFactor,
                  gamepad1.right_trigger * speedFactor,
-                 gamepad1.right_stick_x * speedFactor,
+                 gamepad1.right_stick_x * speedFactor * (float)0.7,   // forced lower speed @ AV request
                  gamepad1.left_stick_x * speedFactor);
       }
 
