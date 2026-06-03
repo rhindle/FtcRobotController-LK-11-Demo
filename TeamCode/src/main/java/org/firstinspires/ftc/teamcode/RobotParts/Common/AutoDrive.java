@@ -144,11 +144,12 @@ public class AutoDrive implements PartsInterface {
       //todo: If Navigating is interrupted by UserDrive, then holding changes the navTarget and onTargetByAccuracy may not represent what we want
       onTargetByAccuracy = navTarget.inToleranceByTime(parts.positionMgr.robotPosition);
 
-      //special case for noSlow transition points
+      // Experimental special case for noSlow transition points to check if it missed
+      // but passed the target (due to robot speed and loop time)
       if (navTarget.noSlow) {
          updateError();
          navAngle = Math.toDegrees(Math.atan2(error.y,error.x));
-         onTargetByOvershoot = Math.abs(Functions.normalizeAngle(navAngleInitial-navAngle)) > 110;
+         onTargetByOvershoot = Math.abs(Functions.normalizeAngle(navAngleInitial-navAngle)) > 90; //110
          onTargetByAccuracy = onTargetByOvershoot; // kludge?
       }
 

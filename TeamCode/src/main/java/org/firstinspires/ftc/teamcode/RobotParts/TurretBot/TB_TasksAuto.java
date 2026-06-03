@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.RobotParts.TurretBot;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
+import org.firstinspires.ftc.teamcode.Tools.ArcPath;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.NavigationTarget;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.PositionTolerance;
@@ -19,6 +20,7 @@ public class TB_TasksAuto {
     public static StateMachine smAutoTestDriveToGate;
     public static StateMachine smAutoTestOperateGate;
     public static StateMachine smTieItAllTogether;
+    public static StateMachine smAutoTestTransitions;
 
     public static double autoSpeed = 1.0;
 
@@ -303,6 +305,14 @@ public class TB_TasksAuto {
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
+        smAutoTestTransitions = new StateMachine("ATTransitions");
+        task = smAutoTestTransitions;
+        task.setGroups("autotest");  // will be killed by
+        task.setAutoRestart(false);
+        ////// NEED TO WRITE THIS
+        ////// See: parts.dsAuto.testAutoMethod4();
+
+
     }
 
     static NavigationTarget toTargetTransition (Position pos) {
@@ -336,4 +346,52 @@ public class TB_TasksAuto {
     static PositionTolerance toleranceMedium = new PositionTolerance (2.0, 2.0, 125);
     static PositionTolerance toleranceLow = new PositionTolerance(2.0,6.0,5.0,50);
     static PositionTolerance toleranceTransition = new PositionTolerance(6.0,90.0,0);
+
+
+    // added for testing transition paths 20260603
+    public NavigationTarget[] generateNavCircle (Position posStart, Position posMid, double speed, int timeLimit, circleVar var){
+        Position[] arc1 = ArcPath.calculateArcPathWithDepth(posStart, posMid, 1, 1, 11);
+        Position[] arc2 = ArcPath.calculateArcPathWithDepth(posMid, posStart, 1, 1, 11);
+        Position[] circle = ArcPath.combinePaths(arc1, arc2, true);
+        switch (var) {
+            case FORWARD:
+                break;
+            case BACKWARD:
+                circle = ArcPath.adjustArcPathHeadingRelative(circle, 180);
+                break;
+            case INWARD:
+                circle = ArcPath.adjustArcPathHeadingRelative(circle, 90);
+                break;
+            case RIGHT:
+                circle = ArcPath.adjustArcPathHeadingConstant(circle, -90);
+                break;
+            case TARGET:
+                circle = ArcPath.adjustArcPathHeadingTarget(circle, new Position (0, -4, 0));
+                break;
+            case SMOOTHCHANGE:
+                circle = ArcPath.combinePaths(
+                        ArcPath.adjustArcPathHeadingStartEnd(arc1, 90, -45),
+                        ArcPath.adjustArcPathHeadingStartEnd(arc2, -45, 90),
+                        true);
+                break;
+            default: break;
+        }
+        return ArcPath.buildNavTargetArray(
+                circle,
+                toleranceTransition,
+                toleranceMedium,
+                speed,
+                timeLimit,
+                false);
+    }
+
+    public enum circleVar {
+        FORWARD,
+        BACKWARD,
+        INWARD,
+        RIGHT,
+        TARGET,
+        SMOOTHCHANGE;
+    }
+
 }

@@ -204,6 +204,9 @@ public class ControlsTB extends Controls {
          StateMachine.stopAll();
          TB_Turret.stop();
          TB_Intake.stop();
+         parts.drivetrain.eStop();
+         parts.autoDrive.eStop();
+         parts.userDrive.eStop();
          // add drivetrain, etc
       }
 
@@ -281,6 +284,13 @@ public class ControlsTB extends Controls {
       }
       if (buttonMgr.getState(1, Buttons.left_trigger, State.wasPressed)) {
          TB_TasksAuto.smTieItAllTogether.restart();
+      }
+
+      // Delete this test - position queue
+      if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
+              buttonMgr.getState(1,Buttons.right_trigger, State.wasDoubleTapped)) {
+//         parts.dsAuto.testAutoMethod4();
+         TB_TasksAuto.smAutoTestTransitions.restart();
       }
 
    }
