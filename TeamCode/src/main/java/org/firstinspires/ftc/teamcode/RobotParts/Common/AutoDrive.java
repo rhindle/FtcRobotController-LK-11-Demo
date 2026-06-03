@@ -31,6 +31,7 @@ public class AutoDrive implements PartsInterface {
    PIDCoefficients PIDmovement_calculated = new PIDCoefficients(0,0,0);
    PIDCoefficients PIDrotate_calculated = new PIDCoefficients(0,0,0);
    public boolean onTargetByAccuracy = false;
+   public boolean onTargetByOvershoot = false;
    public boolean isNavigating = false;
    public boolean isQueueing = false;
    public boolean isHolding = false;
@@ -39,7 +40,7 @@ public class AutoDrive implements PartsInterface {
    NavigationTarget navTarget;
    Error error, errorLast;
    long timeNavStart, timePIDCurrent, timePIDLast;
-   double powerTranslate, powerRotate, navAngle, navAngleLast;
+   double powerTranslate, powerRotate, navAngle, navAngleLast, navAngleInitial;
    Deque<NavigationTarget> navQueue = new ArrayDeque<>();
 
    /* Constructor */
@@ -142,6 +143,15 @@ public class AutoDrive implements PartsInterface {
       //todo: Have navigate that ends in holding vs end idle?
       //todo: If Navigating is interrupted by UserDrive, then holding changes the navTarget and onTargetByAccuracy may not represent what we want
       onTargetByAccuracy = navTarget.inToleranceByTime(parts.positionMgr.robotPosition);
+
+      //special case for noSlow transition points
+      if (navTarget.noSlow) {
+         updateError();
+         navAngle = Math.toDegrees(Math.atan2(error.y,error.x));
+         onTargetByOvershoot = Math.abs(Functions.normalizeAngle(navAngleInitial-navAngle)) > 110;
+         onTargetByAccuracy = onTargetByOvershoot; // kludge?
+      }
+
       if (onTargetByAccuracy && isQueueing) {
          navQueue.poll();  //removeFirst();
          if (!navQueue.isEmpty()) {
@@ -160,6 +170,8 @@ public class AutoDrive implements PartsInterface {
       if (isNavigating) parts.userDrive.storedHeading=parts.positionMgr.robotPosition.R;   // todo: improve this kludge
 
       updateError();
+      TelemetryMgr.message(Category.AUTODRIVE, "DeltaX", JavaUtil.formatNumber(error.x, 2));
+      TelemetryMgr.message(Category.AUTODRIVE, "DeltaY", JavaUtil.formatNumber(error.y, 2));
       navAngle = Math.toDegrees(Math.atan2(error.y,error.x));  // angle to xy destination (vector when combined with distance)
       timePIDCurrent = System.currentTimeMillis();
 
@@ -236,8 +248,8 @@ public class AutoDrive implements PartsInterface {
       error.y = navTarget.targetPos.Y - parts.positionMgr.robotPosition.Y;
       error.rot = getHeadingError(navTarget.targetPos.R);
       error.dist = Math.sqrt(Math.pow(error.x,2) + Math.pow(error.y,2));
-      TelemetryMgr.message(Category.AUTODRIVE, "DeltaX", JavaUtil.formatNumber(error.x, 2));
-      TelemetryMgr.message(Category.AUTODRIVE, "DeltaY", JavaUtil.formatNumber(error.y, 2));
+//      TelemetryMgr.message(Category.AUTODRIVE, "DeltaX", JavaUtil.formatNumber(error.x, 2));
+//      TelemetryMgr.message(Category.AUTODRIVE, "DeltaY", JavaUtil.formatNumber(error.y, 2));
    }
 
    public double getHeadingError(double targetAngle) {
@@ -293,6 +305,10 @@ public class AutoDrive implements PartsInterface {
       isHolding = hold;
       resetPID();
       onTargetByAccuracy = false;  //todo: does setting this to false cause any problems?  Needed for shooter state machines.
+      // special addition for transition points; navAngleInitial will be used to determine if the
+      // robot passed through (overshot) the transition point to avoid driving back to it
+      updateError();
+      navAngleInitial = Math.toDegrees(Math.atan2(error.y,error.x));
    }
 
    // included for legacy reasons, but should be phased out
