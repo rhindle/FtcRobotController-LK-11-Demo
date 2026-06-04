@@ -146,7 +146,7 @@ public class AutoDrive implements PartsInterface {
 
       // Experimental special case for noSlow transition points to check if it missed
       // but passed the target (due to robot speed and loop time)
-      if (navTarget.noSlow) {
+      if (navTarget.noSlow && !onTargetByAccuracy) {
          updateError();
          navAngle = Math.toDegrees(Math.atan2(error.y,error.x));
          onTargetByOvershoot = Math.abs(Functions.normalizeAngle(navAngleInitial-navAngle)) > 90; //110

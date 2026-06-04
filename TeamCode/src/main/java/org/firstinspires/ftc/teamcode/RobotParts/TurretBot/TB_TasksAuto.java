@@ -145,7 +145,7 @@ public class TB_TasksAuto {
 //        Position p_nearStart                = redOrBlue(-41, -56, 180);
 //        Position p_nearStart                = redOrBlue(-40, -56, 180);  // This isn't defined here; see partsTB
 //        Position p_nearShoot                = redOrBlue(-27, -22, -134);
-        Position p_start_move1              = TB_Misc.redOrBlue(-40,-40,180);   // move away from the wall first
+        Position p_start_move1              = TB_Misc.redOrBlue(-40,-48,180);   // move away from the wall first
         Position p_nearShoot                = TB_Misc.redOrBlue(-12, -17, -135);
 
         Position p_spike1_pre               = TB_Misc.redOrBlue(-13, -27, -90); //-15
@@ -310,7 +310,7 @@ public class TB_TasksAuto {
         Position posOpp   = new Position(24,0,90);
         Position posCenter = new Position(0,0,0);
         int timeLimit = 5000;
-        double speed = 0.5;
+        double speed = 0.75;
 
         smAutoTestTransitions = new StateMachine("ATTransitions");
         task = smAutoTestTransitions;
