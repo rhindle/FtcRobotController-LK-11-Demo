@@ -256,7 +256,7 @@ public class TB_TasksAuto {
         });
 
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_start_move1)) );
-        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+//        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 //        task.addRunOnce(() -> parts.autoDrive.stop());
 
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
@@ -305,12 +305,67 @@ public class TB_TasksAuto {
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
+
+        Position posStart = new Position(-24,0,-90);
+        Position posOpp   = new Position(24,0,90);
+        Position posCenter = new Position(0,0,0);
+        int timeLimit = 5000;
+        double speed = 0.5;
+
         smAutoTestTransitions = new StateMachine("ATTransitions");
         task = smAutoTestTransitions;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         ////// NEED TO WRITE THIS
         ////// See: parts.dsAuto.testAutoMethod4();
+
+        // Make a circle driving forward
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(posStart, toleranceMedium, speed, timeLimit, false)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(2000);
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.FORWARD)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(1000);
+
+        // Make a circle driving backward
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(posStart.withR(90), toleranceMedium, speed, timeLimit, false)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(500);
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.BACKWARD)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(1000);
+
+        // Make a circle aiming inward
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(posStart.withR(0), toleranceMedium, speed, timeLimit, false)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(500);
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.INWARD)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(1000);
+
+        // Make a circle aiming right (-90)
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(posStart.withR(-90), toleranceMedium, speed, timeLimit, false)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(500);
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.RIGHT)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(1000);
+
+        // Make a circle aiming at the target (DSMisc.aimPosition)
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(posStart.withR(0), toleranceMedium, speed, timeLimit, false)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(500);
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.TARGET)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(1000);
+
+        // Make a circle while smoothly changing heading
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(posStart.withR(90), toleranceMedium, speed, timeLimit, false)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(500);
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.SMOOTHCHANGE)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addDelayOf(1000);
 
 
     }
@@ -349,7 +404,7 @@ public class TB_TasksAuto {
 
 
     // added for testing transition paths 20260603
-    public NavigationTarget[] generateNavCircle (Position posStart, Position posMid, double speed, int timeLimit, circleVar var){
+    static public NavigationTarget[] generateNavCircle (Position posStart, Position posMid, double speed, int timeLimit, circleVar var){
         Position[] arc1 = ArcPath.calculateArcPathWithDepth(posStart, posMid, 1, 1, 11);
         Position[] arc2 = ArcPath.calculateArcPathWithDepth(posMid, posStart, 1, 1, 11);
         Position[] circle = ArcPath.combinePaths(arc1, arc2, true);
@@ -366,7 +421,7 @@ public class TB_TasksAuto {
                 circle = ArcPath.adjustArcPathHeadingConstant(circle, -90);
                 break;
             case TARGET:
-                circle = ArcPath.adjustArcPathHeadingTarget(circle, new Position (0, -4, 0));
+                circle = ArcPath.adjustArcPathHeadingTarget(circle, new Position (72, 0, 0));  //new Position (0, -4, 0)
                 break;
             case SMOOTHCHANGE:
                 circle = ArcPath.combinePaths(
