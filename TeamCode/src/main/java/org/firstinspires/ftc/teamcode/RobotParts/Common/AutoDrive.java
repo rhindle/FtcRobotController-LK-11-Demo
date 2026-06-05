@@ -28,6 +28,8 @@ public class AutoDrive implements PartsInterface {
    double powerMotorMaximum = 1;
    public PIDCoefficients PIDmovement = new PIDCoefficients(0.06,0.0012,0.006); //.12 0 .035
    public PIDCoefficients PIDrotate = new PIDCoefficients(0.026,0.01,0.00025);  // .03 0 0
+   public PIDCoefficients PIDmovementOverride = PIDmovement;
+   public PIDCoefficients PIDrotateOverride = PIDrotate;
    PIDCoefficients PIDmovement_calculated = new PIDCoefficients(0,0,0);
    PIDCoefficients PIDrotate_calculated = new PIDCoefficients(0,0,0);
    public boolean onTargetByAccuracy = false;
@@ -146,7 +148,7 @@ public class AutoDrive implements PartsInterface {
 
       // Experimental special case for noSlow transition points to check if it missed
       // but passed the target (due to robot speed and loop time)
-      if (navTarget.noSlow && !onTargetByAccuracy) {
+      if (isNavigating && navTarget.noSlow && !onTargetByAccuracy) {
          updateError();
          navAngle = Math.toDegrees(Math.atan2(error.y,error.x));
          onTargetByOvershoot = Math.abs(Functions.normalizeAngle(navAngleInitial-navAngle)) > 90; //110
@@ -178,10 +180,10 @@ public class AutoDrive implements PartsInterface {
 
       /* Calculate translation PID and power */
       if (Math.abs(navAngle-navAngleLast)>45) PIDmovement_calculated.i = 0;  // test - zero the I if we pass through an inflection
-      PIDmovement_calculated.p = PIDmovement.p * error.dist;
-      PIDmovement_calculated.i += PIDmovement.i * error.dist * ((timePIDCurrent - timePIDLast) / 1000.0);
+      PIDmovement_calculated.p = PIDmovementOverride.p * error.dist;
+      PIDmovement_calculated.i += PIDmovementOverride.i * error.dist * ((timePIDCurrent - timePIDLast) / 1000.0);
       PIDmovement_calculated.i = Math.max(Math.min(PIDmovement_calculated.i,1),-1);
-      PIDmovement_calculated.d = PIDmovement.d * (error.dist - errorLast.dist) / ((timePIDCurrent - timePIDLast) / 1000.0);
+      PIDmovement_calculated.d = PIDmovementOverride.d * (error.dist - errorLast.dist) / ((timePIDCurrent - timePIDLast) / 1000.0);
       if (parts.useDrivetrainEncoders) {
          powerTranslate = PIDmovement_calculated.p;
       } else {
@@ -189,14 +191,16 @@ public class AutoDrive implements PartsInterface {
       }
       //if (navTarget.noSlow) powerTranslate = 1;  // don't bother with proportional when hitting transitional destinations
       // Don't use proportional when hitting transitional destinations unless still waiting for rotation
-      if (navTarget.noSlow && !navTarget.inToleranceExceptRotation(parts.positionMgr.robotPosition)) powerTranslate = 1; ;
+      // 20260605 - trying to figure out "dancing", which might be related to holding a noSlow target;
+      //            added isNavigating condition so full power isn't used when holding (?)
+      if (isNavigating && navTarget.noSlow && !navTarget.inToleranceExceptRotation(parts.positionMgr.robotPosition)) powerTranslate = 1; ;
       powerTranslate = Math.max(Math.min(powerTranslate, powerMotorMaximum), powerMotorMinimum);
 
       /* Calculate rotation PID and power */
-      PIDrotate_calculated.p = PIDrotate.p * error.rot;
-      PIDrotate_calculated.i += PIDrotate.i * error.rot * ((timePIDCurrent - timePIDLast) / 1000.0);
+      PIDrotate_calculated.p = PIDrotateOverride.p * error.rot;
+      PIDrotate_calculated.i += PIDrotateOverride.i * error.rot * ((timePIDCurrent - timePIDLast) / 1000.0);
       PIDrotate_calculated.i = Math.max(Math.min(PIDrotate_calculated.i,1),-1);
-      PIDrotate_calculated.d = PIDrotate.d * (error.dist - errorLast.rot) / ((timePIDCurrent - timePIDLast) / 1000.0);
+      PIDrotate_calculated.d = PIDrotateOverride.d * (error.dist - errorLast.rot) / ((timePIDCurrent - timePIDLast) / 1000.0);
       if (parts.useDrivetrainEncoders) {
          powerRotate =  PIDrotate_calculated.p;
       } else {
@@ -310,6 +314,10 @@ public class AutoDrive implements PartsInterface {
       // robot passed through (overshot) the transition point to avoid driving back to it
       updateError();
       navAngleInitial = Math.toDegrees(Math.atan2(error.y,error.x));
+      if (navTarget.PIDmovement!=null) PIDmovementOverride = navTarget.PIDmovement;
+      else PIDmovementOverride = PIDmovement;
+      if (navTarget.PIDrotate!=null) PIDrotateOverride = navTarget.PIDrotate;
+      else PIDrotateOverride = PIDrotate;
    }
 
    // included for legacy reasons, but should be phased out
@@ -339,6 +347,8 @@ public class AutoDrive implements PartsInterface {
       isHolding = false;
 //      parts.dsAuto.setIsAuto(false);    //lk need to put this back?  20241107
       clearNavTargetQueue();
+      PIDmovementOverride = PIDmovement;
+      PIDrotateOverride = PIDrotate;
       if (!parts.userDrive.isDriving) parts.drivetrain.stopDriveMotors(true);
    }
 

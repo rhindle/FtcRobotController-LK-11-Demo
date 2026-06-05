@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Tools.DataTypes;
 
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+
 import androidx.annotation.NonNull;
 
 public class NavigationTarget {
@@ -9,9 +11,11 @@ public class NavigationTarget {
     public double maxSpeed;
     public long timeLimit;
     public boolean noSlow;
-    // add pid coefficients?
+    public PIDCoefficients PIDmovement;
+    public PIDCoefficients PIDrotate;
+    // add pid coefficients?  added!
 
-    public NavigationTarget(Position targetPos, PositionTolerance tolerance, double maxSpeed, long timeLimit, boolean noSlow) {
+    public NavigationTarget(Position targetPos, PositionTolerance tolerance, double maxSpeed, long timeLimit, boolean noSlow, PIDCoefficients PIDmovement, PIDCoefficients PIDrotate) {
         if (tolerance==null) tolerance=new PositionTolerance(2, 2, 125);   //todo: determine if this is a good default
         if (maxSpeed==0) maxSpeed = 1;
         if (timeLimit==0) timeLimit = 10000;  //todo: inserted for debugging
@@ -20,6 +24,16 @@ public class NavigationTarget {
         this.maxSpeed = maxSpeed;
         this.timeLimit = timeLimit;
         this.noSlow = noSlow;
+        this.PIDmovement = PIDmovement;
+        this.PIDrotate = PIDrotate;
+    }
+
+    public NavigationTarget(Position targetPos, PositionTolerance tolerance, double maxSpeed, long timeLimit, boolean noSlow, PIDCoefficients PID) {
+        this(targetPos, tolerance, maxSpeed, timeLimit, noSlow, PID, null);
+    }
+
+    public NavigationTarget(Position targetPos, PositionTolerance tolerance, double maxSpeed, long timeLimit, boolean noSlow) {
+        this(targetPos, tolerance, maxSpeed, timeLimit, noSlow, null, null);
     }
 
     //without noslow
@@ -73,7 +87,7 @@ public class NavigationTarget {
 
     @NonNull
     public NavigationTarget clone() {
-        return new NavigationTarget(targetPos, tolerance, maxSpeed, timeLimit, noSlow);
+        return new NavigationTarget(targetPos, tolerance, maxSpeed, timeLimit, noSlow, PIDmovement, PIDrotate);
     }
 
     public boolean inTolerance (Position currentPos) {
