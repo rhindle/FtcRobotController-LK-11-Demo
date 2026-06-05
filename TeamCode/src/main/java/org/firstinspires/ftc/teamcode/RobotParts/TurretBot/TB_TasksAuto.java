@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.RobotParts.TurretBot;
 
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
 import org.firstinspires.ftc.teamcode.Tools.ArcPath;
@@ -212,7 +214,7 @@ public class TB_TasksAuto {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike1_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike1_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike1_shoot)) ); //toTargetMedium
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike1_shoot)) ); //toTargetMedium
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 
@@ -228,8 +230,6 @@ public class TB_TasksAuto {
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike2_leave)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave1)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave2)) );
-
-
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
         smAutoTestGotoSpike3 = new StateMachine("ATSpike3");
@@ -264,12 +264,16 @@ public class TB_TasksAuto {
         task.addWaitFor(() -> TB_Intake.definitely3, 3000);
         task.addRunOnce(() -> parts.autoDrive.stop());  // in case it's still trying to navigate
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave1)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_leave2, toleranceTransition, 0.25,1000, true)) );
-        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_leave2, toleranceTransition, 0.25,1000, true)) );
+//        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+//        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_leave2)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave1)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave2)) );
+        // changes 20260605; ditch the initial reverse motion
+        task.addDelayOf(300); // try to make sure the last ball is intaken
+        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
+        //
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
 
@@ -288,6 +292,7 @@ public class TB_TasksAuto {
 
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
+        task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);  //added for the fist shot only?
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
@@ -419,7 +424,7 @@ public class TB_TasksAuto {
     }
 
     static NavigationTarget toTargetLow (Position pos) {
-        return toTargetMedium(pos, autoSpeed, 5000);
+        return toTargetLow(pos, autoSpeed, 5000);
     }
     static NavigationTarget toTargetLow (Position pos, double speed, long time) {
         return new NavigationTarget(pos, toleranceLow, speed, time, false);
@@ -427,6 +432,14 @@ public class TB_TasksAuto {
 
     static NavigationTarget toTarget (Position pos, PositionTolerance tolerance, double maxSpeed, long timeLimit, boolean noSlow) {
         return new NavigationTarget(pos, tolerance, maxSpeed, timeLimit, noSlow);
+    }
+    static NavigationTarget toTarget (Position pos, PositionTolerance tolerance, double maxSpeed, long timeLimit,
+                                      boolean noSlow, PIDCoefficients PID) {
+        return new NavigationTarget(pos, tolerance, maxSpeed, timeLimit, noSlow, PID);
+    }
+    static NavigationTarget toTarget (Position pos, PositionTolerance tolerance, double maxSpeed, long timeLimit,
+                                      boolean noSlow, PIDCoefficients PIDmove, PIDCoefficients PIDrotate) {
+        return new NavigationTarget(pos, tolerance, maxSpeed, timeLimit, noSlow, PIDmove, PIDrotate);
     }
 
     // These could also be stored in TB_Misc (and in fact they are!)
