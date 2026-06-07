@@ -65,6 +65,7 @@ public class TB_Tasks {
             if (TB_Intake.disableIntakeSensors) smIntakeAutoStop.end();
         });
         task.addWaitFor(() -> TB_Intake.definitely3);
+        task.addDelayOf(500);
 //        task.addRunOnce(TB_Turret::indicateFullIntake);
         task.addRunOnce(smIntakeOff::restart);
 

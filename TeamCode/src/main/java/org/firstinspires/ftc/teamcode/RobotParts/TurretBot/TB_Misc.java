@@ -14,7 +14,7 @@ public class TB_Misc  {
    public static final Position targetBlue             = new Position(-70.5, -70.5, 0.0);
 
    public static final Position fieldStartPositionBlueNear = new Position(-40, -56, 180);
-   public static final Position fieldStartPositionBlueFar  = new Position(63, -16, 180);  // todo: update this
+   public static final Position fieldStartPositionBlueFar  = new Position(63.5, -16, 180);  // todo: update this
    public static Position fieldStartPositionBlue = fieldStartPositionBlueNear.clone();
    public static Position fieldStartPosition = fieldStartPositionBlue.clone();
 
@@ -54,10 +54,12 @@ public class TB_Misc  {
    }
    public static void setAutoNear() {
       autoNear = true;
+      fieldStartPositionBlue = fieldStartPositionBlueNear.clone();
       fieldStartPosition = redOrBlue(fieldStartPositionBlueNear);
    }
    public static void setAutoFar() {
       autoNear = false;
+      fieldStartPositionBlue = fieldStartPositionBlueFar.clone();
       fieldStartPosition = redOrBlue(fieldStartPositionBlueFar);
    }
 

@@ -54,6 +54,7 @@ public class PartsTB extends Parts {
         TB_Misc.setup(this);
         TB_Tasks.setup(this);
         TB_TasksAuto.setup(this);
+        TB_TasksAutoFar.setup(this);
 
 //        sb_Auto = new SB_Auto(this);
 

@@ -87,11 +87,11 @@ public class TB_TasksAutoFar {
         Position p_spike3_fin               = TB_Misc.redOrBlue(35.5, -60, -90);
         Position p_spike3_leave             = p_spike3_pre.clone();
 
-        Position p_human_wall               = TB_Misc.redOrBlue(60, -60, -90);
+        Position p_human_wall               = TB_Misc.redOrBlue(60, -57.5, -90); // -60
         Position p_human_retry              = TB_Misc.redOrBlue(60, -45, -90);
-        Position p_human_wall2              = TB_Misc.redOrBlue(48, -60, -90);
+        Position p_human_wall2              = TB_Misc.redOrBlue(48, -57.5, -90); // -60
         Position p_human_retry2             = TB_Misc.redOrBlue(48, -45, -90);
-        Position p_human_wall3              = TB_Misc.redOrBlue(36, -60, -90);
+        Position p_human_wall3              = TB_Misc.redOrBlue(36, -57.5, -90); // -60
         Position p_human_slide_start        = TB_Misc.redOrBlue(56, -59.75, -120);
         Position p_human_slide_end          = TB_Misc.redOrBlue(32, -59.75, -120);
 
@@ -103,7 +103,7 @@ public class TB_TasksAutoFar {
 //        Position p_gate_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
 //        Position p_gate_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
 
-        Position p_park                     = TB_Misc.redOrBlue(55, -20, -90);
+        Position p_park                     = TB_Misc.redOrBlue(55, -30, -90);
 
         autoSpeed = 0.75;  //0.5;  // todo: remember to change this back to 1
 
@@ -135,7 +135,7 @@ public class TB_TasksAutoFar {
         // reminder: comment out new drive position if testing arc generator in spike2/gate
         //           or refactor and don't call this machine at all
         // Note: Overshooting here will be dangerous, so may require tighter tolerance
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_farShoot90)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_farShoot90)) );
         task.addDelayOf(500); // try to make sure the last ball is intaken
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_farShoot90)) );
@@ -150,28 +150,29 @@ public class TB_TasksAutoFar {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike3_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike3_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
+//        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike3_leave)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 
         smAutoFarHumanArea = new StateMachine("ATHumanArea");
         task = smAutoFarHumanArea;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
           // end the task when it has three balls or at least one and _ seconds have passed (todo: tune the time)
-        task.setEndCriteria( () -> TB_Intake.probably3 || (TB_Intake.atLeast1 && (smAutoFarHumanArea.getRuntime() > 7500)) );
+        task.setEndCriteria( () -> TB_Intake.probably3 || (TB_Intake.atLeast1 && (smAutoFarHumanArea.getRuntime() > 5000)) );
         task.setEndCriteriaRunnable( () -> parts.autoDrive.stop());  // stop navigating
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_wall)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_retry)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_wall)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_retry2)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_wall2)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_retry2)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_wall3)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_retry2)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_slide_start)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_human_slide_end)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry2)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall2)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry2)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall3)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry2)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_slide_start)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_slide_end)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
 
@@ -179,7 +180,7 @@ public class TB_TasksAutoFar {
         task = smAutoFarOrchestrator;
         task.setGroups("orchestrator");  // will be killed by
         task.setAutoRestart(false);
-        task.setEndCriteria( () -> (smAutoFarOrchestrator.getRuntime() > 38000) && !TB_Tasks.smLaunch.isRunning() );   // change to 28? seconds
+        task.setEndCriteria( () -> (smAutoFarOrchestrator.getRuntime() > 28000) && !TB_Tasks.smLaunch.isRunning() );   // change to 28? seconds
         task.setEndCriteriaRunnable( () -> {
             StateMachine.stopGroups("autotest");
             parts.autoDrive.stop();  // stop navigating

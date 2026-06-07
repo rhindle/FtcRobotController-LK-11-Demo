@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.PartsTB;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_TasksAuto;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "TurretBot_AutoTest1", group = "")
@@ -91,6 +92,8 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         parts.preRun();
 
 //        TB_TasksAuto.smAutoTest1.restart();   // get the ball rolling
+        TB_Turret.armTurret(false);
+        TB_Turret.armSpinner(false);
 
         /* Run Loop */
         if (opModeIsActive()) {
