@@ -19,6 +19,7 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
     public Parts parts;
 
     boolean teamBlue = true;
+    boolean startNear = true;
 
     @Override
     public void runOpMode() {
@@ -64,10 +65,18 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
             TelemetryMgr.message(Category.MANDATORY, "Press Play to start");
             TelemetryMgr.message(Category.MANDATORY, "Heading", (parts.positionMgr.headingOnly==null) ? "(null)" : parts.positionMgr.headingOnly.toString(2));
             TelemetryMgr.message(Category.MANDATORY, "(Press UP) Team,", teamBlue ? "Blue" : "Red");
+            TelemetryMgr.message(Category.MANDATORY, "(Press Down) Near/Far,", startNear ? "Near" : "Far");
             parts.initLoop();
             if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_up, ButtonMgr.State.wasTapped)) {
                 teamBlue = !teamBlue;
                 if (teamBlue) TB_Misc.setAllianceBlue(); else TB_Misc.setAllianceRed();
+                parts.fieldStartPosition = TB_Misc.fieldStartPosition;
+                parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition;
+                parts.pinpoint.preRun();
+            }
+            if (parts.buttonMgr.getState(1, ButtonMgr.Buttons.dpad_down, ButtonMgr.State.wasTapped)) {
+                startNear = !startNear;
+                if (startNear) TB_Misc.setAutoNear(); else TB_Misc.setAutoFar();
                 parts.fieldStartPosition = TB_Misc.fieldStartPosition;
                 parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition;
                 parts.pinpoint.preRun();

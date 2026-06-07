@@ -21,7 +21,7 @@ public class TB_TasksAuto {
     public static StateMachine smAutoTestGotoSpike3;
     public static StateMachine smAutoTestDriveToGate;
     public static StateMachine smAutoTestOperateGate;
-    public static StateMachine smTieItAllTogether;
+    public static StateMachine smAutoNearOrchestrator;
 
     public static StateMachine smAutoTestTransitions;
 
@@ -138,6 +138,8 @@ public class TB_TasksAuto {
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(TB_Intake::intakeOff);
+        // reminder: comment out new drive position if testing arc generator in spike2/gate
+        //           or refactor and don't call this machine at all
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_nearShoot45)) );
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_nearShoot45)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
@@ -168,7 +170,8 @@ public class TB_TasksAuto {
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike2_leave)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave1)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave2)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_spike2_leave1, p_spike2_leave2, autoSpeed, 0.171, 1000)) );
+        // reminder: if testing the arc generator, comment out shoot position in ...nearShoot45
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_spike2_leave1, p_nearShoot45, autoSpeed, 0.171, 1000)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
         smAutoTestGotoSpike3 = new StateMachine("ATSpike3");
@@ -209,7 +212,8 @@ public class TB_TasksAuto {
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_leave2)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave1)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave2)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_gate_leave1, p_gate_leave2, autoSpeed, 0.171, 1000)) );
+        // reminder: if testing the arc generator, comment out shoot position in ...nearShoot45
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_gate_leave1, p_nearShoot45, autoSpeed, 0.171, 1000)) );
         // changes 20260605; ditch the initial reverse motion
         task.addDelayOf(300); // try to make sure the last ball is intaken
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
@@ -217,8 +221,8 @@ public class TB_TasksAuto {
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
 
-        smTieItAllTogether = new StateMachine("TieItAllTogether");
-        task = smTieItAllTogether;
+        smAutoNearOrchestrator = new StateMachine("NearOrchestrator");
+        task = smAutoNearOrchestrator;
         task.setGroups("orchestrator");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> {

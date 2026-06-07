@@ -147,7 +147,10 @@ public class PartsTB extends Parts {
     @Override
     public void preRun() {
         TB_Tasks.smShowAlliance.stop();
-        TB_TasksAuto.initialize();  // done here so changes made in initLoop are reflected
+        if (TB_Misc.isAuto()) {    // done here so changes made in initLoop are reflected
+            TB_TasksAuto.initialize();
+            if (!TB_Misc.isAutoNear()) TB_TasksAutoFar.initialize();
+        }
         drivetrain.initialize();
         if (useIMU) imuMgr.preRun();
         if (usePinpoint && TB_Misc.isAuto()) pinpoint.preRun(); // this sets the position (again)

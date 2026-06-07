@@ -20,6 +20,7 @@ public class TB_Misc  {
 
    static boolean modeTeleOp = true;
    static boolean allianceBlue = true;
+   static boolean autoNear = true;
    public static Position targetCurrent = targetBlue;
    public static boolean servosInit = false;
    public static boolean noPosition = true;
@@ -51,8 +52,18 @@ public class TB_Misc  {
       fieldStartPosition = redOrBlue(fieldStartPositionBlue);
 
    }
+   public static void setAutoNear() {
+      autoNear = true;
+      fieldStartPosition = redOrBlue(fieldStartPositionBlueNear);
+   }
+   public static void setAutoFar() {
+      autoNear = false;
+      fieldStartPosition = redOrBlue(fieldStartPositionBlueFar);
+   }
+
    public static boolean isAllianceBlue() { return allianceBlue; }
    public static boolean isAllianceRed() { return !allianceBlue; }
+   public static boolean isAutoNear() { return autoNear; }
 
    public static Position redOrBlue (double X, double Y, double R) {
       if (TB_Misc.isAllianceRed()) {

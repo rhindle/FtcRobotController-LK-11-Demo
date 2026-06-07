@@ -283,7 +283,7 @@ public class ControlsTB extends Controls {
          TB_Intake.stop();
       }
       if (buttonMgr.getState(1, Buttons.left_trigger, State.wasPressed)) {
-         TB_TasksAuto.smTieItAllTogether.restart();
+         TB_TasksAuto.smAutoNearOrchestrator.restart();
       }
 
       // Delete this test - position queue
