@@ -739,6 +739,14 @@ public class StateMachine {
         return lastStepTimeout;
     }
 
+    /**
+     * @return How long the machine has been running (in ms), or -1 if it is not running.
+     */
+    public long getRuntime() {
+        if (running) return System.currentTimeMillis() - overallStartTime;
+        else return -1;
+    }
+
     /*==============*/
     /*   Setters    */
     /*==============*/

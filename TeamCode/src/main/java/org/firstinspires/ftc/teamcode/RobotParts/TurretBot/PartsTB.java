@@ -149,7 +149,9 @@ public class PartsTB extends Parts {
         TB_Tasks.smShowAlliance.stop();
         if (TB_Misc.isAuto()) {    // done here so changes made in initLoop are reflected
             TB_TasksAuto.initialize();
-            if (!TB_Misc.isAutoNear()) TB_TasksAutoFar.initialize();
+            TB_TasksAutoFar.initialize();
+//            if (!TB_Misc.isAutoNear()) TB_TasksAutoFar.initialize();
+
         }
         drivetrain.initialize();
         if (useIMU) imuMgr.preRun();

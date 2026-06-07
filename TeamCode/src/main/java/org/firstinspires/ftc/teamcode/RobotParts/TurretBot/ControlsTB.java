@@ -245,35 +245,35 @@ public class ControlsTB extends Controls {
 //        public static StateMachine smAutoTestOperateGate;
 
 
-      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoTestGotoCenter.restart();
       }
-      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoTestGotoNearShoot.restart();
       }
-      if (buttonMgr.getState(1, Buttons.dpad_left, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.dpad_left, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoTestGotoSpike1.restart();
       }
-      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoTestGotoSpike2.restart();
       }
-      if (buttonMgr.getState(1, Buttons.left_bumper, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.left_bumper, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoTestGotoSpike3.restart();
       }
-      if (buttonMgr.getState(1, Buttons.y, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.y, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoTestDriveToGate.restart();
       }
-      if (buttonMgr.getState(1, Buttons.x, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.x, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoTestOperateGate.restart();
       }
-      if (buttonMgr.getState(1, Buttons.a, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.a, State.wasSingleTapped)) {
          TB_Tasks.smLaunch.restart();
       }
-      if (buttonMgr.getState(1, Buttons.b, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.b, State.wasSingleTapped)) {
          TB_Turret.armTurret(true);
          TB_Turret.armSpinner(true);
       }
-      if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.right_bumper, State.wasSingleTapped)) {
          TB_Turret.armTurret(false);
          TB_Turret.armSpinner(false);
       }
@@ -282,9 +282,29 @@ public class ControlsTB extends Controls {
          TB_Turret.stop();
          TB_Intake.stop();
       }
-      if (buttonMgr.getState(1, Buttons.left_trigger, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.left_trigger, State.wasSingleTapped)) {
          TB_TasksAuto.smAutoNearOrchestrator.restart();
       }
+
+      //Far specific
+
+      if (buttonMgr.getState(1, Buttons.left_trigger, State.wasDoubleTapped)) {
+         TB_TasksAutoFar.smAutoFarOrchestrator.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_right, State.wasDoubleTapped)) {
+         TB_TasksAutoFar.smAutoFarGotoShoot180.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_up, State.wasDoubleTapped)) {
+         TB_TasksAutoFar.smAutoFarGotoShoot90.restart();
+      }
+
+      if (buttonMgr.getState(1, Buttons.dpad_left, State.wasDoubleTapped)) {
+         TB_TasksAutoFar.smAutoFarGotoSpike3.restart();
+      }
+      if (buttonMgr.getState(1, Buttons.dpad_down, State.wasDoubleTapped)) {
+         TB_TasksAutoFar.smAutoFarHumanArea.restart();
+      }
+
 
       // Delete this test - position queue
       if (buttonMgr.getState(1, Buttons.right_bumper, State.isHeld) &&
