@@ -5,11 +5,11 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.StateMachine;
 
-class TB_Tasks {
+public class TB_Tasks {
 
     public static Parts parts;
 
-    static StateMachine smIntakeOn;
+    public static StateMachine smIntakeOn;
     static StateMachine smIntakeOff;
     static StateMachine smRelax;
     static StateMachine smLaunch;

@@ -8,7 +8,9 @@ import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.TelemetryMgr.Category;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.PartsTB;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Intake;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Misc;
+import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Tasks;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
@@ -84,6 +86,14 @@ public class TurretBot_Test1 extends LinearOpMode {
         else TB_Misc.setAllianceRed();
 
         parts.preRun();
+
+        // automate things that were manual:
+        //   set drive speed to full, arm turret parts, turn on intake
+        TB_Misc.controlsFullSpeed = true;  // driver won't have to press right bumper
+        TB_Turret.armTurret(true);
+        TB_Turret.armSpinner(true);
+        TB_Intake.intakeRunning = true;
+        TB_Tasks.smIntakeOn.restart();
 
         /* Run Loop */
         if (opModeIsActive()) {

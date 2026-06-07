@@ -13,7 +13,6 @@ public class TB_TasksAuto {
 
     public static Parts parts;
 
-    public static StateMachine smAutoTest1;
     public static StateMachine smAutoTestGotoCenter;
     public static StateMachine smAutoTestGotoNearShoot;
     public static StateMachine smAutoTestGotoNearShoot45;
@@ -23,9 +22,14 @@ public class TB_TasksAuto {
     public static StateMachine smAutoTestDriveToGate;
     public static StateMachine smAutoTestOperateGate;
     public static StateMachine smTieItAllTogether;
+
     public static StateMachine smAutoTestTransitions;
 
     public static double autoSpeed = 1.0;
+
+    //        autoDrive.PIDmovement = new PIDCoefficients(0.03,0.0012,0.006); //.12 0 .035  0.06
+    static PIDCoefficients HighPID = new PIDCoefficients(0.12,0.0012,0.006);  // is 0.03 is PartsTB
+
 
     public static void setup(Parts p) {
         parts = p;
@@ -39,52 +43,14 @@ public class TB_TasksAuto {
         StateMachine task;
 
         // reminder: X is toward audience, Y is away from red team
-        Position l_pos1          = new Position(-12, 8,150);
-        Position l_pos2          = new Position(-24, 16,180);
-        Position l_pos3          = new Position(-36, 8,-135);
-        Position l_pos4          = new Position(-48, 0,-90); //here
-        Position l_pos5          = new Position(-48, 16,180);
-        Position l_pos6          = new Position(-36, 16, 180);
-        Position l_pos7          = new Position(-24, 8, 150);
-        Position l_pos8          = new Position(-12,0,180);
-        Position l_pos9          = new Position(0,0,180);
 
-        /******************************************************************************************/
         // This robot is fast so it might pass right through a transition point without registering
         // (and then reverse to go back to it)
         // The trick will be to find tolerance parameters and map the navigation points
         // in such a way as to avoid this problem.
         // Or don't use noSlow but make large tolerance values to minimize slowing.
+        // Or: (new) use a higher PID in the NavTarget if you don't care about overshoot
 
-        smAutoTest1 = new StateMachine("AutoTest1");
-        task = smAutoTest1;
-        task.setGroups("auto-master");  // will be killed by
-        //task.setStopGroups("launcher", "green");    // groups to kill
-        //task.setMemberGroups("all", "green");  // will be killed by
-        task.setAutoRestart(false);
-        //task.setStopRunnable( () -> {} );
-        //task.setTimeLimit(5000);
-        //task.setTimeoutRunnable( () -> {} );
-        //task.setEndCriteria( () -> false );
-        //task.setEndCriteriaRunnable( () -> {} );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(l_pos1)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(l_pos2)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(l_pos3)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetAccurate(l_pos4)) );
-        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart());
-        task.addDelayOf(2000);
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(l_pos5)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(l_pos6)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(l_pos7)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(l_pos8)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetAccurate(l_pos9)) );
-        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart());
-        task.addWaitFor(2000);
-        task.addRunOnce(() -> parts.autoDrive.stop());
-        
-        
         /*
         
         Auto near:
@@ -115,39 +81,12 @@ public class TB_TasksAuto {
         
         */
 
-        // These are positions copied from robot 1 blue side. Could do red instead.
-
-//        Position p_targetGoal                = redOrBlue(-70.5, -60.5, 180);   // Y: -70.5; BlueGoal Position.
-        Position p_fieldStart                = TB_Misc.redOrBlue(-39.0,-55,-180); // TODO: Confirm/Tune this position.
-//        Position p_obeliskView               = redOrBlue(-39.0, -31, 160);  // GoalBlue: ObeliskView Position
-        Position p_launchPosZero             = TB_Misc.redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
-        Position p_launchPosOne              = TB_Misc.redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position.
-        Position p_launchPosFinal            = TB_Misc.redOrBlue(-28.0,-16,-135);    // GoalBlue Launching Position for pinkServo. Z:???.
-
-        Position p_pre_intakeArtifactRow2    = TB_Misc.redOrBlue(14, -22, 90);   // X:12; Blue: Ready to collect on Row2
-        Position p_intakeArtifactRow2        = TB_Misc.redOrBlue(14, -60, 90);   // X:12; Blue: Intake Artifacts in Row2
-
-        Position p_pre_intakeArtifactRow1    = TB_Misc.redOrBlue(-12, -22, 90);  // Blue: Ready to collect on Row1
-        Position p_intakeArtifactRow1        = TB_Misc.redOrBlue(-12, -53, 90);  // Blue: Intake Artifacts in Row1
-
-        //leave row 3 for far team?
-//        Position p_pre_intakeArtifactRow3    = redOrBlue(35.5, -22, 90);   // Blue: Ready to collect in Row3
-//        Position p_intakeArtifactRow3        = redOrBlue(35.5, -60, 90);   // Blue: Intake Artifacts in Row3
-
-        Position p_pre_leverOpen             = TB_Misc.redOrBlue(0, -45, -180);    // Blue: Pre-Open Lever Position
-        Position p_leverOpen                 = TB_Misc.redOrBlue(0, -55, -180);    // Blue: Open Lever Position
-        Position p_parkAfterAuto             = TB_Misc.redOrBlue(-12,-28,-180);
-
         // suggestion:  Make different actions different tasks with an orchestrator task that
         // runs them all and can adjust for time remaining, etc.
         // Do not give the orchestrator task the same group name or it will be stopped by the subtasks.
 
-
-
         Position p_center                   = TB_Misc.redOrBlue(0,0,180);
-//        Position p_nearStart                = redOrBlue(-41, -56, 180);
 //        Position p_nearStart                = redOrBlue(-40, -56, 180);  // This isn't defined here; see partsTB
-//        Position p_nearShoot                = redOrBlue(-27, -22, -134);
         Position p_start_move1              = TB_Misc.redOrBlue(-40,-48,180);   // move away from the wall first
         Position p_nearShoot                = TB_Misc.redOrBlue(-12, -17, -135);
 
@@ -157,11 +96,8 @@ public class TB_TasksAuto {
         Position p_spike1_fin               = TB_Misc.redOrBlue(-13, -53, -90);
         Position p_spike1_shoot             = TB_Misc.redOrBlue(-38.96, -16.68, -65.92);
 
-
         Position p_spike2_pre               = TB_Misc.redOrBlue(12, -29, -90);  //13
         Position p_spike2_fin               = TB_Misc.redOrBlue(12, -60, -90);
-        Position p_spike2_leave             = p_spike2_pre.clone();
-
         Position p_spike2_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
         Position p_spike2_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
 
@@ -172,14 +108,11 @@ public class TB_TasksAuto {
         Position p_gate_pre1                = TB_Misc.redOrBlue(5, -29, -90);
         Position p_gate_pre2                = TB_Misc.redOrBlue(7, -46, -90);
         Position p_gate_tap                 = TB_Misc.redOrBlue(7, -54, -90);
-//        Position p_gate_gather              = redOrBlue(12.5, -58.75, -120);
         Position p_gate_gather              = TB_Misc.redOrBlue(14, -59.75, -120);  // -58.75
-//        Position p_gate_leave1              = TB_Misc.redOrBlue(15, -54, -120);
-//        Position p_gate_leave2              = p_spike2_pre.clone();
         Position p_gate_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
         Position p_gate_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
 
-        autoSpeed = 0.75;  //0.5;
+        autoSpeed = 0.75;  //0.5;  // todo: remember to change this back to 1
 
         smAutoTestGotoCenter = new StateMachine("ATCenter");
         task = smAutoTestGotoCenter;
@@ -196,7 +129,9 @@ public class TB_TasksAuto {
         task.setAutoRestart(false);
         task.addRunOnce(TB_Intake::intakeOff);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_nearShoot)) );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_nearShoot)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+//        task.addRunOnce(() -> parts.autoDrive.stop() );  // so it doesn't try to "hold" back to position
 
         smAutoTestGotoNearShoot45 = new StateMachine("ATNearShoot45");
         task = smAutoTestGotoNearShoot45;
@@ -204,7 +139,9 @@ public class TB_TasksAuto {
         task.setAutoRestart(false);
         task.addRunOnce(TB_Intake::intakeOff);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_nearShoot45)) );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_nearShoot45)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+//        task.addRunOnce(() -> parts.autoDrive.stop() );  // so it doesn't try to "hold" back to position
 
         smAutoTestGotoSpike1 = new StateMachine("ATSpike1");
         task = smAutoTestGotoSpike1;
@@ -215,6 +152,7 @@ public class TB_TasksAuto {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike1_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike1_shoot)) ); //toTargetMedium
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_spike1_shoot)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 
@@ -230,6 +168,7 @@ public class TB_TasksAuto {
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike2_leave)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave1)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave2)) );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_spike2_leave1, p_spike2_leave2, autoSpeed, 0.171, 1000)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
         smAutoTestGotoSpike3 = new StateMachine("ATSpike3");
@@ -270,6 +209,7 @@ public class TB_TasksAuto {
 //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_leave2)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave1)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave2)) );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_gate_leave1, p_gate_leave2, autoSpeed, 0.171, 1000)) );
         // changes 20260605; ditch the initial reverse motion
         task.addDelayOf(300); // try to make sure the last ball is intaken
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
@@ -287,9 +227,6 @@ public class TB_TasksAuto {
         });
 
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_start_move1)) );
-//        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-//        task.addRunOnce(() -> parts.autoDrive.stop());
-
         task.addRunOnce(smAutoTestGotoNearShoot::restart);
         task.addWaitFor(smAutoTestGotoNearShoot::isDone);
         task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);  //added for the fist shot only?
@@ -430,6 +367,13 @@ public class TB_TasksAuto {
         return new NavigationTarget(pos, toleranceLow, speed, time, false);
     }
 
+    static NavigationTarget toTargetLowHighPID (Position pos) {
+        return toTargetLowHighPID(pos, autoSpeed, 5000);
+    }
+    static NavigationTarget toTargetLowHighPID (Position pos, double speed, long time) {
+        return new NavigationTarget(pos, toleranceLow, speed, time, false, HighPID);
+    }
+
     static NavigationTarget toTarget (Position pos, PositionTolerance tolerance, double maxSpeed, long timeLimit, boolean noSlow) {
         return new NavigationTarget(pos, tolerance, maxSpeed, timeLimit, noSlow);
     }
@@ -451,7 +395,25 @@ public class TB_TasksAuto {
     static PositionTolerance toleranceTransition = new PositionTolerance(6.0,90.0,0);
 
 
+    static public NavigationTarget[] generateReturnArc (Position posStart, Position posEnd, double speed, double depth, int timeLimit) {
+        // return from Spike 2 and gate 2
+        // calculate an arc path with an appropriate depth (sagitta), and direction based on alliance.
+        Position[] arc1 = ArcPath.calculateArcPathWithDepth(posStart, posEnd, depth, TB_Misc.isAllianceBlue() ? 1 : -1, 5);
+        // adjust the direction (position.R) through the path to match the start and end
+        arc1 = ArcPath.adjustArcPathHeadingStartEnd(arc1, posStart.R, posEnd.R);
+        return ArcPath.buildNavTargetArray(
+                arc1,
+                toleranceTransition,  // start tolerance
+                toleranceTransition,  // mid tolerance
+                toleranceTransition,  // end tolerance
+                speed,
+                timeLimit,            // per step
+                true);                // no slow at end
+    }
+
+
     // added for testing transition paths 20260603
+    // leaving because it provides examples of how to use ArcPath
     static public NavigationTarget[] generateNavCircle (Position posStart, Position posMid, double speed, int timeLimit, circleVar var){
         Position[] arc1 = ArcPath.calculateArcPathWithDepth(posStart, posMid, 1, 1, 11);
         Position[] arc2 = ArcPath.calculateArcPathWithDepth(posMid, posStart, 1, 1, 11);

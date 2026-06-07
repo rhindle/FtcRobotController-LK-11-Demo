@@ -16,7 +16,7 @@ public class ControlsTB extends Controls {
 
    // working variables
    boolean isStopped = false;
-   boolean fulLSpeed = false;
+//   boolean fullSpeed = false;
 //   float speedFactor = 1;    // this is float on purpose so drivedata overload is correct!
    float speedFactor = (float)speedNormal;
 
@@ -51,8 +51,8 @@ public class ControlsTB extends Controls {
    public void NormalControls() {
 
       if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
-         fulLSpeed = !fulLSpeed;
-         if (fulLSpeed) speedFactor = (float)speedFast;
+         TB_Misc.controlsFullSpeed = !TB_Misc.controlsFullSpeed;
+         if (TB_Misc.controlsFullSpeed) speedFactor = (float)speedFast;
          else speedFactor = (float)speedNormal;
          parts.userDrive.setSpeedMaximum(speedFactor);
       }
@@ -301,8 +301,8 @@ public class ControlsTB extends Controls {
    public void TestControls() {
 
 //      if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
-//         fulLSpeed = !fulLSpeed;
-//         if (fulLSpeed) speedFactor = (float)speedFast;
+//         fullSpeed = !fullSpeed;
+//         if (fullSpeed) speedFactor = (float)speedFast;
 //         else speedFactor = (float)speedNormal;
 //         parts.userDrive.setSpeedMaximum(speedFactor);
 //      }

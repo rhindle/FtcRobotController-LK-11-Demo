@@ -23,6 +23,7 @@ public class TB_Misc  {
    public static Position targetCurrent = targetBlue;
    public static boolean servosInit = false;
    public static boolean noPosition = true;
+   public static boolean controlsFullSpeed = false;
 //   public static boolean forza = false;
    public static Position currentPosition = new Position();
 

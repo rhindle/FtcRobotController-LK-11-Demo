@@ -51,6 +51,7 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
 
         parts.setup();
         parts.pinpoint.pinpointFieldStart = TB_Misc.fieldStartPosition;
+        parts.drivetrain.accelControl = false;
         parts.preInit();
 
         parts.controls.controlMode=100;
