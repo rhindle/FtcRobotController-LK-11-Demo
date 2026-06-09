@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.ZZ;
 
 import android.graphics.Color;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,7 +15,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.LegacyBots.Robot;
 //import java.util.Locale;
 
 @TeleOp (name="ZZ_TestBot_LED", group="Test")
-//@Disabled
+@Disabled
 public class ZZ_TestBot_LED extends LinearOpMode {
 
 //    Robot robot   = new Robot(this);

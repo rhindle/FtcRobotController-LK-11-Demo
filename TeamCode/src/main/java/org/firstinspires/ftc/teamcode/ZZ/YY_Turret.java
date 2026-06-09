@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.ZZ;
 
 import android.annotation.SuppressLint;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -9,7 +10,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp (name="YY_Turret", group="Test")
-//@Disabled
+@Disabled
 public class YY_Turret extends LinearOpMode {
 
     ZZ_Robot_2025 robot;

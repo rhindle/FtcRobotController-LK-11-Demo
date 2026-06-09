@@ -2,13 +2,14 @@ package org.firstinspires.ftc.teamcode.ZZ;
 
 import android.annotation.SuppressLint;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 @TeleOp (name="ZZ_3Shooter", group="Test")
-//@Disabled
+@Disabled
 public class ZZ_3Shooter extends LinearOpMode {
 
     ZZ_Robot_2025 robot;

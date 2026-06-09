@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Test2025.PartsT25;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "Test25_v1", group = "")
-//@Disabled
+@Disabled
 public class Test25_v1 extends LinearOpMode {
 
     public Parts parts;

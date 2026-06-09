@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.ZZ;
 
 import android.graphics.Color;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -13,7 +14,7 @@ import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
 
 
 @TeleOp (name="ZZ_TestBot_LEDStick3", group="Test")
-//@Disabled
+@Disabled
 public class ZZ_TestBot_LEDStick3 extends LinearOpMode {
 
     ZZ_Robot_2025 robot;

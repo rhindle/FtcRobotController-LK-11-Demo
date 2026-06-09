@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -11,7 +12,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.Test2024.PartsT24;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "SM_Test_v1", group = "")
-//@Disabled
+@Disabled
 public class SM_Test_v1 extends LinearOpMode {
 
     public Parts parts;
