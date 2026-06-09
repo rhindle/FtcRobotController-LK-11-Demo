@@ -14,15 +14,12 @@ public class TB_TasksAutoFar {
 
     public static StateMachine smAutoFarGotoShoot180;
     public static StateMachine smAutoFarGotoShoot90;
-    public static StateMachine smAutoFarGotoSpike3;
+    public static StateMachine smAutoFarSpike3;
     public static StateMachine smAutoFarOrchestrator;
     public static StateMachine smAutoFarHumanArea;
 
     public static double autoSpeed = 1.0;
-
-    //        autoDrive.PIDmovement = new PIDCoefficients(0.03,0.0012,0.006); //.12 0 .035  0.06
     static PIDCoefficients HighPID = new PIDCoefficients(0.12,0.0012,0.006);  // is 0.03 is PartsTB
-
 
     public static void setup(Parts p) {
         parts = p;
@@ -94,73 +91,46 @@ public class TB_TasksAutoFar {
         Position p_human_wall3              = TB_Misc.redOrBlue(36, -57.5, -90); // -60
         Position p_human_slide_start        = TB_Misc.redOrBlue(56, -59.75, -120);
         Position p_human_slide_end          = TB_Misc.redOrBlue(32, -59.75, -120);
-
-
-//        Position p_gate_pre1                = TB_Misc.redOrBlue(5, -29, -90);
-//        Position p_gate_pre2                = TB_Misc.redOrBlue(7, -46, -90);
-//        Position p_gate_tap                 = TB_Misc.redOrBlue(7, -54, -90);
-//        Position p_gate_gather              = TB_Misc.redOrBlue(14, -59.75, -120);  // -58.75
-//        Position p_gate_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
-//        Position p_gate_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
-
         Position p_park                     = TB_Misc.redOrBlue(55, -30, -90);
 
         autoSpeed = 0.75;  //0.5;  // todo: remember to change this back to 1
 
-//        smAutoTestGotoCenter = new StateMachine("ATCenter");
-//        task = smAutoTestGotoCenter;
-//        task.setGroups("autotest");  // will be killed by
-//        task.setAutoRestart(false);
-//        task.addRunOnce(TB_Intake::intakeOff);
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetAccurate(p_center)) );
-//        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-//        task.addRunOnce(() -> parts.autoDrive.stop());
-
-        smAutoFarGotoShoot180 = new StateMachine("ATFarShoot180");
+        smAutoFarGotoShoot180 = new StateMachine("AFShoot180");
         task = smAutoFarGotoShoot180;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(TB_Intake::intakeOff);
         // Note: First shoot will require time for turret to get ready, so tighter tolerance OK?
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_farShoot180)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_farShoot180)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-//        task.addRunOnce(() -> parts.autoDrive.stop() );  // so it doesn't try to "hold" back to position
 
-        smAutoFarGotoShoot90 = new StateMachine("ATFarShoot90");
+        smAutoFarGotoShoot90 = new StateMachine("AFShoot90");
         task = smAutoFarGotoShoot90;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
-//        task.addRunOnce(TB_Intake::intakeOff);
-        // reminder: comment out new drive position if testing arc generator in spike2/gate
-        //           or refactor and don't call this machine at all
-        // Note: Overshooting here will be dangerous, so may require tighter tolerance
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_farShoot90)) );
         task.addDelayOf(500); // try to make sure the last ball is intaken
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_farShoot90)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-//        task.addRunOnce(() -> parts.autoDrive.stop() );  // so it doesn't try to "hold" back to position
 
-        smAutoFarGotoSpike3 = new StateMachine("ATSpike3");
-        task = smAutoFarGotoSpike3;
+        smAutoFarSpike3 = new StateMachine("AFSpike3");
+        task = smAutoFarSpike3;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike3_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike3_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-//        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike3_leave)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 
-        smAutoFarHumanArea = new StateMachine("ATHumanArea");
+        smAutoFarHumanArea = new StateMachine("AFHuman");
         task = smAutoFarHumanArea;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
           // end the task when it has three balls or at least one and _ seconds have passed (todo: tune the time)
-        task.setEndCriteria( () -> TB_Intake.probably3 || (TB_Intake.atLeast1 && (smAutoFarHumanArea.getRuntime() > 5000)) );
+        task.setEndCriteria( () -> TB_Intake.probably3 || (TB_Intake.atLeast1 && (smAutoFarHumanArea.getRuntime() > 4500)) ); //5000
         task.setEndCriteriaRunnable( () -> parts.autoDrive.stop());  // stop navigating
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall)) );
@@ -176,7 +146,7 @@ public class TB_TasksAutoFar {
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
 
-        smAutoFarOrchestrator = new StateMachine("FarOrchestrator");
+        smAutoFarOrchestrator = new StateMachine("AFOrch");
         task = smAutoFarOrchestrator;
         task.setGroups("orchestrator");  // will be killed by
         task.setAutoRestart(false);
@@ -192,22 +162,20 @@ public class TB_TasksAutoFar {
             TB_Turret.armSpinner(true);
         });
 
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_start_move1)) );
         task.addRunOnce(smAutoFarGotoShoot180::restart);
         task.addWaitFor(smAutoFarGotoShoot180::isDone);
         task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);  //added for the fist shot only?
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoFarGotoSpike3::restart);
-        task.addWaitFor(smAutoFarGotoSpike3::isDone);
+        task.addRunOnce(smAutoFarSpike3::restart);
+        task.addWaitFor(smAutoFarSpike3::isDone);
         task.addRunOnce(smAutoFarGotoShoot90::restart);
         task.addWaitFor(smAutoFarGotoShoot90::isDone);
         task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        //add human player area stuff here
         task.addRunOnce(smAutoFarHumanArea::restart);
         task.addWaitFor(smAutoFarHumanArea::isDone);
         task.addRunOnce(smAutoFarGotoShoot90::restart);

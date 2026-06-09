@@ -14,22 +14,18 @@ public class TB_TasksAuto {
     public static Parts parts;
 
     public static StateMachine smAutoTestGotoCenter;
-    public static StateMachine smAutoTestGotoNearShoot;
-    public static StateMachine smAutoTestGotoNearShoot45;
-    public static StateMachine smAutoTestGotoSpike1;
-    public static StateMachine smAutoTestGotoSpike2;
-    public static StateMachine smAutoTestGotoSpike3;
-    public static StateMachine smAutoTestDriveToGate;
-    public static StateMachine smAutoTestOperateGate;
+    public static StateMachine smAutoNearGotoShoot;
+    public static StateMachine smAutoNearGotoShoot45;
+    public static StateMachine smAutoNearSpike1;
+    public static StateMachine smAutoNearSpike2;
+    public static StateMachine smAutoNearSpike3;
+    public static StateMachine smAutoNearGotoGate;
+    public static StateMachine smAutoNearOperateGate;
     public static StateMachine smAutoNearOrchestrator;
-
     public static StateMachine smAutoTestTransitions;
 
     public static double autoSpeed = 1.0;
-
-    //        autoDrive.PIDmovement = new PIDCoefficients(0.03,0.0012,0.006); //.12 0 .035  0.06
-    static PIDCoefficients HighPID = new PIDCoefficients(0.12,0.0012,0.006);  // is 0.03 is PartsTB
-
+    static PIDCoefficients HighPID = new PIDCoefficients(0.12,0.0012,0.006);  // is 0.03 in PartsTB
 
     public static void setup(Parts p) {
         parts = p;
@@ -99,7 +95,7 @@ public class TB_TasksAuto {
         Position p_spike2_pre               = TB_Misc.redOrBlue(12, -29, -90);  //13
         Position p_spike2_fin               = TB_Misc.redOrBlue(12, -60, -90);
         Position p_spike2_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
-        Position p_spike2_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
+        //Position p_spike2_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
 
         Position p_spike3_pre               = p_spike2_pre.withX(35.5); //36.5
         Position p_spike3_fin               = p_spike2_fin.withX(35.5);
@@ -107,10 +103,10 @@ public class TB_TasksAuto {
 
         Position p_gate_pre1                = TB_Misc.redOrBlue(5, -29, -90);
         Position p_gate_pre2                = TB_Misc.redOrBlue(7, -46, -90);
-        Position p_gate_tap                 = TB_Misc.redOrBlue(7, -54, -90);
+        //Position p_gate_tap                 = TB_Misc.redOrBlue(7, -54, -90);
         Position p_gate_gather              = TB_Misc.redOrBlue(14, -59.75, -120);  // -58.75
         Position p_gate_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
-        Position p_gate_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
+        //Position p_gate_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
 
         autoSpeed = 1.0; //0.75;  //0.5;  // todo: remember to change this back to 1
 
@@ -123,62 +119,51 @@ public class TB_TasksAuto {
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> parts.autoDrive.stop());
 
-        smAutoTestGotoNearShoot = new StateMachine("ATNearShoot");
-        task = smAutoTestGotoNearShoot;
+        smAutoNearGotoShoot = new StateMachine("ANShoot");
+        task = smAutoNearGotoShoot;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(TB_Intake::intakeOff);
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_nearShoot)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_nearShoot)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> parts.autoDrive.stop() );  // so it doesn't try to "hold" back to position
 
-        smAutoTestGotoNearShoot45 = new StateMachine("ATNearShoot45");
-        task = smAutoTestGotoNearShoot45;
+        smAutoNearGotoShoot45 = new StateMachine("ANShoot45");
+        task = smAutoNearGotoShoot45;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(TB_Intake::intakeOff);
-        // reminder: comment out new drive position if testing arc generator in spike2/gate
-        //           or refactor and don't call this machine at all
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_nearShoot45)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_nearShoot45)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> parts.autoDrive.stop() );  // so it doesn't try to "hold" back to position
 
-        smAutoTestGotoSpike1 = new StateMachine("ATSpike1");
-        task = smAutoTestGotoSpike1;
+        smAutoNearSpike1 = new StateMachine("ANSpike1");
+        task = smAutoNearSpike1;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike1_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike1_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike1_shoot)) ); //toTargetMedium
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_spike1_shoot)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike1_shoot)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> parts.autoDrive.stop());
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 
-        smAutoTestGotoSpike2 = new StateMachine("ATSpike2");
-        task = smAutoTestGotoSpike2;
+        smAutoNearSpike2 = new StateMachine("ANSpike2");
+        task = smAutoNearSpike2;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike2_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike2_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-//        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_spike2_leave)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave1)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike2_leave2)) );
-        // reminder: if testing the arc generator, comment out shoot position in ...nearShoot45
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_spike2_leave1, p_nearShoot45, autoSpeed, 0.171, 1000)) );
         task.addDelayOf(750); // try to make sure the last ball is intaken
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
-        smAutoTestGotoSpike3 = new StateMachine("ATSpike3");
-        task = smAutoTestGotoSpike3;
+        smAutoNearSpike3 = new StateMachine("ANSpike3");
+        task = smAutoNearSpike3;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
@@ -189,42 +174,28 @@ public class TB_TasksAuto {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike3_leave)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
-        smAutoTestDriveToGate = new StateMachine("ATDriveToGate");
-        task = smAutoTestDriveToGate;
+        smAutoNearGotoGate = new StateMachine("ANGotoGate");
+        task = smAutoNearGotoGate;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_pre1, toleranceTransition, 0.5,1000, true)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_pre1)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_pre2)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_pre2, toleranceLow, autoSpeed,2000, false)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
-        smAutoTestOperateGate = new StateMachine("ATOperateGate");
-        task = smAutoTestOperateGate;
+        smAutoNearOperateGate = new StateMachine("ANUseGate");
+        task = smAutoNearOperateGate;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_tap)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_gather)) );
         task.addWaitFor(() -> TB_Intake.definitely3, 3000);
         task.addRunOnce(() -> parts.autoDrive.stop());  // in case it's still trying to navigate
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave1)) );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_leave2, toleranceTransition, 0.25,1000, true)) );
-//        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-//        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
-//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_leave2)) );
-    //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave1)) );
-    //        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_gate_leave2)) );
-        // reminder: if testing the arc generator, comment out shoot position in ...nearShoot45
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_gate_leave1, p_nearShoot45, autoSpeed, 0.171, 1000)) );
-        // changes 20260605; ditch the initial reverse motion
         task.addDelayOf(750); // try to make sure the last ball is intaken // 300
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
-        //
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
-
-        smAutoNearOrchestrator = new StateMachine("NearOrchestrator");
+        smAutoNearOrchestrator = new StateMachine("ANOrch");
         task = smAutoNearOrchestrator;
         task.setGroups("orchestrator");  // will be killed by
         task.setAutoRestart(false);
@@ -234,53 +205,54 @@ public class TB_TasksAuto {
         });
 
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_start_move1)) );
-        task.addRunOnce(smAutoTestGotoNearShoot::restart);
-        task.addWaitFor(smAutoTestGotoNearShoot::isDone);
+        task.addRunOnce(smAutoNearGotoShoot::restart);
+        task.addWaitFor(smAutoNearGotoShoot::isDone);
         task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);  //added for the fist shot only?
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoTestGotoSpike2::restart);
-        task.addWaitFor(smAutoTestGotoSpike2::isDone);
-        task.addRunOnce(smAutoTestGotoNearShoot45::restart);
-        task.addWaitFor(smAutoTestGotoNearShoot45::isDone);
+        task.addRunOnce(smAutoNearSpike2::restart);
+        task.addWaitFor(smAutoNearSpike2::isDone);
+        task.addRunOnce(smAutoNearGotoShoot45::restart);
+        task.addWaitFor(smAutoNearGotoShoot45::isDone);
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoTestDriveToGate::restart);
-        task.addWaitFor(smAutoTestDriveToGate::isDone);
-        task.addRunOnce(smAutoTestOperateGate::restart);
-        task.addWaitFor(smAutoTestOperateGate::isDone);
-        task.addRunOnce(smAutoTestGotoNearShoot45::restart);
-        task.addWaitFor(smAutoTestGotoNearShoot45::isDone);
+        task.addRunOnce(smAutoNearGotoGate::restart);
+        task.addWaitFor(smAutoNearGotoGate::isDone);
+        task.addRunOnce(smAutoNearOperateGate::restart);
+        task.addWaitFor(smAutoNearOperateGate::isDone);
+        task.addRunOnce(smAutoNearGotoShoot45::restart);
+        task.addWaitFor(smAutoNearGotoShoot45::isDone);
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoTestDriveToGate::restart);
-        task.addWaitFor(smAutoTestDriveToGate::isDone);
-        task.addRunOnce(smAutoTestOperateGate::restart);
-        task.addWaitFor(smAutoTestOperateGate::isDone);
-        task.addRunOnce(smAutoTestGotoNearShoot45::restart);
-        task.addWaitFor(smAutoTestGotoNearShoot45::isDone);
+        task.addRunOnce(smAutoNearGotoGate::restart);
+        task.addWaitFor(smAutoNearGotoGate::isDone);
+        task.addRunOnce(smAutoNearOperateGate::restart);
+        task.addWaitFor(smAutoNearOperateGate::isDone);
+        task.addRunOnce(smAutoNearGotoShoot45::restart);
+        task.addWaitFor(smAutoNearGotoShoot45::isDone);
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-//        task.addRunOnce(smAutoTestDriveToGate::restart);
-//        task.addWaitFor(smAutoTestDriveToGate::isDone);
-//        task.addRunOnce(smAutoTestOperateGate::restart);
-//        task.addWaitFor(smAutoTestOperateGate::isDone);
-//        task.addRunOnce(smAutoTestGotoNearShoot45::restart);
-//        task.addWaitFor(smAutoTestGotoNearShoot45::isDone);
+        // suggest checking if enough time is left and skip if not
+//        task.addRunOnce(smAutoNearGotoGate::restart);
+//        task.addWaitFor(smAutoNearGotoGate::isDone);
+//        task.addRunOnce(smAutoNearOperateGate::restart);
+//        task.addWaitFor(smAutoNearOperateGate::isDone);
+//        task.addRunOnce(smAutoNearGotoShoot45::restart);
+//        task.addWaitFor(smAutoNearGotoShoot45::isDone);
 //        task.addRunOnce(TB_Tasks.smLaunch::restart);
 //        task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoTestGotoSpike1::restart);
-        task.addWaitFor(smAutoTestGotoSpike1::isDone);
-//        task.addRunOnce(smAutoTestGotoNearShoot::restart);
-//        task.addWaitFor(smAutoTestGotoNearShoot::isDone);
+        task.addRunOnce(smAutoNearSpike1::restart);
+        task.addWaitFor(smAutoNearSpike1::isDone);
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
+
+        /* Below is a test machine for making circles with transition tolerances. */
 
         Position posStart = new Position(-24,0,-90);
         Position posOpp   = new Position(24,0,90);
@@ -292,8 +264,6 @@ public class TB_TasksAuto {
         task = smAutoTestTransitions;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
-        ////// NEED TO WRITE THIS
-        ////// See: parts.dsAuto.testAutoMethod4();
 
         // Make a circle driving forward
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(posStart, toleranceMedium, speed, timeLimit, false)) );
@@ -342,7 +312,6 @@ public class TB_TasksAuto {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateNavCircle(posStart, posOpp, speed, timeLimit, circleVar.SMOOTHCHANGE)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addDelayOf(1000);
-
 
     }
 
