@@ -10,15 +10,16 @@ import org.firstinspires.ftc.teamcode.Tools.DataTypes.DriveData;
 public class ControlsTB extends Controls {
 
    // settings
-   double speedSlow = 0.25;
-   double speedNormal = 0.5;
-   double speedFast = 1.0;
+   /* speed settings moved to TB_Misc */
+//   double speedSlow = 0.25;
+//   double speedNormal = 0.5;
+//   double speedFast = 1.0;
 
    // working variables
    boolean isStopped = false;
 //   boolean fullSpeed = false;
 //   float speedFactor = 1;    // this is float on purpose so drivedata overload is correct!
-   float speedFactor = (float)speedNormal;
+//   float speedFactor = (float)TB_Misc.speedNormal;
 
    public ControlsTB(Parts parts) {
       super(parts);
@@ -52,21 +53,21 @@ public class ControlsTB extends Controls {
 
       if (buttonMgr.getState(1, Buttons.right_bumper, State.wasPressed)) {
          TB_Misc.controlsFullSpeed = !TB_Misc.controlsFullSpeed;
-         if (TB_Misc.controlsFullSpeed) speedFactor = (float)speedFast;
-         else speedFactor = (float)speedNormal;
-         parts.userDrive.setSpeedMaximum(speedFactor);
+         if (TB_Misc.controlsFullSpeed) TB_Misc.speedFactor = (float)TB_Misc.speedFast;
+         else TB_Misc.speedFactor = (float)TB_Misc.speedNormal;
+         parts.userDrive.setSpeedMaximum(TB_Misc.speedFactor);
       }
 
       if (!parts.useForzaControls) {
-         driveData = new DriveData(gamepad1.left_stick_x * speedFactor,
-                 gamepad1.left_stick_y * speedFactor,
-                 gamepad1.right_stick_x * speedFactor);
+         driveData = new DriveData(gamepad1.left_stick_x * TB_Misc.speedFactor,
+                 gamepad1.left_stick_y * TB_Misc.speedFactor,
+                 gamepad1.right_stick_x * TB_Misc.speedFactor);
       }
       else {
-         driveData = new DriveData(gamepad1.left_trigger * speedFactor,
-                 gamepad1.right_trigger * speedFactor,
-                 gamepad1.right_stick_x * speedFactor * (float)0.7,   // forced lower speed @ AV request
-                 gamepad1.left_stick_x * speedFactor);
+         driveData = new DriveData(gamepad1.left_trigger * TB_Misc.speedFactor,
+                 gamepad1.right_trigger * TB_Misc.speedFactor,
+                 gamepad1.right_stick_x * TB_Misc.speedFactor * (float)0.7,   // forced lower speed @ AV request
+                 gamepad1.left_stick_x * TB_Misc.speedFactor);
       }
 
       // turret test stuff
@@ -312,6 +313,7 @@ public class ControlsTB extends Controls {
    public void TestControls() {
 
    }
+
 
    public void stopEverything() {
       if (!isStopped) {

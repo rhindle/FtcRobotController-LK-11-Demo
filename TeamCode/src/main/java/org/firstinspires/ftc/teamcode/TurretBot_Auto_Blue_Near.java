@@ -1,8 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.RobotParts.Common.ButtonMgr;
 import org.firstinspires.ftc.teamcode.RobotParts.Common.Parts;
@@ -13,11 +12,10 @@ import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Misc;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_TasksAuto;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_TasksAutoFar;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
-import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
-@TeleOp(name = "TurretBot_AutoTest1", group = "")
-@Disabled
-public class TurretBot_AutoTest1 extends LinearOpMode {
+@Autonomous(name = "1 TurretBot Blue Near", group = "14273")
+//@Disabled
+public class TurretBot_Auto_Blue_Near extends LinearOpMode {
 
     public Parts parts;
 
@@ -95,8 +93,8 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
         TB_Turret.armTurret(false);
         TB_Turret.armSpinner(false);
 
-//        if (startNear) TB_TasksAuto.smAutoNearOrchestrator.restart();
-//        else TB_TasksAutoFar.smAutoFarOrchestrator.restart();
+        if (startNear) TB_TasksAuto.smAutoNearOrchestrator.restart();
+        else TB_TasksAutoFar.smAutoFarOrchestrator.restart();
 
         /* Run Loop */
         if (opModeIsActive()) {
@@ -111,6 +109,5 @@ public class TurretBot_AutoTest1 extends LinearOpMode {
     public void settingsOverride(){
         teamBlue = true;
         startNear = true;
-
     }
 }

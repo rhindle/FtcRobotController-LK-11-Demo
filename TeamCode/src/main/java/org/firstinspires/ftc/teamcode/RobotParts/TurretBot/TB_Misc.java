@@ -13,6 +13,11 @@ public class TB_Misc  {
    public static final Position targetRed              = new Position(-70.5, 70.5, 0.0);
    public static final Position targetBlue             = new Position(-70.5, -70.5, 0.0);
 
+   public static double speedSlow = 0.25;
+   public static double speedNormal = 0.5;
+   public static double speedFast = 1.0;
+   public static float speedFactor = (float)speedNormal;  // this is float on purpose so drivedata overload is correct!
+
    public static final Position fieldStartPositionBlueNear = new Position(-40, -56, 180);
    public static final Position fieldStartPositionBlueFar  = new Position(63.5, -16, 180);  // todo: update this
    public static Position fieldStartPositionBlue = fieldStartPositionBlueNear.clone();
@@ -82,6 +87,13 @@ public class TB_Misc  {
       else {
          return pos.clone();
       }
+   }
+
+   public static void fullSpeed(boolean goFast) {
+      controlsFullSpeed = goFast;
+      if (controlsFullSpeed) speedFactor = (float)speedFast;
+      else speedFactor = (float)speedNormal;
+      parts.userDrive.setSpeedMaximum(speedFactor);
    }
 
    public enum rgbIndicatorColor {

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -14,9 +15,9 @@ import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Tasks;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
-@TeleOp(name = "TurretBot_Test1", group = "")
-//@Disabled
-public class TurretBot_Test1 extends LinearOpMode {
+@TeleOp(name = "1 TurretBot Auto Alliance", group = "14273")
+@Disabled
+public class TurretBot_TeleOp_AutoAlliance extends LinearOpMode {
 
     public Parts parts;
 
@@ -53,6 +54,7 @@ public class TurretBot_Test1 extends LinearOpMode {
         settingsOverride();
 
         parts.setup();
+        settingsOverrideParts();
         parts.preInit();
 
         TelemetryMgr.setDebugLevel(10);
@@ -106,8 +108,15 @@ public class TurretBot_Test1 extends LinearOpMode {
         parts.stop();
     }
 
-    public void settingsOverride(){
+    public void settingsOverride() {
         // team color?  better to hold from autonomous?
+//        teamBlue = true;
+//        if (teamBlue) TB_Misc.setAllianceBlue(); else TB_Misc.setAllianceRed();
+    }
+
+    public void settingsOverrideParts() {
+//        parts.drivetrain.accelControl = true;
+//        parts.drivetrain.accelControlRamp = 125;
     }
 }
 
