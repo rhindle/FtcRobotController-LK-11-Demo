@@ -86,13 +86,13 @@ public class TB_TasksAuto {
         Position p_start_move1              = TB_Misc.redOrBlue(-40,-48,180);   // move away from the wall first
         Position p_nearShoot                = TB_Misc.redOrBlue(-12, -23, -135);  // -12, -17
 
-        Position p_nearShoot45              = TB_Misc.redOrBlue(-12, -23, -45);
+        Position p_nearShoot45              = TB_Misc.redOrBlue(-7, -28, -45);
 
         Position p_spike1_pre               = TB_Misc.redOrBlue(-13, -27, -90); //-15
         Position p_spike1_fin               = TB_Misc.redOrBlue(-13, -53, -90);
-        Position p_spike1_shoot             = TB_Misc.redOrBlue(-45, -20, -66);
+        Position p_spike1_shoot             = TB_Misc.redOrBlue(-29, -26, -66);
 
-        Position p_spike2_pre               = TB_Misc.redOrBlue(12, -29, -90);  //13
+        Position p_spike2_pre               = TB_Misc.redOrBlue(9, -29, -90);  //13 12
         Position p_spike2_fin               = TB_Misc.redOrBlue(12, -60, -90);
         Position p_spike2_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
         //Position p_spike2_leave2            = TB_Misc.redOrBlue(0.46, -26.57, -46.76);
@@ -102,7 +102,7 @@ public class TB_TasksAuto {
         Position p_spike3_leave             = p_spike3_pre.clone();
 
         Position p_gate_pre1                = TB_Misc.redOrBlue(5, -29, -90);
-        Position p_gate_pre2                = TB_Misc.redOrBlue(7, -46, -90);
+        Position p_gate_pre2                = TB_Misc.redOrBlue(7, -43, -90);  //-46
         //Position p_gate_tap                 = TB_Misc.redOrBlue(7, -54, -90);
         Position p_gate_gather              = TB_Misc.redOrBlue(14, -59.75, -120);  // -58.75
         Position p_gate_leave1            = TB_Misc.redOrBlue(10.36, -50, -68.4);  //-43.31
@@ -154,7 +154,7 @@ public class TB_TasksAuto {
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike2_pre)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_spike2_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike2_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_spike2_leave1, p_nearShoot45, autoSpeed, 0.171, 1000)) );
@@ -178,8 +178,8 @@ public class TB_TasksAuto {
         task = smAutoNearGotoGate;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_pre1, toleranceTransition, 0.5,1000, true)) );
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_pre2, toleranceLow, autoSpeed,2000, false)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_pre1, toleranceTransition, 1,1000, true)) ); //1
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTarget(p_gate_pre2, toleranceLow, autoSpeed,2000, false, HighPID)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
         smAutoNearOperateGate = new StateMachine("ANUseGate");
@@ -188,7 +188,7 @@ public class TB_TasksAuto {
         task.setAutoRestart(false);
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_gate_gather)) );
-        task.addWaitFor(() -> TB_Intake.definitely3, 3000);
+        task.addWaitFor(() -> TB_Intake.definitely3, 2500);
         task.addRunOnce(() -> parts.autoDrive.stop());  // in case it's still trying to navigate
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(generateReturnArc(p_gate_leave1, p_nearShoot45, autoSpeed, 0.171, 1000)) );
         task.addDelayOf(750); // try to make sure the last ball is intaken // 300
@@ -237,14 +237,14 @@ public class TB_TasksAuto {
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
         // suggest checking if enough time is left and skip if not
-//        task.addRunOnce(smAutoNearGotoGate::restart);
-//        task.addWaitFor(smAutoNearGotoGate::isDone);
-//        task.addRunOnce(smAutoNearOperateGate::restart);
-//        task.addWaitFor(smAutoNearOperateGate::isDone);
-//        task.addRunOnce(smAutoNearGotoShoot45::restart);
-//        task.addWaitFor(smAutoNearGotoShoot45::isDone);
-//        task.addRunOnce(TB_Tasks.smLaunch::restart);
-//        task.addWaitFor(TB_Tasks.smLaunch::isDone);
+        task.addRunOnce(smAutoNearGotoGate::restart);
+        task.addWaitFor(smAutoNearGotoGate::isDone);
+        task.addRunOnce(smAutoNearOperateGate::restart);
+        task.addWaitFor(smAutoNearOperateGate::isDone);
+        task.addRunOnce(smAutoNearGotoShoot45::restart);
+        task.addWaitFor(smAutoNearGotoShoot45::isDone);
+        task.addRunOnce(TB_Tasks.smLaunch::restart);
+        task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
         task.addRunOnce(smAutoNearSpike1::restart);
         task.addWaitFor(smAutoNearSpike1::isDone);
