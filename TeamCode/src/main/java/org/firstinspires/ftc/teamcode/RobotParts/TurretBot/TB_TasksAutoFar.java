@@ -84,14 +84,14 @@ public class TB_TasksAutoFar {
         Position p_spike3_fin               = TB_Misc.redOrBlue(35.5, -60, -90);
         Position p_spike3_leave             = p_spike3_pre.clone();
 
-        Position p_human_wall               = TB_Misc.redOrBlue(60, -57.5, -90); // -60
-        Position p_human_retry              = TB_Misc.redOrBlue(60, -45, -90);
+        Position p_human_wall               = TB_Misc.redOrBlue(62, -57.5, -90); // -60
+        Position p_human_retry              = TB_Misc.redOrBlue(60, -50, -90);  //-45
         Position p_human_wall2              = TB_Misc.redOrBlue(48, -57.5, -90); // -60
-        Position p_human_retry2             = TB_Misc.redOrBlue(48, -45, -90);
+        Position p_human_retry2             = TB_Misc.redOrBlue(48, -50, -90);
         Position p_human_wall3              = TB_Misc.redOrBlue(36, -57.5, -90); // -60
         Position p_human_slide_start        = TB_Misc.redOrBlue(56, -59.75, -120);
         Position p_human_slide_end          = TB_Misc.redOrBlue(32, -59.75, -120);
-        Position p_park                     = TB_Misc.redOrBlue(55, -30, -90);
+        Position p_park                     = TB_Misc.redOrBlue(55, -34, -90);
 
         autoSpeed = 0.75;  //0.5;  // todo: remember to change this back to 1
 

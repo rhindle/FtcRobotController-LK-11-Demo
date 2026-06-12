@@ -10,7 +10,7 @@ public class TB_Misc  {
    /* Public OpMode members. */
    public static Parts parts;
 
-   public static final Position targetRed              = new Position(-70.5, 70.5, 0.0);
+   public static final Position targetRed              = new Position(-70.5, 68, 0.0); //y 70.5
    public static final Position targetBlue             = new Position(-70.5, -70.5, 0.0);
 
    public static double speedSlow = 0.25;

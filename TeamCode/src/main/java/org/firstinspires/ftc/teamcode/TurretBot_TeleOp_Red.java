@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Misc;
 
 @TeleOp(name = "3 TurretBot RED Alliance", group = "14273")
-@Disabled
+//@Disabled
 public class TurretBot_TeleOp_Red extends TurretBot_TeleOp_AutoAlliance {
 
     @Override

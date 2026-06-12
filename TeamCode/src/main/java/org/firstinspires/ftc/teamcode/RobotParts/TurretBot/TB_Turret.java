@@ -282,7 +282,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    }
 
    public static void pauseTurret(boolean pause) {
-      if (TB_Misc.isAuto()) return;  // don't pause the turret in autonomous
+//      if (TB_Misc.isAuto()) return;  // don't pause the turret in autonomous
       turretPaused = pause;
       if (!turretArmed) return;
       if (pause) {

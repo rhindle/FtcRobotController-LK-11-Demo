@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "2 TurretBot BLUE Alliance", group = "14273")
-@Disabled
+//@Disabled
 public class TurretBot_TeleOp_Blue extends TurretBot_TeleOp_AutoAlliance {
 
     @Override

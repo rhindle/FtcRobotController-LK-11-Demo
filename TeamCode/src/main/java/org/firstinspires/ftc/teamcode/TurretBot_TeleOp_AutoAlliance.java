@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.RobotParts.TurretBot.TB_Turret;
 import org.firstinspires.ftc.teamcode.Tools.DataTypes.Position;
 
 @TeleOp(name = "1 TurretBot Auto Alliance", group = "14273")
-@Disabled
+//@Disabled
 public class TurretBot_TeleOp_AutoAlliance extends LinearOpMode {
 
     public Parts parts;

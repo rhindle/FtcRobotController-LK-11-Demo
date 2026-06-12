@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
-@Autonomous(name = "2 TurretBot Red Near", group = "14273")
+@Autonomous(name = "3 TurretBot Red Near", group = "14273")
 //@Disabled
 public class TurretBot_Auto_Red_Near extends TurretBot_Auto_Blue_Near {
 
