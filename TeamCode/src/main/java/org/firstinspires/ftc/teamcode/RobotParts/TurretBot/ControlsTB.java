@@ -72,16 +72,16 @@ public class ControlsTB extends Controls {
 
       // turret test stuff
       if (buttonMgr.getState(1, Buttons.x, State.wasSingleTapped)) {
-         TB_Turret.armTurret(false);
-      }
-      if (buttonMgr.getState(1, Buttons.x, State.wasDoubleTapped)) {
          TB_Turret.armTurret(true);
       }
+      if (buttonMgr.getState(1, Buttons.x, State.wasDoubleTapped)) {
+         TB_Turret.armTurret(false);
+      }
       if (buttonMgr.getState(1, Buttons.y, State.wasSingleTapped)) {
-         TB_Turret.armSpinner(false);
+         TB_Turret.armSpinner(true);
       }
       if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
-         TB_Turret.armSpinner(true);
+         TB_Turret.armSpinner(false);
       }
       if (buttonMgr.getState(1, Buttons.a, State.wasPressed)) {
          // toggle intake on  (close gate, start intake)
@@ -96,13 +96,14 @@ public class ControlsTB extends Controls {
             TB_Tasks.smLaunch.restart();
          }
       }
+      if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
+         //intake+transfer   (open gate, start both motors)  [override]
+         TB_Intake.intakeRunning = false;
+         TB_Tasks.smLaunch.restart();
+      }
 
-      // emergency overrides with left bumper
-      if (buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
-         // modify spin speed
-         TB_Turret.spinnerManualSpeed += gamepad2.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
-         TB_Turret.spinnerManualSpeed += gamepad2.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
-         TB_Turret.spinnerManualSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerManualSpeed));
+      //normal operation
+      if (!buttonMgr.getState(2, Buttons.left_bumper, State.isPressed)) {
 
          if (buttonMgr.getState(2, Buttons.dpad_up, State.wasPressed)) {
             TB_Turret.manualOverride(100);
@@ -116,19 +117,47 @@ public class ControlsTB extends Controls {
          if (buttonMgr.getState(2, Buttons.dpad_right, State.wasPressed)) {
             TB_Turret.manualOverride(120);
          }
-         if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
-            TB_Intake.disableSensors();
+         if (buttonMgr.getState(2, Buttons.x, State.wasPressed)) {
+            TB_LL.toggleAuto();
          }
          if (buttonMgr.getState(2, Buttons.y, State.wasPressed)) {
             TB_LL.applyTransform();
          }
-         if (buttonMgr.getState(2, Buttons.x, State.wasPressed)) {
-            TB_LL.toggleAuto();
+         if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
+            // toggle intake on  (close gate, start intake)
+            TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
+            if (TB_Intake.intakeRunning) TB_Tasks.smIntakeOn.restart();
+            else TB_Tasks.smIntakeOff.restart();
+         }
+         if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
+            //intake+transfer   (open gate, start both motors)  [only if in range]
+            if (!TB_Turret.turretOutOfRange) {
+               TB_Intake.intakeRunning = false;
+               TB_Tasks.smLaunch.restart();
+            }
+         }
+         if (buttonMgr.getState(2, Buttons.b, State.wasHeld)) {
+            //intake+transfer   (open gate, start both motors)  [override]
+            TB_Intake.intakeRunning = false;
+            TB_Tasks.smLaunch.restart();
+         }
+         if (buttonMgr.getState(2, Buttons.right_bumper, State.wasPressed)) {
+            // reverse
+            TB_Intake.intakeReverse();
+         }
+         if (buttonMgr.getState(2, Buttons.right_bumper, State.wasReleased)) {
+            TB_Intake.intakeOff();
+            TB_Intake.clearSensorFlags();
          }
 
       }
-      //normal operation
+      // emergency overrides with left bumper
       else {
+         // modify spin speed
+         TB_Turret.spinnerManualSpeed += gamepad2.left_stick_y * -TB_Turret.spinLargeChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerManualSpeed += gamepad2.right_stick_y * -TB_Turret.spinSmallChange * TB_Turret.spinMotorRPM;
+         TB_Turret.spinnerManualSpeed = Math.max(-TB_Turret.spinMotorRPM, Math.min(TB_Turret.spinMotorRPM, TB_Turret.spinnerManualSpeed));
+
          if (buttonMgr.getState(2, Buttons.dpad_left, State.wasPressed)) {
             TB_Intake.gateOpen();
          }
@@ -145,43 +174,24 @@ public class ControlsTB extends Controls {
             TB_Turret.servoHoodPos = Math.max(0, Math.min(1, TB_Turret.servoHoodPos));
             TB_Turret.servoHood.setPosition(TB_Turret.servoHoodPos);
          }
-         if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
-            // toggle intake on  (close gate, start intake)
-            TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
-            if (TB_Intake.intakeRunning) TB_Tasks.smIntakeOn.restart();
-            else TB_Tasks.smIntakeOff.restart();
-         }
          if (buttonMgr.getState(2, Buttons.x, State.isPressed)) {
             // spin up
             StateMachine.stopGroups("spinner");
             TB_Turret.setSpinnerTargetSpeed(TB_Turret.spinnerManualSpeed);
          }
          if (buttonMgr.getState(2, Buttons.y, State.wasPressed)) {
-            //intake+transfer   (open gate, start both motors)  [only if in range]
-            if (!TB_Turret.turretOutOfRange) {
-               TB_Intake.intakeRunning = false;
-               TB_Tasks.smLaunch.restart();
-            }
+            TB_Intake.disableSensors(true);
          }
          if (buttonMgr.getState(2, Buttons.y, State.wasHeld)) {
-            //intake+transfer   (open gate, start both motors)  [override]
-            TB_Intake.intakeRunning = false;
-            TB_Tasks.smLaunch.restart();
+            TB_Intake.disableSensors(false);
          }
-         if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
-            // idle
-            TB_Tasks.smSpinDown.restart();
-            TB_Intake.intakeOff();
-            TB_Intake.gateClose();
-         }
-         if (buttonMgr.getState(2, Buttons.right_bumper, State.wasPressed)) {
-            // reverse
-            TB_Intake.intakeReverse();
-         }
-         if (buttonMgr.getState(2, Buttons.right_bumper, State.wasReleased)) {
-            TB_Intake.intakeOff();
-            TB_Intake.clearSensorFlags();
-         }
+
+//         if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
+//            // idle
+//            TB_Tasks.smSpinDown.restart();
+//            TB_Intake.intakeOff();
+//            TB_Intake.gateClose();
+//         }
       }
 
       if (buttonMgr.getState(2, Buttons.left_trigger, State.isPressed) &&

@@ -97,7 +97,7 @@ public class TB_Tasks {
         task.addRunOnce(TB_Intake::transferOff);
 //        task.addRunOnce(TB_Intake::intakeOff);  // do we want this on? off? whatever state it was?
         task.addRunOnce(TB_Intake::gateClose);
-        task.addRunOnce(() -> smSpinDown.restartNoStop());
+//        task.addRunOnce(() -> smSpinDown.restartNoStop());  // 20260614 we haven't been using the spindown
         task.addRunOnce(smIntakeOn::restart);
 
         smRelax = new StateMachine("relax");   //now does the opposite?

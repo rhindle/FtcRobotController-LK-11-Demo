@@ -166,8 +166,8 @@ public class TB_Intake implements PartsInterfaceStatic {
       }
    }
 
-   public static void disableSensors() {
-      disableIntakeSensors = true;
+   public static void disableSensors(boolean disable) {
+      disableIntakeSensors = disable;
       clearSensorFlags();
    }
 
