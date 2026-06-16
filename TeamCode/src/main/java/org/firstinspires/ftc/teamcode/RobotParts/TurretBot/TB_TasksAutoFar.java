@@ -17,6 +17,7 @@ public class TB_TasksAutoFar {
     public static StateMachine smAutoFarSpike3;
     public static StateMachine smAutoFarOrchestrator;
     public static StateMachine smAutoFarHumanArea;
+    public static StateMachine smAutoFarHumanAreaV2;
 
     public static double autoSpeed = 1.0;
     static PIDCoefficients HighPID = new PIDCoefficients(0.12,0.0012,0.006);  // is 0.03 is PartsTB
@@ -93,7 +94,7 @@ public class TB_TasksAutoFar {
         Position p_human_slide_end          = TB_Misc.redOrBlue(32, -59.75, -120);
         Position p_park                     = TB_Misc.redOrBlue(55, -34, -90);
 
-        autoSpeed = 0.75;  //0.5;  // todo: remember to change this back to 1
+        autoSpeed = 1.0; //0.75;  //0.5;  // todo: remember to change this back to 1
 
         smAutoFarGotoShoot180 = new StateMachine("AFShoot180");
         task = smAutoFarGotoShoot180;
@@ -145,6 +146,30 @@ public class TB_TasksAutoFar {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_slide_end)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
 
+        smAutoFarHumanAreaV2 = new StateMachine("AFHuman2");
+        task = smAutoFarHumanAreaV2;
+        task.setGroups("autotest");  // will be killed by
+        task.setAutoRestart(false);
+        // end the task when it has three balls or at least one and _ seconds have passed (todo: tune the time)
+        task.setEndCriteria( () -> TB_Intake.probably3 ||
+                (TB_Intake.atLeast1 && (smAutoFarHumanArea.getRuntime() > 4500)) ||
+                (TB_Intake.probably2 && (smAutoFarHumanArea.getRuntime() > 2500))); //5000
+        task.setEndCriteriaRunnable( () -> parts.autoDrive.stop());  // stop navigating
+        task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry2)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall2)) );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry2)) );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall3)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_slide_start)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_slide_end)) );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_retry)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_park)) );
+        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+        task.addRunOnce(() -> smAutoFarHumanAreaV2.restart());
 
         smAutoFarOrchestrator = new StateMachine("AFOrch");
         task = smAutoFarOrchestrator;
@@ -176,24 +201,24 @@ public class TB_TasksAutoFar {
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoFarHumanArea::restart);
-        task.addWaitFor(smAutoFarHumanArea::isDone);
+        task.addRunOnce(smAutoFarHumanAreaV2::restart);
+        task.addWaitFor(smAutoFarHumanAreaV2::isDone);
         task.addRunOnce(smAutoFarGotoShoot90::restart);
         task.addWaitFor(smAutoFarGotoShoot90::isDone);
         task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoFarHumanArea::restart);
-        task.addWaitFor(smAutoFarHumanArea::isDone);
+        task.addRunOnce(smAutoFarHumanAreaV2::restart);
+        task.addWaitFor(smAutoFarHumanAreaV2::isDone);
         task.addRunOnce(smAutoFarGotoShoot90::restart);
         task.addWaitFor(smAutoFarGotoShoot90::isDone);
         task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);
         task.addRunOnce(TB_Tasks.smLaunch::restart);
         task.addWaitFor(TB_Tasks.smLaunch::isDone);
 
-        task.addRunOnce(smAutoFarHumanArea::restart);
-        task.addWaitFor(smAutoFarHumanArea::isDone);
+        task.addRunOnce(smAutoFarHumanAreaV2::restart);
+        task.addWaitFor(smAutoFarHumanAreaV2::isDone);
         task.addRunOnce(smAutoFarGotoShoot90::restart);
         task.addWaitFor(smAutoFarGotoShoot90::isDone);
         task.addWaitFor(TB_Turret::isSpinnerInToleranceV2, 2000);
