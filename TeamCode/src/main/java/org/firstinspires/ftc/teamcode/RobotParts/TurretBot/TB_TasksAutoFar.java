@@ -79,7 +79,7 @@ public class TB_TasksAutoFar {
 //        public static final Position fieldStartPositionBlueFar  = new Position(63, -16, 180);  // todo: update this
         Position p_center                   = TB_Misc.redOrBlue(0,0,180);
         Position p_farShoot180              = TB_Misc.redOrBlue(60, -12, 180);
-        Position p_farShoot90               = TB_Misc.redOrBlue(60, -12, -90);
+        Position p_farShoot90               = TB_Misc.redOrBlue(60, -15, -90);  //-12
 
         Position p_spike3_pre               = TB_Misc.redOrBlue(35.5, -29, -90);
         Position p_spike3_fin               = TB_Misc.redOrBlue(35.5, -60, -90);
@@ -94,7 +94,7 @@ public class TB_TasksAutoFar {
         Position p_human_slide_end          = TB_Misc.redOrBlue(32, -59.75, -120);
         Position p_park                     = TB_Misc.redOrBlue(55, -34, -90);
 
-        autoSpeed = 1.0; //0.75;  //0.5;  // todo: remember to change this back to 1
+        autoSpeed = 0.75; //1.0; //0.75;  //0.5;  // todo: remember to change this back to 1
 
         smAutoFarGotoShoot180 = new StateMachine("AFShoot180");
         task = smAutoFarGotoShoot180;
@@ -109,7 +109,7 @@ public class TB_TasksAutoFar {
         task = smAutoFarGotoShoot90;
         task.setGroups("autotest");  // will be killed by
         task.setAutoRestart(false);
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_farShoot90)) );
+        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetMedium(p_farShoot90)) );  //targetlow
         task.addDelayOf(500); // try to make sure the last ball is intaken
         task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
