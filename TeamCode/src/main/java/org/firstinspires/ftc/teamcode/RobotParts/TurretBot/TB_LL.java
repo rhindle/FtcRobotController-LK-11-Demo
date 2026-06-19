@@ -290,6 +290,7 @@ public class TB_LL implements PartsInterfaceStatic {
         llSavedTransform = llLastValidTransform.clone();
         parts.positionMgr.overrideTransform = llSavedTransform;
         if (!automaticTransform) {
+            TB_Turret.servoLedLL.setPosition(0);
             setLedIndicator(rgbIndicatorColor.Off);
             llLastValidTransformTime = 0;
         }
