@@ -255,12 +255,12 @@ public class StateMachine {
      * Add state machine status to telemetry for debugging.
      */
     public static void addTelemetry() {
-        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "============ State Machines ============");
+        TelemetryMgr.message(TelemetryMgr.Category.TASK, "============ State Machines ============");
         for (StateMachine machine : list ) {
             if (machine.debugLevel > telemetryLevel) continue;
-            TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, machine.name, machine.getStatus()+" ("+machine.className+")");
+            TelemetryMgr.message(TelemetryMgr.Category.TASK, machine.name, machine.getStatus()+" ("+machine.className+")");
         }
-        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "======================================");
+        TelemetryMgr.message(TelemetryMgr.Category.TASK, "======================================");
     }
     public static void addTelemetry(LinearOpMode opMode) {
         opMode.telemetry.addData("=========== State Machines ===========", "");

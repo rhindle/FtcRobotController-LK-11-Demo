@@ -82,13 +82,13 @@ public class TelemetryMgr {
         debugLevel = lvl;
     }
 
-    public static void enableCategories(Category[] categories) {
+    public static void enableCategories(Category... categories) {
         for (Category category : categories) {
             showCategory[category.ordinal()] = true;
         }
     }
 
-    public static void disableCategories (Category[] categories) {
+    public static void disableCategories (Category... categories) {
         for (Category category : categories) {
             showCategory[category.ordinal()] = false;
         }
@@ -139,6 +139,7 @@ public class TelemetryMgr {
         POSITION("POS"),
         POSITION_EXT("POX"),
         DRIVETRAIN("DVT"),
+        DRIVETRAIN_EXT("DVX"),
         CONTROLS("CON"),
         APRILTAG("TAG"),
         APRILTAG_EXT("TAX"),

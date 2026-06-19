@@ -62,9 +62,9 @@ public class Drivetrain {
 
     public void applyDrivePowers(boolean addTelemetry) {
         currentLoopTime = System.currentTimeMillis();
-        if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN, "raw", drivePowers.toString(2));
+        if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN_EXT, "raw", drivePowers.toString(2));
         if (accelControl) drivePowers = applyAccelRateLimit(drivePowers, drivePowersLast);
-        if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN, "lim", drivePowers.toString(2));
+        if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN_EXT, "lim", drivePowers.toString(2));
         if (minimizeCycleTime) drivePowers = adjustPowers(drivePowers, drivePowersLast);
         if (addTelemetry) TelemetryMgr.message(Category.DRIVETRAIN, "adj", drivePowers.toString(2));
         motorLF.setPower(drivePowers.v0);

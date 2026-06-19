@@ -62,6 +62,7 @@ public class TurretBot_Auto_Blue_Near extends LinearOpMode {
 
         TelemetryMgr.setDebugLevel(10);
         TelemetryMgr.enableAllCategories();
+        TelemetryMgr.disableEXTCategories();
 
         /* Init Loop */
         while (!isStarted()) {

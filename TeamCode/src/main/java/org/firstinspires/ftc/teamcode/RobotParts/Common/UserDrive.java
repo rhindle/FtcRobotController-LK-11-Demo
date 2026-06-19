@@ -89,7 +89,7 @@ public class UserDrive implements PartsInterface {
                else parts.autoDrive.setTargetToCurrentPosition();
                useHoldOK = false;
             }
-            TelemetryMgr.message(Category.USERDRIVE, "pow: Not Driving");
+            TelemetryMgr.message(Category.USERDRIVE_EXT, "pow: Not Driving");
             return;
          }
       }

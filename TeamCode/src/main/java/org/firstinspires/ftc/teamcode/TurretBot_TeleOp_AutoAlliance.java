@@ -59,6 +59,8 @@ public class TurretBot_TeleOp_AutoAlliance extends LinearOpMode {
 
         TelemetryMgr.setDebugLevel(10);
         TelemetryMgr.enableAllCategories();
+        TelemetryMgr.disableEXTCategories();
+        TelemetryMgr.disableCategories(Category.AUTODRIVE, Category.USERDRIVE, Category.IMU);
 //        parts.opMode.telemetry.setMsTransmissionInterval(11);
 
         /* Init Loop */

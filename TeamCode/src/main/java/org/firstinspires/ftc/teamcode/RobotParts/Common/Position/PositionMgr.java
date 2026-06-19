@@ -88,18 +88,18 @@ public class PositionMgr implements PartsInterface {
          robotPosition = overrideTransform.transformPosition(robotPosition);
       }
 
-      TelemetryMgr.message(Category.POSITION, "odo__", (odoPosition==null) ? "(null)" : odoPosition.toString(2));
-      TelemetryMgr.message(Category.POSITION, "pinpt", (pinpointPosition==null) ? "(null)" : pinpointPosition.toString(2));
-      TelemetryMgr.message(Category.POSITION, "slmra", (slamraPosition==null) ? "(null)" : slamraPosition.toString(2));
-      TelemetryMgr.message(Category.POSITION, "encdr", (encoderPosition==null) ? "(null)" : encoderPosition.toString(2));
-      TelemetryMgr.message(Category.POSITION, "enc_a", (encoderAbsPosition==null) ? "(null)" : encoderAbsPosition.toString(2));
-      TelemetryMgr.message(Category.POSITION, "tag__", (tagPosition==null) ? "(null)" : tagPosition.toString(2));
-      TelemetryMgr.message(Category.POSITION, "imu__", (imuHeading==null) ? "(null)" : imuHeading.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "odo__", (odoPosition==null) ? "(null)" : odoPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "pinpt", (pinpointPosition==null) ? "(null)" : pinpointPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "slmra", (slamraPosition==null) ? "(null)" : slamraPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "encdr", (encoderPosition==null) ? "(null)" : encoderPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "enc_a", (encoderAbsPosition==null) ? "(null)" : encoderAbsPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "tag__", (tagPosition==null) ? "(null)" : tagPosition.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "imu__", (imuHeading==null) ? "(null)" : imuHeading.toString(2));
       TelemetryMgr.message(Category.POSITION, "b4ovr", (beforeOverride==null) ? "(null)" : beforeOverride.toString(2));
       TelemetryMgr.message(Category.POSITION, "overr", (overrideTransform==null) ? "(null)" : overrideTransform.toString(2));
       TelemetryMgr.message(Category.POSITION, "final", (robotPosition==null) ? "(null)" : robotPosition.toString(2));
-      TelemetryMgr.message(Category.POSITION, "imus_", (imusHeadingOnly==null) ? "(null)" : imusHeadingOnly.toString(2));
-      TelemetryMgr.message(Category.POSITION, "head_", (headingOnly==null) ? "(null)" : headingOnly.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "imus_", (imusHeadingOnly==null) ? "(null)" : imusHeadingOnly.toString(2));
+      TelemetryMgr.message(Category.POSITION_EXT, "head_", (headingOnly==null) ? "(null)" : headingOnly.toString(2));
    }
 
    public void stop() {

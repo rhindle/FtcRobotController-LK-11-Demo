@@ -82,7 +82,7 @@ public class Pinpoint implements PartsInterface {
 
       Pose2D vel = pinpoint.getVelocity();
       String velocity = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.MM), vel.getY(DistanceUnit.MM), vel.getHeading(AngleUnit.DEGREES));
-      TelemetryMgr.message(TelemetryMgr.Category.PINPOINT, "Velocity", velocity);
+      TelemetryMgr.message(TelemetryMgr.Category.PINPOINT_EXT, "Velocity", velocity);
 
       GoBildaPinpointDriver.DeviceStatus status = pinpoint.getDeviceStatus();
       TelemetryMgr.message(TelemetryMgr.Category.PINPOINT, "Status", status);

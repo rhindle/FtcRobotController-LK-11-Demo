@@ -254,10 +254,10 @@ public class TB_LL implements PartsInterfaceStatic {
 
     static void finalTelemetry () {
         // Used to keep the telemetry consistent each loop (not bouncing)
-        TelemetryMgr.message(TelemetryMgr.Category.LL, "Accpt", acceptableStdDev.toString());
-        TelemetryMgr.message(TelemetryMgr.Category.LL, "StDev", llStandardDeviation.toString());
-        TelemetryMgr.message(TelemetryMgr.Category.LL, "Trans", llSavedTransform.toString());
-        TelemetryMgr.message(TelemetryMgr.Category.LL, "LastV", llLastValidTransform.toString());
+        TelemetryMgr.message(TelemetryMgr.Category.LL_EXT, "Accpt", acceptableStdDev.toString());
+        TelemetryMgr.message(TelemetryMgr.Category.LL_EXT, "StDev", llStandardDeviation.toString());
+        TelemetryMgr.message(TelemetryMgr.Category.LL_EXT, "Trans", llSavedTransform.toString());
+        TelemetryMgr.message(TelemetryMgr.Category.LL_EXT, "LastV", llLastValidTransform.toString());
 
     }
 
