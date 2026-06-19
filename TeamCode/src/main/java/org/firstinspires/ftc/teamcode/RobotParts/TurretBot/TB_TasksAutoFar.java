@@ -122,9 +122,9 @@ public class TB_TasksAutoFar {
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike3_pre)) );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLow(p_spike3_fin)) );
         task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike3_leave)) );
-        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
-        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
+//        task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetTransition(p_spike3_leave)) );
+//        task.addWaitFor(() -> !parts.autoDrive.isNavigating);
+//        task.addRunOnce(() -> TB_Tasks.smIntakeOff.restart() );
 
         smAutoFarHumanArea = new StateMachine("AFHuman");
         task = smAutoFarHumanArea;
@@ -152,8 +152,8 @@ public class TB_TasksAutoFar {
         task.setAutoRestart(false);
         // end the task when it has three balls or at least one and _ seconds have passed (todo: tune the time)
         task.setEndCriteria( () -> TB_Intake.probably3 ||
-                (TB_Intake.atLeast1 && (smAutoFarHumanArea.getRuntime() > 4500)) ||
-                (TB_Intake.probably2 && (smAutoFarHumanArea.getRuntime() > 2500))); //5000
+                (TB_Intake.atLeast1 && (smAutoFarHumanAreaV2.getRuntime() > 4500)) ||
+                (TB_Intake.probably2 && (smAutoFarHumanAreaV2.getRuntime() > 2500))); //5000
         task.setEndCriteriaRunnable( () -> parts.autoDrive.stop());  // stop navigating
         task.addRunOnce(() -> TB_Tasks.smIntakeOn.restart() );
         task.addRunOnce(() -> parts.autoDrive.addNavTargets(toTargetLowHighPID(p_human_wall)) );
