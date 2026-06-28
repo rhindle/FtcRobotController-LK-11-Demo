@@ -23,6 +23,11 @@ public class TB_Misc  {
    public static Position fieldStartPositionBlue = fieldStartPositionBlueNear.clone();
    public static Position fieldStartPosition = fieldStartPositionBlue.clone();
 
+   public static boolean modeDemo = false;
+   public static double demoTeamSpeedFast = 1.0;
+   public static double demoTeamSpeedSlow = 0.5;
+   public static double demoGuestSpeed = 0.3;
+
    static boolean modeTeleOp = true;
    static boolean allianceBlue = true;
    static boolean autoNear = true;

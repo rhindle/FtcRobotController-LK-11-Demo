@@ -21,6 +21,10 @@ public class ControlsTB extends Controls {
 //   float speedFactor = 1;    // this is float on purpose so drivedata overload is correct!
 //   float speedFactor = (float)TB_Misc.speedNormal;
 
+   boolean teamOK = false;
+   boolean guestDriveOK = false;
+   boolean guestShootOK = false;
+
    public ControlsTB(Parts parts) {
       super(parts);
    }
@@ -40,6 +44,9 @@ public class ControlsTB extends Controls {
             break;
          case 1:
             TestControls();
+            break;
+         case 10:
+            DemoControls();
             break;
          case 100:
             AutoControls();
@@ -317,6 +324,190 @@ public class ControlsTB extends Controls {
 
    }
 
+   //~~~~~~~~~~~~~~~~~~~~~~~~ DEMO CONTROLS ~~~~~~~~~~~~~~~~~~~~~~~~//
+
+   /* ==========================================================================================
+
+   Controller 1 is Team Controller
+      left bumper allows Guest to drive
+      right bumper allows Guest to shoot (and drive)
+      Team is faster
+
+   Controller 2 is Guest Controller
+      Guest is slower
+
+   Stored in TB_Misc:
+      TB_Misc.demoTeamSpeedFast = 1.0;
+      TB_Misc.demoTeamSpeedSlow = 0.5;
+      TB_Misc.demoGuestSpeed = 0.3;
+
+   ============================================================================================= */
+
+   public void DemoControls() {
+
+//      TB_Misc.speedFactor = (float)TB_Misc.demoTeamSpeedFast; // main driver speed always "fast" unless a control added
+
+      // ~~~~ dead-man controls
+      guestDriveOK = false;
+      guestShootOK = false;
+      if (buttonMgr.getState(1, Buttons.left_bumper, State.isPressed)) {
+         teamOK = true;
+         guestDriveOK = true;
+      }
+      if (buttonMgr.getState(1, Buttons.right_bumper, State.isPressed)) {
+         teamOK = true;
+         guestDriveOK = true;
+         guestShootOK = true;
+      }
+
+
+      // ~~~~ drivetrain
+         // if driver 1 is doing anything, override; otherwise accept driver 2 input
+      if (teamOK) {
+         parts.userDrive.setSpeedMaximum(TB_Misc.speedFactor);
+         driveData = new DriveData(gamepad1.left_stick_x * TB_Misc.speedFactor,
+                 gamepad1.left_stick_y * TB_Misc.speedFactor,
+                 gamepad1.right_stick_x * TB_Misc.speedFactor * (float) 0.7);
+      }
+      if (guestDriveOK && driveData.driveSpeed == 0 && driveData.rotate == 0) {
+         parts.userDrive.setSpeedMaximum(TB_Misc.demoGuestSpeed);
+         driveData = new DriveData(gamepad2.left_stick_x * (float)TB_Misc.demoGuestSpeed,
+                 gamepad2.left_stick_y * (float)TB_Misc.demoGuestSpeed,
+                 gamepad2.right_stick_x * (float)TB_Misc.demoGuestSpeed * (float) 0.7);
+      }
+
+      // ~~~~ guest controls
+      if (guestDriveOK) {
+         if (buttonMgr.getState(2, Buttons.a, State.wasPressed)) {
+            // toggle intake on  (close gate, start intake)
+            TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
+            if (TB_Intake.intakeRunning) TB_Tasks.smIntakeOn.restart();
+            else TB_Tasks.smIntakeOff.restart();
+         }
+      }
+      if (guestShootOK) {
+         if (buttonMgr.getState(2, Buttons.b, State.wasPressed)) {
+            //intake+transfer   (open gate, start both motors)  [only if in range]
+            if (!TB_Turret.turretOutOfRange) {
+               TB_Intake.intakeRunning = false;
+               TB_Tasks.smLaunch.restart();
+            }
+         }
+         if (buttonMgr.getState(2, Buttons.b, State.wasHeld)) {  // is this wanted?
+            //intake+transfer   (open gate, start both motors)  [override]
+            TB_Intake.intakeRunning = false;
+            TB_Tasks.smLaunch.restart();
+         }
+      }
+
+      // ~~~~ team controls
+      // ~~ always available, but unshifted
+      if (!buttonMgr.getState(1, Buttons.start, State.isPressed)) {
+         if (buttonMgr.getState(1, Buttons.dpad_left, State.wasPressed)) teamOK = true;
+         if (buttonMgr.getState(1, Buttons.dpad_right, State.wasPressed)) teamOK = false;
+         if (buttonMgr.getState(1, Buttons.dpad_up, State.wasPressed))
+            TB_Misc.speedFactor = (float)TB_Misc.demoTeamSpeedFast;
+         if (buttonMgr.getState(1, Buttons.dpad_down, State.wasPressed))
+            TB_Misc.speedFactor = (float)TB_Misc.demoTeamSpeedSlow;
+      }
+
+      // ~~ unshifted (start button not pressed)
+      if (teamOK && !buttonMgr.getState(1, Buttons.start, State.isPressed)) {
+         if (buttonMgr.getState(1, Buttons.a, State.wasPressed)) {
+            // toggle intake on  (close gate, start intake)
+            TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
+            if (TB_Intake.intakeRunning) TB_Tasks.smIntakeOn.restart();
+            else TB_Tasks.smIntakeOff.restart();
+         }
+         if (buttonMgr.getState(1, Buttons.b, State.wasPressed)) {
+            //intake+transfer   (open gate, start both motors)  [only if in range]
+            if (!TB_Turret.turretOutOfRange) {
+               TB_Intake.intakeRunning = false;
+               TB_Tasks.smLaunch.restart();
+            }
+         }
+         if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
+            //intake+transfer   (open gate, start both motors)  [override]
+            TB_Intake.intakeRunning = false;
+            TB_Tasks.smLaunch.restart();
+         }
+
+         if (buttonMgr.getState(1, Buttons.x, State.wasSingleTapped)) {
+            TB_Turret.armTurret(true);
+         }
+         if (buttonMgr.getState(1, Buttons.x, State.wasDoubleTapped)) {
+            TB_Turret.armTurret(false);
+         }
+         if (buttonMgr.getState(1, Buttons.y, State.wasSingleTapped)) {
+            TB_Turret.armSpinner(true);
+         }
+         if (buttonMgr.getState(1, Buttons.y, State.wasDoubleTapped)) {
+            TB_Turret.armSpinner(false);
+         }
+
+         if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
+            // stop spin
+            StateMachine.stopGroups("spinner");
+            TB_Turret.spinOff();
+         }
+
+         if (buttonMgr.getState(1, Buttons.left_trigger, State.isPressed) &&
+                 buttonMgr.getState(1, Buttons.right_trigger, State.isPressed)) {
+            TB_Turret.manualTurretOffest = 0;
+         } else if (buttonMgr.getState(1, Buttons.left_trigger, State.wasPressed)) {
+            TB_Turret.manualTurretOffest += 1;
+         } else if (buttonMgr.getState(1, Buttons.right_trigger, State.wasPressed)) {
+            TB_Turret.manualTurretOffest -= 1;
+         }
+      }
+
+      // ~~ shifted (start button is pressed)
+      else if (teamOK) {
+         if (buttonMgr.getState(1, Buttons.dpad_up, State.wasPressed)) {
+            TB_Turret.manualOverride(100);
+         }
+         if (buttonMgr.getState(1, Buttons.dpad_left, State.wasPressed)) {
+            TB_Turret.manualOverride(75);
+         }
+         if (buttonMgr.getState(1, Buttons.dpad_down, State.wasPressed)) {
+            TB_Turret.manualOverride(140);
+         }
+         if (buttonMgr.getState(1, Buttons.dpad_right, State.wasPressed)) {
+            TB_Turret.manualOverride(120);
+         }
+         if (buttonMgr.getState(1, Buttons.x, State.wasPressed)) {
+            TB_LL.toggleAuto();
+         }
+         if (buttonMgr.getState(1, Buttons.y, State.wasPressed)) {
+            TB_LL.applyTransform();
+         }
+         if (buttonMgr.getState(1, Buttons.a, State.wasPressed)) {
+            // reverse
+            TB_Intake.intakeReverse();
+         }
+         if (buttonMgr.getState(1, Buttons.a, State.wasReleased)) {
+            TB_Intake.intakeOff();
+            TB_Intake.clearSensorFlags();
+         }
+         if (buttonMgr.getState(1, Buttons.b, State.wasPressed)) {
+            TB_Intake.disableSensors(true);
+         }
+         if (buttonMgr.getState(1, Buttons.b, State.wasHeld)) {
+            TB_Intake.disableSensors(false);
+         }
+      }
+
+      // ~~~~ stop all (always works regardless of dead man flags)
+      if (buttonMgr.getState(1, Buttons.back, State.wasPressed) || buttonMgr.getState(2, Buttons.back, State.wasPressed)) {
+         StateMachine.stopAll();
+         TB_Turret.stop();
+         TB_Intake.stop();
+         parts.drivetrain.eStop();
+         parts.autoDrive.eStop();
+         parts.userDrive.eStop();
+         // add drivetrain, etc
+      }
+   }
 
    //~~~~~~~~~~~~~~~~~~~~~~~~ TEST CONTROLS ~~~~~~~~~~~~~~~~~~~~~~~~//
 

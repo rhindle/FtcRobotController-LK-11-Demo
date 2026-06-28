@@ -48,6 +48,7 @@ public class TurretBot_TeleOp_AutoAlliance extends LinearOpMode {
         parts.speedMaximum = 1;
 //        DSAprilTag.USE_WEBCAM = true;
         parts.useForzaControls = true;
+        TB_Misc.modeDemo = false;
 
         TB_Misc.setTeleOp();
 
@@ -117,6 +118,7 @@ public class TurretBot_TeleOp_AutoAlliance extends LinearOpMode {
     }
 
     public void settingsOverrideParts() {
+        // This is for overrides to parts.xxx; won't work until parts.setup() has created all the sub-parts
 //        parts.drivetrain.accelControl = true;
 //        parts.drivetrain.accelControlRamp = 125;
     }
