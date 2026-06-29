@@ -257,6 +257,12 @@ public class AutoDrive implements PartsInterface {
 //      TelemetryMgr.message(Category.AUTODRIVE, "DeltaY", JavaUtil.formatNumber(error.y, 2));
    }
 
+   public double getNavAngle(Position startPos, Position targetPos) {
+      double errX = targetPos.X - startPos.X;
+      double errY = targetPos.Y - startPos.Y;
+      return Functions.normalizeAngle(Math.toDegrees(Math.atan2(errY,errX)));
+   }
+
    public double getHeadingError(double targetAngle) {
 //      if (parts.positionMgr.noPosition()) return 0;
       double robotError;
@@ -302,6 +308,11 @@ public class AutoDrive implements PartsInterface {
    }
 
    private void updateNavTarget(NavigationTarget target, boolean hold) {
+      // 20260628 Trying to improve going from one point to the next without reversing
+      Position previousTarget;
+      if (isNavigating) previousTarget = navTarget.targetPos; //.clone();
+      else previousTarget = parts.positionMgr.robotPosition; //.clone();
+      //
       //if (parts.positionMgr.noPosition()) return;  //todo:Is this necessary? Or just rely on the loop's checks
       this.navTarget = target;
 //      speedMaximum = target.maxSpeed;
@@ -312,8 +323,11 @@ public class AutoDrive implements PartsInterface {
       onTargetByAccuracy = false;  //todo: does setting this to false cause any problems?  Needed for shooter state machines.
       // special addition for transition points; navAngleInitial will be used to determine if the
       // robot passed through (overshot) the transition point to avoid driving back to it
-      updateError();
-      navAngleInitial = Math.toDegrees(Math.atan2(error.y,error.x));
+//      updateError();
+//      navAngleInitial = Math.toDegrees(Math.atan2(error.y,error.x));
+      // 20260628 Trying to improve the navAngleInitial code above
+      navAngleInitial = getNavAngle(previousTarget, navTarget.targetPos);
+      //
       if (navTarget.PIDmovement!=null) PIDmovementOverride = navTarget.PIDmovement;
       else PIDmovementOverride = PIDmovement;
       if (navTarget.PIDrotate!=null) PIDrotateOverride = navTarget.PIDrotate;
