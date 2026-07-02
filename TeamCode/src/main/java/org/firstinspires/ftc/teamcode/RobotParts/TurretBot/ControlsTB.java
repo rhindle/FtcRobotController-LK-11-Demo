@@ -402,7 +402,7 @@ public class ControlsTB extends Controls {
 
       // ~~~~ team controls
       // ~~ always available, but unshifted
-      if (!buttonMgr.getState(1, Buttons.start, State.isPressed)) {
+      if (!buttonMgr.getState(1, Buttons.back, State.isPressed)) {
          if (buttonMgr.getState(1, Buttons.dpad_left, State.wasPressed)) teamOK = true;
          if (buttonMgr.getState(1, Buttons.dpad_right, State.wasPressed)) teamOK = false;
          if (buttonMgr.getState(1, Buttons.dpad_up, State.wasPressed))
@@ -411,8 +411,8 @@ public class ControlsTB extends Controls {
             TB_Misc.speedFactor = (float)TB_Misc.demoTeamSpeedSlow;
       }
 
-      // ~~ unshifted (start button not pressed)
-      if (teamOK && !buttonMgr.getState(1, Buttons.start, State.isPressed)) {
+      // ~~ unshifted (back button not pressed)
+      if (teamOK && !buttonMgr.getState(1, Buttons.back, State.isPressed)) {
          if (buttonMgr.getState(1, Buttons.a, State.wasPressed)) {
             // toggle intake on  (close gate, start intake)
             TB_Intake.intakeRunning = !TB_Intake.intakeRunning;
@@ -445,7 +445,7 @@ public class ControlsTB extends Controls {
             TB_Turret.armSpinner(false);
          }
 
-         if (buttonMgr.getState(1, Buttons.start, State.wasDoubleTapped)) {
+         if (buttonMgr.getState(1, Buttons.back, State.wasDoubleTapped)) {
             // stop spin
             StateMachine.stopGroups("spinner");
             TB_Turret.spinOff();
@@ -461,7 +461,7 @@ public class ControlsTB extends Controls {
          }
       }
 
-      // ~~ shifted (start button is pressed)
+      // ~~ shifted (back button is pressed)
       else if (teamOK) {
          if (buttonMgr.getState(1, Buttons.dpad_up, State.wasPressed)) {
             TB_Turret.manualOverride(100);
@@ -498,7 +498,7 @@ public class ControlsTB extends Controls {
       }
 
       // ~~~~ stop all (always works regardless of dead man flags)
-      if (buttonMgr.getState(1, Buttons.back, State.wasPressed) || buttonMgr.getState(2, Buttons.back, State.wasPressed)) {
+      if (buttonMgr.getState(1, Buttons.start, State.wasPressed) || buttonMgr.getState(2, Buttons.start, State.wasPressed)) {
          StateMachine.stopAll();
          TB_Turret.stop();
          TB_Intake.stop();
