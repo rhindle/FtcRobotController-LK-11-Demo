@@ -58,6 +58,7 @@ public class StateMachine {
     boolean noBulkStop = false;      // this makes the task invincible except when stopped directly
     boolean lastStepTimeout = false; // status for potential use in the next step
     boolean forceNext = false;       // this makes the machine advance to the next step
+    boolean yielding = false;
     boolean restarted = false;       // to allow only a single auto restart in the runLoop iterator
 
     int currentStep = -1;
@@ -145,6 +146,7 @@ public class StateMachine {
             // being waited for) rather than waiting for the next full loop.
             // Tracking whether the machine has already restarted prevents an infinite loop.
             machine.restarted = false;
+            machine.yielding = false;
             boolean doLoop;
             do {
                 doLoop = false;
@@ -178,7 +180,7 @@ public class StateMachine {
                 }
 
                 // Advance step if end criteria met or step timeout.
-                if (machine.stepEnd.get() || stepTimedOut || machine.forceNext) {
+                if (machine.stepEnd.get() || stepTimedOut || machine.forceNext || machine.yielding) {  //todo:yielding belongs here?
 
                     // Store whether the step timed out.
                     machine.lastStepTimeout = stepTimedOut;
@@ -188,14 +190,14 @@ public class StateMachine {
 
                     // If there's another step, load it and loop again.
                     if (machine.loadNextStep()) {
-                        doLoop = true;
+                        if (!machine.yielding) doLoop = true;
                     }
                     // If there isn't a next step, restart or enter FINISHED state.
                     else {
                         if (machine.autoRestart) {
                             machine.tempNoStop = true;   // todo: what behavior is desired?
                             machine.changeRunMode(runModeChange.RESTART);
-                            if (!machine.restarted) doLoop = true;
+                            if (!machine.restarted && !machine.yielding) doLoop = true;
                         }
                         else {
                             machine.changeRunMode(runModeChange.FINISH);
@@ -649,6 +651,17 @@ public class StateMachine {
     }
 
     /**
+     * Cause the machine to "yield" by stopping execution until the next cycle.
+     * Purpose is to be used within a step to ensure that the next step won't run until
+     * the next loop.
+     * An example usage is a round-robin state machine that only runs one time-consuming
+     * step per loop.
+     */
+    public void yield() {
+        yielding = true;
+    }
+
+    /**
      * Cause the machine to advance to the next step. Primitive flow control for use in a
      * step runnable in certain cases where the logic may be simpler than using
      * an exit criteria.
@@ -681,6 +694,18 @@ public class StateMachine {
         if (currentStep > steps.size()) currentStep = steps.size();
         currentStep--;       // intent is for this to only be used within the machine; step counter will increment by one
         forceNext = true;
+    }
+
+    /**
+     * Deletes all steps and associated lists (steps, ends, times, aborts, timeoutSteps).
+     * Useful if a machine is dynamically created / rewritten.
+     */
+    public void clear() {
+        steps.clear();
+        ends.clear();
+        times.clear();
+        aborts.clear();
+        timeoutSteps.clear();
     }
 
     /*==============*/

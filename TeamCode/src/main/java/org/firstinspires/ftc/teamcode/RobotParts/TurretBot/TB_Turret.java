@@ -19,6 +19,8 @@ public class TB_Turret implements PartsInterfaceStatic {
 
    public static Parts parts;
 
+   public static StateMachine smRoundRobin;
+
    public static ServoSSR servoHood;
    public static ServoSSR servoTurretL;
    public static ServoSSR servoTurretR;
@@ -117,6 +119,8 @@ public class TB_Turret implements PartsInterfaceStatic {
       motorSpin1.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, spinnerPID);
       motorSpin2.setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, spinnerPID);
 
+      buildStateMachines();
+      //smRoundRobin.start();
    }
 
    public static void preInit() {
@@ -197,6 +201,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    }
 
    public static void roundRobinSetting() {
+      //todo:replace this with a StateMachine
       roundRobinLoop = 0;
       do {
          roundRobinLoop++;
@@ -406,6 +411,63 @@ public class TB_Turret implements PartsInterfaceStatic {
       setSpinnerTargetSpeed(spinnerRPM);
 //      servoLedTurret.setPosition(TB_Misc.rgbIndicatorColor.Blue.color);
       LEDSettingTurret[0] = TB_Misc.rgbIndicatorColor.Blue.color;
+   }
+
+   static void buildStateMachines() {
+      StateMachine task;
+
+      smRoundRobin = new StateMachine("RoundRobin");
+      task = smRoundRobin;
+      task.setAutoRestart(true);
+      task.setNoBulkStop(true);  // stay running
+      task.addRunOnce( () -> {
+         if (LEDSettingTurret[0] != LEDSettingTurret[1]) {
+            LEDSettingTurret[1] = LEDSettingTurret[0];
+            servoLedTurret.setPosition(LEDSettingTurret[0]);
+            smRoundRobin.yield();
+         }
+      });
+      task.addRunOnce( () -> {
+         if (hoodPosSetting[0] != hoodPosSetting[1]) {
+            hoodPosSetting[1] = hoodPosSetting[0];
+            servoHood.setPosition(hoodPosSetting[0]);
+            smRoundRobin.yield();
+         }
+      });
+      task.addRunOnce( () -> {
+         // the servos sound bad when set separately (the 10-20ms is apparently too much)
+         if (turretLPosSetting[0] != turretLPosSetting[1]) {
+            turretLPosSetting[1] = turretLPosSetting[0];
+            servoTurretL.setPosition(turretLPosSetting[0]);
+            smRoundRobin.yield();
+         }
+         if (turretRPosSetting[0] != turretRPosSetting[1]) {
+            turretRPosSetting[1] = turretRPosSetting[0];
+            servoTurretR.setPosition(turretRPosSetting[0]);
+            smRoundRobin.yield();
+         }
+      });
+      task.addRunOnce( () -> {
+         if (spinner1VelocitySetting[0] != spinner1VelocitySetting[1]) {
+            spinner1VelocitySetting[1] = spinner1VelocitySetting[0];
+            motorSpin1.setVelocity(spinner1VelocitySetting[0]);
+            smRoundRobin.yield();
+         }
+      });
+      task.addRunOnce( () -> {
+         if (spinner2VelocitySetting[0] != spinner2VelocitySetting[1]) {
+            spinner2VelocitySetting[1] = spinner2VelocitySetting[0];
+            motorSpin2.setVelocity(spinner2VelocitySetting[0]);
+            smRoundRobin.yield();
+         }
+      });
+      task.addRunOnce( () -> {
+         if (LEDSettingLL[0] != LEDSettingLL[1]) {
+            LEDSettingLL[1] = LEDSettingLL[0];
+            servoLedLL.setPosition(LEDSettingLL[0]);
+            smRoundRobin.yield();
+         }
+      });
    }
 
 }
