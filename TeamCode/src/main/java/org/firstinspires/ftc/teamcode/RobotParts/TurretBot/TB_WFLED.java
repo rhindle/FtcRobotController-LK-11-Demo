@@ -32,7 +32,10 @@ public class TB_WFLED {
    public final static double LedAngleValue = 360.0 / 16;
    public final static double LedServoValue = 1.0 / 36;
    public static boolean LedDelay = false;
-   public final static int LedDelayTime = 60;  // Long enough for two read attempts?
+   public final static int LedDelayTime = 40;  // Long enough for two read attempts? // was 60
+
+   static long idlePreTimer = 0;
+   static long idleResetTimer = 0;
 
    public static DriveData driveData = new DriveData();
 
@@ -43,10 +46,12 @@ public class TB_WFLED {
    public static void initialize(){
       buildStateMachines();
       servoWFLED = new ServoSSR(parts.robotV2.getServoByName("servo1"));
+      servoWFLED.setPosition(0);
    }
 
    public static void preRun() {
       if (!TB_Misc.modeDemo) return;
+      servoWFLED.setPosition(0);
       smWFLED.restart();
    }
 
@@ -54,37 +59,53 @@ public class TB_WFLED {
       if (!TB_Misc.modeDemo) return;
       if (TB_Intake.transferRunning) {
          LedMode = 5;
+         resetIdlePreTimer();
       }
-      else if (TB_Turret.turretArmed) {
+      else if (TB_Turret.turretArmed && !TB_Turret.turretPaused) {
          LedMode = 4;
          LedAngle = (int)TB_Turret.turretAngle;
          LedSpeed = Math.min(7,(int)(TB_Turret.targetVector.distance/120*7));
+         resetIdlePreTimer();
+         // Because setting up the robot for aim can be time consuming, the LED idle is likely
+         // to activate. Sending a "9" signal resets the idle timer. Next iteration, back to "4".
+         // If the program stops, this keepalive signal stops, so timeout can happen normally.
+         if (System.currentTimeMillis() > idleResetTimer) {
+            LedMode = 9;   // special value for resetting the idle timer
+            idleResetTimer = System.currentTimeMillis() + 5000;
+         }
       }
       else if (driveData.driveSpeed != 0 && driveData.rotate == 0) {
          LedMode = 1;
          LedAngle = driveData.driveAngle;
          LedSpeed = Math.min(7,(int)(driveData.driveSpeed/0.5*7));
+         resetIdlePreTimer();
       }
       else if (driveData.driveSpeed == 0 && driveData.rotate != 0) {
          LedMode = 2;
          LedDirection = driveData.rotate > 0;
+         resetIdlePreTimer();
       }
       else if (driveData.driveSpeed != 0 && driveData.rotate != 0) {
          LedMode = 3;
          LedDirection = driveData.rotate > 0;
          LedAngle = driveData.driveAngle;
          LedSpeed = Math.min(7,(int)(driveData.driveSpeed/0.5*7));
+         resetIdlePreTimer();
       }
       else {
-         LedMode = 0;
+         if (System.currentTimeMillis() > idlePreTimer) LedMode = 0;
       }
+   }
+
+   static void resetIdlePreTimer() {
+      idlePreTimer = System.currentTimeMillis() + 2000;
    }
 
    static void setMode() {
       if (LedMode == LedMode0) {LedDelay=false; return;}
       LedMode0 = LedMode;
       LedDelay = true;
-      // mode is 0 through 5 and doesn't need to be calculated
+      // mode is 0 through 5 and doesn't need to be calculated [also 9 for reset idle]
       setLedServo(LedMode);
    }
 
@@ -93,7 +114,9 @@ public class TB_WFLED {
       LedDirection0 = LedDirection;
       LedDelay = true;
       // true = left/CCW, false = right/CW  // 7 left, 8 right
-      setLedServo(LedDirection ? 7 : 8);
+      //setLedServo(LedDirection ? 7 : 8);
+      // This was exactly backwards and I don't know why, so here is a hack fix
+      setLedServo(LedDirection ? 8 : 7);
    }
 
    static void setAngle() {
