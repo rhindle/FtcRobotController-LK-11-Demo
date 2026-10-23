@@ -38,6 +38,25 @@ public class TB_Misc  {
 //   public static boolean forza = false;
    public static Position currentPosition = new Position();
 
+   //============ demo LED additions ============
+
+   public static int LEDmode = 0;
+   public static int LEDmode0 = LEDmode;
+   //0 idle, 1 driving, 2 rotating, 3 driving & rotating, 4 aiming, 5 shooting
+   public static boolean LEDdirection = true;
+   public static boolean LEDdirection0 = LEDdirection;
+   // true = left/CCW, false = right/CW
+   // 7 left, 8 right
+   public static int LEDangle = 0;
+   public static int LEDangle0 = LEDangle;
+   // 10 through 25 = 16 positions
+   public static int LEDspeed = 0;
+   public static int LEDspeed0 = LEDspeed;
+   // 30 through 36 = 7 speeds
+   public static double LEDangleValue = 360.0 / 16;
+
+   //============================================
+
    public static PositionTolerance toleranceImpossible = new PositionTolerance (0.5, 0.5, 250);
    public static PositionTolerance toleranceHigh = new PositionTolerance (1.0, 1.0, 250);
    public static PositionTolerance toleranceMedium = new PositionTolerance (2.0, 2.0, 125);
