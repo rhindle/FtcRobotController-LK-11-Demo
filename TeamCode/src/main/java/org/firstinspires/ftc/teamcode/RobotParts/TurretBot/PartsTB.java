@@ -55,6 +55,7 @@ public class PartsTB extends Parts {
         TB_Tasks.setup(this);
         TB_TasksAuto.setup(this);
         TB_TasksAutoFar.setup(this);
+        TB_WFLED.setup(this);
 
 //        sb_Auto = new SB_Auto(this);
 
@@ -130,6 +131,7 @@ public class PartsTB extends Parts {
         if (TB_Misc.isAuto()) TB_Tasks.smInitServos.restart();
         TB_Tasks.smShowAlliance.restart();
         TB_Misc.noPosition = false;   // todo: REVISIT THIS LAST MINUTE HACK =============================
+        TB_WFLED.initialize();
     }
 
     @Override
@@ -166,6 +168,7 @@ public class PartsTB extends Parts {
         if (useLimeLight) TB_LL.preRun();
         if (useEncoderTracker) encoderTracker.preRun();
         if (TB_Misc.isTeleOp() && !TB_Misc.servosInit) TB_Tasks.smInitServos.restart();
+        TB_WFLED.preRun();
     }
 
     @Override
@@ -193,6 +196,7 @@ public class PartsTB extends Parts {
         StateMachine.addTelemetry();
         TelemetryMgr.Update();
         TB_Misc.currentPosition = positionMgr.robotPosition;
+        TB_WFLED.runLoop();
     }
 
     @Override

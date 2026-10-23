@@ -34,6 +34,9 @@ public class ControlsTB extends Controls {
       driveData = new DriveData();
       userInput();
       parts.userDrive.setUserDriveSettings(driveData);
+      if (TB_Misc.modeDemo) {
+         TB_WFLED.driveData = driveData;
+      }
    }
 
    @Override

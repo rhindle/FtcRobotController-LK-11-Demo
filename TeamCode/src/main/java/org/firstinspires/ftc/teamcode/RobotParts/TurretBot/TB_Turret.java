@@ -50,7 +50,7 @@ public class TB_Turret implements PartsInterfaceStatic {
    static int spinMotorRPM = 6000;
 
    static double servoHoodPos = 0.5;
-   static double turretAngle;
+   public static double turretAngle;
    static double turretPos;
    static double spinnerTargetSpeed = 1500;
    static double spinnerManualSpeed = 1500;

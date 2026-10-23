@@ -32,7 +32,7 @@ public class TB_Intake implements PartsInterfaceStatic {
 
    static final int reverseTicks = 10; //10;
    public static boolean intakeRunning = false;
-   static boolean transferRunning = false;
+   public static boolean transferRunning = false;
    static boolean gateOpen = false;
 
    static boolean disableIntakeSensors = false;
