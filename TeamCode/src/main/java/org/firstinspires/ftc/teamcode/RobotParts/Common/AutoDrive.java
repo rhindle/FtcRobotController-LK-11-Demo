@@ -42,7 +42,7 @@ public class AutoDrive implements PartsInterface {
    NavigationTarget navTarget;
    Error error, errorLast;
    long timeNavStart, timePIDCurrent, timePIDLast;
-   double powerTranslate, powerRotate, navAngle, navAngleLast, navAngleInitial;
+   protected double powerTranslate, powerRotate, navAngle, navAngleLast, navAngleInitial;
    Deque<NavigationTarget> navQueue = new ArrayDeque<>();
 
    /* Constructor */
@@ -88,6 +88,9 @@ public class AutoDrive implements PartsInterface {
       TelemetryMgr.message(Category.AUTODRIVE, "onTargetByAccuracy", onTargetByAccuracy);
       TelemetryMgr.message(Category.AUTODRIVE, "AutoDrive", status);
       TelemetryMgr.message(Category.AUTODRIVE, "Target", (navTarget==null) ? "(null)" : navTarget.targetPos.toString(2));
+   }
+
+   public void extra() {
    }
 
    public void stop() {

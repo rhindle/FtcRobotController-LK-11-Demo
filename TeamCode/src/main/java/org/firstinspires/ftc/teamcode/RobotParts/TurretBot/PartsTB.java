@@ -216,6 +216,7 @@ public class PartsTB extends Parts {
         controls.runLoop();  // todo: comment this out?
 //        userDrive.runLoop();
         autoDrive.runLoop();
+        autoDrive.extra();  // for the LED show
         drivetrain.runLoop();
         TB_Intake.runLoop();
         TB_Turret.runLoop();
@@ -225,6 +226,7 @@ public class PartsTB extends Parts {
         StateMachine.addTelemetry();
         TelemetryMgr.Update();
         TB_Misc.currentPosition = positionMgr.robotPosition;
+        TB_WFLED.runLoop();
     }
 
     @Override

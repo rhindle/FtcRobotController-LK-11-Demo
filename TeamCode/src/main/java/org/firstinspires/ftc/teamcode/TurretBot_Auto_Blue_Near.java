@@ -45,6 +45,7 @@ public class TurretBot_Auto_Blue_Near extends LinearOpMode {
         parts.speedMaximum = 1;
 
         TB_Misc.setAuto();
+        TB_Misc.useLedLightShow = true;
 
         settingsOverride();
 

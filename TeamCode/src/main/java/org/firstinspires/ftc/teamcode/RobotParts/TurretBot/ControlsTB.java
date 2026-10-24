@@ -34,7 +34,7 @@ public class ControlsTB extends Controls {
       driveData = new DriveData();
       userInput();
       parts.userDrive.setUserDriveSettings(driveData);
-      if (TB_Misc.modeDemo) {
+      if (TB_Misc.useLedLightShow && TB_Misc.isTeleOp()) {
          TB_WFLED.driveData = driveData;
       }
    }
@@ -370,13 +370,13 @@ public class ControlsTB extends Controls {
          parts.userDrive.setSpeedMaximum(TB_Misc.speedFactor);
          driveData = new DriveData(gamepad1.left_stick_x * TB_Misc.speedFactor,
                  gamepad1.left_stick_y * TB_Misc.speedFactor,
-                 gamepad1.right_stick_x * TB_Misc.speedFactor * (float) 0.7);
+                 gamepad1.right_stick_x * TB_Misc.speedFactor * (float) 0.8);
       }
       if (guestDriveOK && driveData.driveSpeed == 0 && driveData.rotate == 0) {
          parts.userDrive.setSpeedMaximum(TB_Misc.demoGuestSpeed);
          driveData = new DriveData(gamepad2.left_stick_x * (float)TB_Misc.demoGuestSpeed,
                  gamepad2.left_stick_y * (float)TB_Misc.demoGuestSpeed,
-                 gamepad2.right_stick_x * (float)TB_Misc.demoGuestSpeed * (float) 0.7);
+                 gamepad2.right_stick_x * (float)TB_Misc.demoGuestSpeed * (float) 0.8);
       }
 
       // ~~~~ guest controls

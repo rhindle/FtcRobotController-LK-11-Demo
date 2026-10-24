@@ -50,13 +50,13 @@ public class TB_WFLED {
    }
 
    public static void preRun() {
-      if (!TB_Misc.modeDemo) return;
+      if (!TB_Misc.useLedLightShow) return;
       servoWFLED.setPosition(0);
       smWFLED.restart();
    }
 
    public static void runLoop() {
-      if (!TB_Misc.modeDemo) return;
+      if (!TB_Misc.useLedLightShow) return;
       if (TB_Intake.transferRunning) {
          LedMode = 5;
          resetIdlePreTimer();
@@ -143,7 +143,7 @@ public class TB_WFLED {
    }
 
    static void buildStateMachines() {
-      if (!TB_Misc.modeDemo) return;
+      if (!TB_Misc.useLedLightShow) return;
       StateMachine task;
 
       smWFLED = new StateMachine("WF LED");

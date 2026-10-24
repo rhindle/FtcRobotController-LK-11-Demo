@@ -17,6 +17,7 @@ public class TurretBot_TeleOp_Demo extends TurretBot_TeleOp_AutoAlliance {
         parts.speedMaximum = 1;
         parts.useForzaControls = false;
         TB_Misc.modeDemo = true;
+        TB_Misc.useLedLightShow = true;
         TB_Misc.speedFactor = (float)TB_Misc.demoTeamSpeedSlow;
         // team color?  change according to demo field
         teamBlue = true;

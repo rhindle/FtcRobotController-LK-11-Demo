@@ -49,6 +49,7 @@ public class TurretBot_TeleOp_AutoAlliance extends LinearOpMode {
 //        DSAprilTag.USE_WEBCAM = true;
         parts.useForzaControls = true;
         TB_Misc.modeDemo = false;
+        TB_Misc.useLedLightShow = true;
 
         TB_Misc.setTeleOp();
 
@@ -95,7 +96,7 @@ public class TurretBot_TeleOp_AutoAlliance extends LinearOpMode {
         // automate things that were manual:
         //   set drive speed to full, arm turret parts, turn on intake
 //        TB_Misc.controlsFullSpeed = true;  // driver won't have to press right bumper
-        TB_Misc.fullSpeed(true);    // driver won't have to press right bumper
+        if (!TB_Misc.modeDemo) TB_Misc.fullSpeed(true);    // driver won't have to press right bumper
         TB_Turret.armTurret(true);
         TB_Turret.armSpinner(true);
         TB_Intake.intakeRunning = true;
