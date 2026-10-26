@@ -1,16 +1,15 @@
-package org.firstinspires.ftc.teamcode.ZZ;
+package org.firstinspires.ftc.teamcode.ZZ.Core;
 
 import android.annotation.SuppressLint;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-@TeleOp (name="ZZ_MotorSpin_PID", group="Test")
-@Disabled
-public class ZZ_MotorSpin_PID extends LinearOpMode {
+@TeleOp (name="ZZ_MotorSpin", group="Test")
+//@Disabled
+public class ZZ_MotorSpin extends LinearOpMode {
 
     ZZ_Robot_2025 robot;
     ZZ_ButtonMgr buttonMgr;
@@ -33,6 +32,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
     static double defaultTicks = tickOptions[0];
     int tickChoice = 0;
     boolean changeTicks = false;
+    boolean isPaused = false;
 
     int active;
 
@@ -46,7 +46,6 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
     public void runOpMode() {
         robot = new ZZ_Robot_2025(this);
         buttonMgr = new ZZ_ButtonMgr(this);
-        //boolean zz_dualHub = true;
 
         tickChoice = findTickIndex(defaultTicks);
 
@@ -57,16 +56,21 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             telemetry.addLine();
             telemetry.addLine("Press X for Single Hub, Y for Dual Hubs");
             telemetry.addLine("Press triggers to cycle motor types");
+            telemetry.addLine("Press UP to toggle launch PID");
             telemetry.addLine();
             telemetry.addLine("Current Selection: " + (robot.zz_dualHub ? "Dual Hubs" : "Single Hub"));
             telemetry.addLine("Default Ticks: " + defaultTicks + " (" +
                     rpmOptions[tickChoice] + " RPM)" + (changeTicks ? "" : " (no change)"));
+            telemetry.addLine("PID: " + (robot.zz_spinPID ? "Launch" : "default"));
             telemetry.update();
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.x, ZZ_ButtonMgr.State.wasPressed)) {
                 robot.zz_dualHub = false;
             }
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.y, ZZ_ButtonMgr.State.wasPressed)) {
                 robot.zz_dualHub = true;
+            }
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.dpad_up, ZZ_ButtonMgr.State.wasPressed)) {
+                robot.zz_spinPID = !robot.zz_spinPID;
             }
             if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.right_trigger, ZZ_ButtonMgr.State.isRepeating)) {
                 changeTicks = true;
@@ -129,8 +133,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             robot.motorArray[i].setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
             robot.motorArray[i].setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             updateTickSettings(i, ticksPerRev[i]);
-
-            robot.motorArray[i].setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, launchSpinPID);
+            if (robot.zz_spinPID) robot.motorArray[i].setPIDFCoefficients(DcMotorEx.RunMode.RUN_USING_ENCODER, launchSpinPID);
         }
 
         binderKeys = new char[] {'a', 'b', 'x', 'y'};
@@ -181,6 +184,18 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
                     oldVel[i] = 0;
                     newVel[i] = 0;
                     newRPM[i] = 0;
+                }
+            }
+
+            // pause / resume (start)
+            if (buttonMgr.getState(1, ZZ_ButtonMgr.Buttons.start, ZZ_ButtonMgr.State.wasPressed)) {
+                isPaused = !isPaused;
+                if (isPaused) {
+                    for (int i = 0; i < numMotors; i++) {
+                        robot.motorArray[i].setPower(0);
+                        newVel[i] = oldVel[i];
+                        oldVel[i] = 0;
+                    }
                 }
             }
 
@@ -241,10 +256,12 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             }
 
             // update the motor velocity if live and the position has changed
-            for (int i = 0; i < numMotors; i++) {
-                if (live[i] && newVel[i] != oldVel[i]) {
-                    robot.motorArray[i].setVelocity(newVel[i]);
-                    oldVel[i] = newVel[i];
+            if (!isPaused) {
+                for (int i = 0; i < numMotors; i++) {
+                    if (live[i] && newVel[i] != oldVel[i]) {
+                        robot.motorArray[i].setVelocity(newVel[i]);
+                        oldVel[i] = newVel[i];
+                    }
                 }
             }
 
@@ -253,7 +270,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             telemetry.addLine("up/down to select motor |  doubletap a/b/x/y to bind");
             telemetry.addLine("left for forward/reverse   |  right for live/not");
             telemetry.addLine("l_bumper for brake/not    |  ");
-            telemetry.addLine("back for stop all                |  ");
+            telemetry.addLine("back for stop all                |  start to pause/resume");
             telemetry.addLine("triggers to cycle motor types");
             telemetry.addLine();
             telemetry.addLine("hold a/b/x/y to change power for bound motors");
@@ -263,6 +280,7 @@ public class ZZ_MotorSpin_PID extends LinearOpMode {
             telemetry.addLine();
             telemetry.addLine("[sel] [name] [bind] [live][brake][dir] (spec) [setrpm] [rpm]");
             telemetry.addLine();
+            telemetry.addLine((isPaused ? "~~~ PAUSED (press start to resume) ~~~" : ""));
 
             // Build telemetry strings
             for (int i = 0; i < numMotors; i++) {

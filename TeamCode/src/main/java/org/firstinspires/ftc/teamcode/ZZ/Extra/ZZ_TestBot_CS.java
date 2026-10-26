@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.ZZ;
+package org.firstinspires.ftc.teamcode.ZZ.Extra;
 
 import android.graphics.Color;
 
@@ -10,8 +10,6 @@ import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.Tools.i2c.AdafruitNeoDriver;
-import org.firstinspires.ftc.teamcode.Tools.i2c.QwiicLEDStickLK;
 
 @TeleOp (name="AA_TestBot_CS", group="Test")
 @Disabled
