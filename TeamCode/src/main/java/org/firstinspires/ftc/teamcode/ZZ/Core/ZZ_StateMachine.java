@@ -16,13 +16,13 @@ import androidx.annotation.NonNull;
 
     Requirements
 
-    Initialization - Before instantiating any StateMachine objects, reset() the class. This
+    Initialization - Before instantiating any ZZ_StateMachine objects, reset() the class. This
     re-initializes the static tracking array, clearing out any references to previously created
     machines.
         ZZ_StateMachine.reset();
 
     Periodic - Every iteration of your main LinearOpMode "run loop", runLoop() is required to
-    process all of the StateMachine objects.
+    process all of the ZZ_StateMachine objects.
         ZZ_StateMachine.runLoop();
 
     Telemetry - If desired, some basic debugging information can be added to the telemetry.
@@ -41,6 +41,7 @@ public class ZZ_StateMachine {
     /* Instance tracking */
     static ArrayList<ZZ_StateMachine> list = new ArrayList<>();
     static boolean pausedAll = false;
+    static int telemetryLevel = 0;
 
     /* Internal variables */
     String name;
@@ -57,6 +58,7 @@ public class ZZ_StateMachine {
     boolean noBulkStop = false;      // this makes the task invincible except when stopped directly
     boolean lastStepTimeout = false; // status for potential use in the next step
     boolean forceNext = false;       // this makes the machine advance to the next step
+    boolean yielding = false;
     boolean restarted = false;       // to allow only a single auto restart in the runLoop iterator
 
     int currentStep = -1;
@@ -76,6 +78,7 @@ public class ZZ_StateMachine {
     ArrayList<String> stopGroup = new ArrayList<>();
     ArrayList<String> memberGroup = new ArrayList<>();
     long overallTimeLimit = 0;
+    int debugLevel = 0;
     Supplier<Boolean> endCriteria;
     Runnable stopRunnable;
     Runnable abortRunnable;
@@ -143,6 +146,7 @@ public class ZZ_StateMachine {
             // being waited for) rather than waiting for the next full loop.
             // Tracking whether the machine has already restarted prevents an infinite loop.
             machine.restarted = false;
+            machine.yielding = false;
             boolean doLoop;
             do {
                 doLoop = false;
@@ -176,7 +180,7 @@ public class ZZ_StateMachine {
                 }
 
                 // Advance step if end criteria met or step timeout.
-                if (machine.stepEnd.get() || stepTimedOut || machine.forceNext) {
+                if (machine.stepEnd.get() || stepTimedOut || machine.forceNext || machine.yielding) {  //todo:yielding belongs here?
 
                     // Store whether the step timed out.
                     machine.lastStepTimeout = stepTimedOut;
@@ -186,14 +190,14 @@ public class ZZ_StateMachine {
 
                     // If there's another step, load it and loop again.
                     if (machine.loadNextStep()) {
-                        doLoop = true;
+                        if (!machine.yielding) doLoop = true;
                     }
                     // If there isn't a next step, restart or enter FINISHED state.
                     else {
                         if (machine.autoRestart) {
                             machine.tempNoStop = true;   // todo: what behavior is desired?
                             machine.changeRunMode(runModeChange.RESTART);
-                            if (!machine.restarted) doLoop = true;
+                            if (!machine.restarted && !machine.yielding) doLoop = true;
                         }
                         else {
                             machine.changeRunMode(runModeChange.FINISH);
@@ -253,15 +257,17 @@ public class ZZ_StateMachine {
      * Add state machine status to telemetry for debugging.
      */
 //    public static void addTelemetry() {
-//        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "============ State Machines ============");
+//        TelemetryMgr.message(TelemetryMgr.Category.TASK, "============ State Machines ============");
 //        for (ZZ_StateMachine machine : list ) {
-//            TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, machine.name, machine.getStatus()+" ("+machine.className+")");
+//            if (machine.debugLevel > telemetryLevel) continue;
+//            TelemetryMgr.message(TelemetryMgr.Category.TASK, machine.name, machine.getStatus()+" ("+machine.className+")");
 //        }
-//        TelemetryMgr.message(TelemetryMgr.Category.TASK_EXT, "======================================");
+//        TelemetryMgr.message(TelemetryMgr.Category.TASK, "======================================");
 //    }
     public static void addTelemetry(LinearOpMode opMode) {
         opMode.telemetry.addData("=========== State Machines ===========", "");
         for (ZZ_StateMachine machine : list ) {
+            if (machine.debugLevel > telemetryLevel) continue;
             opMode.telemetry.addData(machine.name, machine.getStatus()+" ("+machine.className+")");
         }
         opMode.telemetry.addData("====================================", "");
@@ -269,6 +275,7 @@ public class ZZ_StateMachine {
     public static void addTelemetry(Telemetry telemetry) {
         telemetry.addData("=========== State Machines ===========", "");
         for (ZZ_StateMachine machine : list ) {
+            if (machine.debugLevel > telemetryLevel) continue;
             telemetry.addData(machine.name, machine.getStatus()+" ("+machine.className+")");
         }
         telemetry.addData("====================================", "");
@@ -644,6 +651,17 @@ public class ZZ_StateMachine {
     }
 
     /**
+     * Cause the machine to "yield" by stopping execution until the next cycle.
+     * Purpose is to be used within a step to ensure that the next step won't run until
+     * the next loop.
+     * An example usage is a round-robin state machine that only runs one time-consuming
+     * step per loop.
+     */
+    public void yield() {
+        yielding = true;
+    }
+
+    /**
      * Cause the machine to advance to the next step. Primitive flow control for use in a
      * step runnable in certain cases where the logic may be simpler than using
      * an exit criteria.
@@ -676,6 +694,18 @@ public class ZZ_StateMachine {
         if (currentStep > steps.size()) currentStep = steps.size();
         currentStep--;       // intent is for this to only be used within the machine; step counter will increment by one
         forceNext = true;
+    }
+
+    /**
+     * Deletes all steps and associated lists (steps, ends, times, aborts, timeoutSteps).
+     * Useful if a machine is dynamically created / rewritten.
+     */
+    public void clear() {
+        steps.clear();
+        ends.clear();
+        times.clear();
+        aborts.clear();
+        timeoutSteps.clear();
     }
 
     /*==============*/
@@ -734,6 +764,14 @@ public class ZZ_StateMachine {
         return lastStepTimeout;
     }
 
+    /**
+     * @return How long the machine has been running (in ms), or -1 if it is not running.
+     */
+    public long getRuntime() {
+        if (running) return System.currentTimeMillis() - overallStartTime;
+        else return -1;
+    }
+
     /*==============*/
     /*   Setters    */
     /*==============*/
@@ -788,6 +826,17 @@ public class ZZ_StateMachine {
         noBulkStop = state;
     }
 
+    /**
+     * Sets the telemetry debug level for the machine.
+     * When addTelemetry() is called, it displays debug information for any/all machines
+     * where their debugLevel is less than or equal to the global telemetryLevel value.
+     * Default levels are 0 for both.
+     * @param level Typically between 0 and 10, where higher numbers are less "important".
+     */
+    public void setDebugLevel(int level) {
+        debugLevel = level;
+    }
+
     /*==============*/
     /* Step Setting */
     /*==============*/
@@ -805,7 +854,7 @@ public class ZZ_StateMachine {
 
     /**
      * Add a step that runs a single time.
-      * @param runnable The runnable to run.
+     * @param runnable The runnable to run.
      */
     public void addRunOnce(Runnable runnable) {
         addStep(runnable, () -> true, 0, false);
